@@ -1,0 +1,297 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Owner {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  phone        String
+  isVerified   Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  canteens     Canteen[]
+}
+
+model Canteen {
+  id           String   @id @default(uuid())
+  ownerId      String
+  owner        Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name         String
+  slug         String   @unique
+  description  String?
+  logoUrl      String?
+  bannerUrl    String?
+  address      String?
+  phone        String?
+  isActive     Boolean  @default(true)
+  openingTime  String   @default("08:00")
+  closingTime  String   @default("22:00")
+  avgPrepTime      Int      @default(15)
+  maxActiveOrders  Int      @default(50)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  staff         Staff[]
+  categories    Category[]
+  tables        Table[]
+  orders        Order[]
+  announcements Announcement[]
+}
+
+model Staff {
+  id           String   @id @default(uuid())
+  canteenId    String
+  canteen      Canteen  @relation(fields: [canteenId], references: [id], onDelete: Cascade)
+  email        String
+  passwordHash String
+  pin          String?
+  name         String
+  role         StaffRole
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([canteenId, email])
+  @@index([canteenId, isActive])
+  @@index([canteenId, pin])
+}
+
+model Category {
+  id          String     @id @default(uuid())
+  canteenId   String
+  canteen     Canteen    @relation(fields: [canteenId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  imageUrl    String?
+  sortOrder   Int        @default(0)
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  items       MenuItem[]
+
+  @@index([canteenId, sortOrder])
+}
+
+model MenuItem {
+  id             String          @id @default(uuid())
+  categoryId     String
+  category       Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name           String
+  description    String?
+  price          Decimal         @db.Decimal(10, 2)
+  imageUrl       String?
+  isVeg          Boolean         @default(true)
+  isAvailable    Boolean         @default(true)
+  prepTimeMin    Int?
+  sortOrder      Int             @default(0)
+  tags           String[]        @default([])
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  customizations Customization[]
+  orderItems     OrderItem[]
+
+  @@index([categoryId, sortOrder])
+}
+
+model Customization {
+  id         String               @id @default(uuid())
+  menuItemId String
+  menuItem   MenuItem             @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  name       String
+  type       CustomizationType
+  isRequired Boolean              @default(false)
+  minSelect  Int                  @default(0)
+  maxSelect  Int                  @default(1)
+  options    CustomizationOption[]
+}
+
+model CustomizationOption {
+  id              String        @id @default(uuid())
+  customizationId String
+  customization   Customization @relation(fields: [customizationId], references: [id], onDelete: Cascade)
+  name            String
+  priceAdjustment Decimal       @default(0) @db.Decimal(10, 2)
+  isDefault       Boolean       @default(false)
+  sortOrder       Int           @default(0)
+}
+
+model Table {
+  id        String   @id @default(uuid())
+  canteenId String
+  canteen   Canteen  @relation(fields: [canteenId], references: [id], onDelete: Cascade)
+  label     String
+  qrCodeUrl String?
+  qrToken   String   @unique @default(uuid())
+  isActive  Boolean  @default(true)
+  section   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+
+  @@unique([canteenId, label])
+}
+
+model Consumer {
+  id           String   @id @default(uuid())
+  name         String
+  phone        String   @unique
+  passwordHash String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  wallet       Wallet?
+  orders       Order[]
+}
+
+model Wallet {
+  id           String              @id @default(uuid())
+  consumerId   String              @unique
+  consumer     Consumer            @relation(fields: [consumerId], references: [id], onDelete: Cascade)
+  balance      Decimal             @default(0) @db.Decimal(10, 2)
+  updatedAt    DateTime            @updatedAt
+  transactions WalletTransaction[]
+}
+
+model WalletTransaction {
+  id            String                  @id @default(uuid())
+  walletId      String
+  wallet        Wallet                  @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  type          WalletTransactionType
+  amount        Decimal                 @db.Decimal(10, 2)
+  balanceBefore Decimal                 @db.Decimal(10, 2)
+  balanceAfter  Decimal                 @db.Decimal(10, 2)
+  source        WalletTransactionSource
+  description   String?
+  reference     String?
+  approvedBy    String?
+  status        WalletRequestStatus     @default(APPROVED)
+  createdAt     DateTime                @default(now())
+
+  @@index([walletId, createdAt])
+  @@index([status, source])
+}
+
+model Order {
+  id                  String         @id @default(uuid())
+  orderNumber         Int
+  canteenId           String
+  canteen             Canteen        @relation(fields: [canteenId], references: [id])
+  tableId             String
+  table               Table          @relation(fields: [tableId], references: [id])
+  consumerId          String
+  consumer            Consumer       @relation(fields: [consumerId], references: [id])
+  status              OrderStatus    @default(PLACED)
+  totalAmount         Decimal        @db.Decimal(10, 2)
+  specialInstructions String?
+  estimatedReadyAt    DateTime?
+  paymentStatus       PaymentStatus  @default(PENDING)
+  paymentMethod       PaymentMethod
+  walletTransactionId String?
+  idempotencyKey      String?        @unique
+  trackingToken       String?        @unique
+  placedAt            DateTime       @default(now())
+  acceptedAt          DateTime?
+  preparingAt         DateTime?
+  readyAt             DateTime?
+  pickedUpAt          DateTime?
+  cancelledAt         DateTime?
+  items               OrderItem[]
+  statusLogs          OrderStatusLog[]
+
+  @@index([canteenId, status])
+  @@index([canteenId, placedAt])
+  @@index([consumerId, placedAt])
+}
+
+model OrderItem {
+  id              String   @id @default(uuid())
+  orderId         String
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItemId      String
+  menuItem        MenuItem @relation(fields: [menuItemId], references: [id])
+  quantity        Int
+  unitPrice       Decimal  @db.Decimal(10, 2)
+  totalPrice      Decimal  @db.Decimal(10, 2)
+  selectedOptions Json     @default("[]")
+  notes           String?
+}
+
+model OrderStatusLog {
+  id         String   @id @default(uuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  fromStatus String?
+  toStatus   String
+  changedBy  String?
+  note       String?
+  createdAt  DateTime @default(now())
+
+  @@index([orderId, createdAt])
+}
+
+model Announcement {
+  id        String    @id @default(uuid())
+  canteenId String
+  canteen   Canteen   @relation(fields: [canteenId], references: [id], onDelete: Cascade)
+  message   String
+  isActive  Boolean   @default(true)
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([canteenId, isActive])
+}
+
+enum StaffRole {
+  MANAGER
+  KITCHEN
+  COUNTER
+}
+
+enum CustomizationType {
+  SINGLE_SELECT
+  MULTI_SELECT
+}
+
+enum OrderStatus {
+  PLACED
+  ACCEPTED
+  PREPARING
+  READY
+  PICKED_UP
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CASH
+  WALLET
+}
+
+enum WalletTransactionType {
+  CREDIT
+  DEBIT
+}
+
+enum WalletTransactionSource {
+  CASH_DEPOSIT
+  BANK_TRANSFER
+  ORDER_PAYMENT
+  REFUND
+}
+
+enum WalletRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
