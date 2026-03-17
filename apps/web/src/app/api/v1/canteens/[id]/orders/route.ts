@@ -40,7 +40,7 @@ export async function POST(
     const activeStatuses: OrderStatus[] = ["PLACED", "ACCEPTED", "PREPARING", "READY"]
 
     const canteenActiveCount = await prisma.order.count({
-      where: { id: canteenId, status: { in: activeStatuses } },
+      where: { canteenId, status: { in: activeStatuses } },
     })
     const maxActive = canteen.maxActiveOrders ?? 50
     if (canteenActiveCount >= maxActive) throw new AuthError("Canteen is at capacity", 429)

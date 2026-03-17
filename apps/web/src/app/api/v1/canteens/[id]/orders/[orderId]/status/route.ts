@@ -2,6 +2,7 @@ import { NextRequest } from "next/server"
 import { Decimal } from "@prisma/client/runtime/library"
 import prisma from "@/lib/prisma"
 import { success, error, handleError, requireRole, parseBody, AuthError } from "@/lib/api-utils"
+import { sendPushToConsumer } from "@/lib/push-notifications"
 import { updateOrderStatusSchema, ORDER_STATUS_FLOW } from "@orderkaro/shared"
 
 export async function PATCH(
@@ -92,6 +93,25 @@ export async function PATCH(
     })
 
     const updated = await prisma.order.findUnique({ where: { id: orderId } })
+
+    if (data.status === "READY") {
+      sendPushToConsumer(
+        order.consumerId,
+        "Order Ready!",
+        `Your order #${order.orderNumber} is ready for pickup at the counter.`,
+        { trackingToken: order.trackingToken || "", orderId }
+      )
+    }
+
+    if (data.status === "CANCELLED") {
+      sendPushToConsumer(
+        order.consumerId,
+        "Order Cancelled",
+        `Your order #${order.orderNumber} has been cancelled.`,
+        { trackingToken: order.trackingToken || "", orderId }
+      )
+    }
+
     return success(updated)
   } catch (err) {
     return handleError(err)

@@ -7,7 +7,7 @@ export const rechargeRequestSchema = z.object({
 })
 
 export const creditWalletSchema = z.object({
-  consumerId: z.string().uuid(),
+  consumerId: z.string().min(1),
   amount: z.number().positive(),
   description: z.string().max(500).optional(),
 })

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="77" fill="#0A0A0A"/>
+  <text x="50%" y="42%" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="179" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">OK</text>
+  <text x="50%" y="72%" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="102" fill="#DC2626" text-anchor="middle" dominant-baseline="middle">OrderKaro</text>
+</svg>

@@ -16,7 +16,6 @@ import {
   ArrowDownLeft,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Modal } from "@/components/ui/modal"
@@ -78,18 +77,18 @@ function StatCard({ stat, index }: { stat: AnalyticsStat; index: number }) {
       transition={{ delay: index * 0.07, type: "spring", damping: 20, stiffness: 200 }}
     >
       <Card className={stat.highlight ? "border-brand-red/20 bg-brand-red/[0.02]" : ""}>
-        <CardContent className="py-5">
+        <CardContent className="py-6">
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide">
+              <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
                 {stat.label}
               </p>
-              <p className={`text-2xl font-extrabold mt-1 ${stat.highlight ? "text-brand-red" : "text-brand-black"}`}>
+              <p className={`text-3xl font-extrabold mt-2 ${stat.highlight ? "text-brand-red" : "text-brand-black"}`}>
                 {stat.value}
               </p>
-              <p className="text-xs text-neutral-400 mt-0.5">{stat.subtext}</p>
+              <p className="text-sm text-neutral-400 mt-1">{stat.subtext}</p>
             </div>
-            <div className={`p-2.5 rounded-xl ${stat.highlight ? "bg-brand-red/10 text-brand-red" : "bg-neutral-100 text-neutral-500"}`}>
+            <div className={`p-3 rounded-2xl ${stat.highlight ? "bg-brand-red/10 text-brand-red" : "bg-neutral-100 text-neutral-500"}`}>
               {stat.icon}
             </div>
           </div>
@@ -136,9 +135,7 @@ export default function WalletManagement() {
   const { data: activityData, isLoading: activityLoading } = useQuery<WalletTransaction[]>({
     queryKey: ["wallet-activity", canteenId],
     queryFn: () =>
-      api
-        .get(`/api/v1/canteens/${canteenId}/wallet/transactions?limit=10`)
-        .then((r) => r.data.data),
+      api.get(`/api/v1/canteens/${canteenId}/wallet/transactions?limit=10`).then((r) => r.data.data),
     enabled: !!canteenId,
     refetchInterval: 30000,
   })
@@ -146,14 +143,9 @@ export default function WalletManagement() {
   const analytics = useMemo(() => {
     const consumers = consumersData?.consumers || []
     const pendingRequests = requests || []
-
     const consumersWithWallet = consumers.filter((c) => c.wallet !== null)
-    const totalBalance = consumersWithWallet.reduce(
-      (sum, c) => sum + Number(c.wallet?.balance || 0),
-      0
-    )
+    const totalBalance = consumersWithWallet.reduce((sum, c) => sum + Number(c.wallet?.balance || 0), 0)
     const pendingAmount = pendingRequests.reduce((sum, r) => sum + Number(r.amount), 0)
-
     return {
       totalConsumers: consumers.length,
       consumersWithWallet: consumersWithWallet.length,
@@ -170,11 +162,7 @@ export default function WalletManagement() {
       queryClient.invalidateQueries({ queryKey: ["wallet-requests"] })
       queryClient.invalidateQueries({ queryKey: ["consumers"] })
       queryClient.invalidateQueries({ queryKey: ["wallet-activity"] })
-      toast.success(
-        variables.status === "APPROVED"
-          ? "Recharge approved and wallet credited"
-          : "Request rejected"
-      )
+      toast.success(variables.status === "APPROVED" ? "Recharge approved and wallet credited" : "Request rejected")
     },
     onError: (err: any) => toast.error(err.response?.data?.error || "Failed to process request"),
   })
@@ -199,41 +187,41 @@ export default function WalletManagement() {
 
   const statCards: AnalyticsStat[] = [
     {
-      label: "Total Consumers",
+      label: "Total Customers",
       value: String(analytics.totalConsumers),
       subtext: `${analytics.consumersWithWallet} with active wallets`,
-      icon: <Users className="w-5 h-5" />,
+      icon: <Users className="w-6 h-6" />,
     },
     {
       label: "Total Wallet Balance",
       value: formatPrice(analytics.totalBalance),
-      subtext: "Across all consumer wallets",
-      icon: <TrendingUp className="w-5 h-5" />,
+      subtext: "Across all customer wallets",
+      icon: <TrendingUp className="w-6 h-6" />,
       highlight: true,
     },
     {
       label: "Pending Requests",
       value: String(analytics.pendingCount),
-      subtext: analytics.pendingCount > 0 ? "Awaiting approval" : "All caught up",
-      icon: <Clock className="w-5 h-5" />,
+      subtext: analytics.pendingCount > 0 ? "Awaiting your approval" : "All caught up!",
+      icon: <Clock className="w-6 h-6" />,
       highlight: analytics.pendingCount > 0,
     },
     {
       label: "Pending Amount",
       value: formatPrice(analytics.pendingAmount),
-      subtext: "Total amount in pending requests",
-      icon: <Wallet className="w-5 h-5" />,
+      subtext: "Total pending approval",
+      icon: <Wallet className="w-6 h-6" />,
     },
   ]
 
   const tabs = [
-    { id: "overview" as const, label: "Overview" },
+    { id: "overview" as const, label: "Recent Activity" },
     {
       id: "requests" as const,
-      label: "Requests",
+      label: "Recharge Requests",
       badge: analytics.pendingCount > 0 ? analytics.pendingCount : null,
     },
-    { id: "consumers" as const, label: "Consumers" },
+    { id: "consumers" as const, label: "All Customers" },
   ]
 
   return (
@@ -241,27 +229,31 @@ export default function WalletManagement() {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between mb-6"
+        className="flex items-start justify-between mb-8"
       >
         <div>
-          <h1 className="text-2xl font-extrabold text-brand-black">Wallet Management</h1>
-          <p className="text-neutral-500 mt-1">Analytics, recharge requests, and consumer balances</p>
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-10 h-10 rounded-xl bg-brand-red/10 flex items-center justify-center">
+              <Wallet className="w-5 h-5 text-brand-red" />
+            </div>
+            <h1 className="text-3xl font-extrabold text-brand-black">Wallet Management</h1>
+          </div>
+          <p className="text-neutral-500">Approve recharge requests and manage customer balances</p>
         </div>
         <div className="flex items-center gap-3">
           {canteens && canteens.length > 1 && (
             <select
               value={canteenId}
               onChange={(e) => setCanteenId(e.target.value)}
-              className="px-4 py-2 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
+              className="px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
             >
               {canteens.map((c: any) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
           )}
-          <Button onClick={() => setShowCreditModal(true)}>
-            <Wallet className="w-4 h-4" />
-            Credit Wallet
+          <Button size="lg" onClick={() => setShowCreditModal(true)}>
+            <Wallet className="w-5 h-5" /> Credit a Wallet
           </Button>
         </div>
       </motion.div>
@@ -277,14 +269,14 @@ export default function WalletManagement() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`relative px-4 py-2.5 text-sm font-semibold transition-colors ${
+            className={`relative px-5 py-3 text-sm font-bold transition-colors ${
               activeTab === tab.id ? "text-brand-black" : "text-neutral-400 hover:text-neutral-600"
             }`}
           >
-            <span className="flex items-center gap-1.5">
+            <span className="flex items-center gap-2">
               {tab.label}
               {tab.badge != null && (
-                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-brand-red text-white text-xs font-bold">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-brand-red text-white text-xs font-bold">
                   {tab.badge}
                 </span>
               )}
@@ -308,33 +300,34 @@ export default function WalletManagement() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.15 }}
           >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-brand-black">Recent Activity</h2>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-bold text-brand-black">Recent Transactions</h2>
               <button
                 onClick={() => queryClient.invalidateQueries({ queryKey: ["wallet-activity"] })}
-                className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-neutral-100 transition-colors text-sm font-semibold text-neutral-600"
               >
-                <RefreshCw className="w-4 h-4 text-neutral-500" />
+                <RefreshCw className="w-4 h-4" /> Refresh
               </button>
             </div>
 
             {activityLoading && (
               <div className="space-y-3">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="h-16 rounded-xl bg-neutral-100 animate-pulse" />
+                  <div key={i} className="h-20 rounded-xl bg-neutral-100 animate-pulse" />
                 ))}
               </div>
             )}
 
             {!activityLoading && (!activityData || activityData.length === 0) && (
-              <div className="text-center py-16 border border-dashed border-neutral-200 rounded-2xl">
-                <TrendingUp className="w-10 h-10 text-neutral-200 mx-auto mb-2" />
-                <p className="text-neutral-400 font-medium text-sm">No transactions yet</p>
+              <div className="text-center py-20 border-2 border-dashed border-neutral-200 rounded-2xl">
+                <TrendingUp className="w-14 h-14 text-neutral-200 mx-auto mb-4" />
+                <h3 className="text-lg font-bold text-brand-black mb-1">No transactions yet</h3>
+                <p className="text-neutral-400 text-sm">Wallet activity will appear here</p>
               </div>
             )}
 
             {!activityLoading && activityData && activityData.length > 0 && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {activityData.map((tx, idx) => (
                   <motion.div
                     key={tx.id}
@@ -343,35 +336,21 @@ export default function WalletManagement() {
                     transition={{ delay: idx * 0.04 }}
                   >
                     <Card>
-                      <CardContent className="flex items-center justify-between py-3">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`p-2 rounded-xl flex-shrink-0 ${
-                              tx.type === "CREDIT"
-                                ? "bg-neutral-100 text-brand-black"
-                                : "bg-red-50 text-brand-red"
-                            }`}
-                          >
-                            {tx.type === "CREDIT" ? (
-                              <ArrowDownLeft className="w-4 h-4" />
-                            ) : (
-                              <ArrowUpRight className="w-4 h-4" />
-                            )}
+                      <CardContent className="flex items-center justify-between py-4">
+                        <div className="flex items-center gap-4">
+                          <div className={`p-3 rounded-xl flex-shrink-0 ${tx.type === "CREDIT" ? "bg-neutral-100 text-brand-black" : "bg-red-50 text-brand-red"}`}>
+                            {tx.type === "CREDIT" ? <ArrowDownLeft className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
                           </div>
                           <div>
-                            <p className="font-semibold text-brand-black text-sm">{tx.consumer?.name}</p>
-                            <p className="text-xs text-neutral-400">{tx.consumer?.phone}</p>
+                            <p className="font-bold text-brand-black">{tx.consumer?.name}</p>
+                            <p className="text-sm text-neutral-400">{tx.consumer?.phone}</p>
                             {tx.description && (
-                              <p className="text-xs text-neutral-400 truncate max-w-xs">{tx.description}</p>
+                              <p className="text-sm text-neutral-400 truncate max-w-xs">{tx.description}</p>
                             )}
                           </div>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p
-                            className={`font-bold text-base ${
-                              tx.type === "CREDIT" ? "text-brand-black" : "text-brand-red"
-                            }`}
-                          >
+                          <p className={`text-lg font-extrabold ${tx.type === "CREDIT" ? "text-brand-black" : "text-brand-red"}`}>
                             {tx.type === "CREDIT" ? "+" : "-"}{formatPrice(tx.amount)}
                           </p>
                           <p className="text-xs text-neutral-400 mt-0.5">
@@ -400,40 +379,41 @@ export default function WalletManagement() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.15 }}
           >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-brand-black">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-bold text-brand-black">
                 Pending Recharge Requests
                 {requests && requests.length > 0 && (
-                  <span className="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-brand-red text-white text-xs font-bold">
+                  <span className="ml-2 inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-red text-white text-sm font-bold">
                     {requests.length}
                   </span>
                 )}
               </h2>
               <button
                 onClick={() => refetchRequests()}
-                className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-neutral-100 transition-colors text-sm font-semibold text-neutral-600"
               >
-                <RefreshCw className="w-4 h-4 text-neutral-500" />
+                <RefreshCw className="w-4 h-4" /> Refresh
               </button>
             </div>
 
             {requestsLoading && (
               <div className="space-y-3">
                 {[1, 2].map((i) => (
-                  <div key={i} className="h-24 rounded-xl bg-neutral-100 animate-pulse" />
+                  <div key={i} className="h-32 rounded-xl bg-neutral-100 animate-pulse" />
                 ))}
               </div>
             )}
 
             {!requestsLoading && (!requests || requests.length === 0) && (
-              <div className="text-center py-10 border border-dashed border-neutral-200 rounded-2xl">
-                <CheckCircle2 className="w-10 h-10 text-neutral-200 mx-auto mb-2" />
-                <p className="text-neutral-400 font-medium text-sm">No pending requests</p>
+              <div className="text-center py-20 border-2 border-dashed border-neutral-200 rounded-2xl">
+                <CheckCircle2 className="w-14 h-14 text-neutral-200 mx-auto mb-4" />
+                <h3 className="text-lg font-bold text-brand-black mb-1">All caught up!</h3>
+                <p className="text-neutral-400 text-sm">No pending recharge requests</p>
               </div>
             )}
 
             {!requestsLoading && requests && requests.length > 0 && (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <AnimatePresence>
                   {requests.map((req, idx) => (
                     <motion.div
@@ -444,55 +424,50 @@ export default function WalletManagement() {
                       transition={{ delay: idx * 0.05 }}
                     >
                       <Card>
-                        <CardContent className="flex items-center justify-between gap-4">
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-brand-black">{req.wallet?.consumer?.name}</p>
-                            <p className="text-sm text-neutral-500">{req.wallet?.consumer?.phone}</p>
-                            <p className="text-sm mt-1">
-                              Amount:{" "}
-                              <span className="font-bold text-brand-black">{formatPrice(req.amount)}</span>
-                            </p>
-                            {req.reference && (
-                              <p className="text-xs text-neutral-400 mt-0.5">Ref: {req.reference}</p>
-                            )}
-                            {req.description && (
-                              <p className="text-xs text-neutral-400">{req.description}</p>
-                            )}
-                            <p className="text-xs text-neutral-400 mt-1">
-                              {new Date(req.createdAt).toLocaleString("en-IN", {
-                                day: "numeric",
-                                month: "short",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                            </p>
-                          </div>
-                          <div className="flex gap-2 flex-shrink-0">
-                            <Button
-                              size="sm"
-                              loading={handleRequest.isPending}
-                              onClick={() =>
-                                handleRequest.mutate({ reqId: req.id, status: "APPROVED" })
-                              }
-                            >
-                              <CheckCircle2 className="w-4 h-4" />
-                              Approve
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              loading={handleRequest.isPending}
-                              onClick={() =>
-                                handleRequest.mutate({
-                                  reqId: req.id,
-                                  status: "REJECTED",
-                                  note: "Rejected by admin",
-                                })
-                              }
-                            >
-                              <XCircle className="w-4 h-4" />
-                              Reject
-                            </Button>
+                        <CardContent className="py-5">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-lg font-extrabold text-brand-black">{req.wallet?.consumer?.name}</p>
+                              <p className="text-sm text-neutral-500">{req.wallet?.consumer?.phone}</p>
+                              <div className="mt-2">
+                                <span className="text-neutral-500 text-sm">Requested Amount: </span>
+                                <span className="text-xl font-extrabold text-brand-black">{formatPrice(req.amount)}</span>
+                              </div>
+                              {req.reference && (
+                                <p className="text-sm text-neutral-400 mt-1">Reference: {req.reference}</p>
+                              )}
+                              {req.description && (
+                                <p className="text-sm text-neutral-400">{req.description}</p>
+                              )}
+                              <p className="text-xs text-neutral-400 mt-2">
+                                Requested on{" "}
+                                {new Date(req.createdAt).toLocaleString("en-IN", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </p>
+                            </div>
+                            <div className="flex flex-col gap-2 flex-shrink-0">
+                              <Button
+                                size="lg"
+                                loading={handleRequest.isPending}
+                                onClick={() => handleRequest.mutate({ reqId: req.id, status: "APPROVED" })}
+                              >
+                                <CheckCircle2 className="w-5 h-5" /> Approve
+                              </Button>
+                              <Button
+                                size="lg"
+                                variant="outline"
+                                className="border-brand-red/40 text-brand-red hover:bg-red-50"
+                                loading={handleRequest.isPending}
+                                onClick={() => handleRequest.mutate({ reqId: req.id, status: "REJECTED", note: "Rejected by admin" })}
+                              >
+                                <XCircle className="w-5 h-5" /> Reject
+                              </Button>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
@@ -512,36 +487,39 @@ export default function WalletManagement() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.15 }}
           >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-brand-black">Consumers</h2>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-bold text-brand-black">All Customers</h2>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
                 <input
                   type="text"
                   placeholder="Search by name or phone..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 pr-4 py-2 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red w-64"
+                  className="pl-11 pr-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red w-72"
                 />
               </div>
             </div>
 
             {consumersLoading && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-16 rounded-xl bg-neutral-100 animate-pulse" />
+                  <div key={i} className="h-20 rounded-xl bg-neutral-100 animate-pulse" />
                 ))}
               </div>
             )}
 
             {!consumersLoading && (!filteredConsumers || filteredConsumers.length === 0) && (
-              <div className="text-center py-12 border border-dashed border-neutral-200 rounded-2xl">
-                <Wallet className="w-10 h-10 text-neutral-200 mx-auto mb-2" />
-                <p className="text-neutral-400 font-medium text-sm">No consumers found</p>
+              <div className="text-center py-20 border-2 border-dashed border-neutral-200 rounded-2xl">
+                <Users className="w-14 h-14 text-neutral-200 mx-auto mb-4" />
+                <h3 className="text-lg font-bold text-brand-black mb-1">No customers found</h3>
+                <p className="text-neutral-400 text-sm">
+                  {search ? "Try a different search term" : "Customers will appear here once they register"}
+                </p>
               </div>
             )}
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               {filteredConsumers?.map((consumer, idx) => (
                 <motion.div
                   key={consumer.id}
@@ -550,34 +528,35 @@ export default function WalletManagement() {
                   transition={{ delay: idx * 0.03 }}
                 >
                   <Card>
-                    <CardContent className="flex items-center justify-between py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-neutral-100 flex items-center justify-center flex-shrink-0">
-                          <span className="text-sm font-bold text-neutral-600">
+                    <CardContent className="flex items-center justify-between py-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-neutral-100 flex items-center justify-center flex-shrink-0">
+                          <span className="text-base font-bold text-neutral-600">
                             {consumer.name.charAt(0).toUpperCase()}
                           </span>
                         </div>
                         <div>
-                          <p className="font-semibold text-brand-black text-sm">{consumer.name}</p>
-                          <p className="text-xs text-neutral-500">{consumer.phone}</p>
+                          <p className="font-bold text-brand-black">{consumer.name}</p>
+                          <p className="text-sm text-neutral-500">{consumer.phone}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-5">
                         <div className="text-right">
-                          <p className="text-xs text-neutral-400">Balance</p>
-                          <p className="text-base font-bold text-brand-black">
+                          <p className="text-xs text-neutral-400 mb-0.5">Wallet Balance</p>
+                          <p className="text-xl font-extrabold text-brand-black">
                             {formatPrice(consumer.wallet?.balance || 0)}
                           </p>
                         </div>
-                        <button
+                        <Button
+                          size="sm"
+                          variant="outline"
                           onClick={() => {
                             setCreditForm({ consumerId: consumer.id, amount: "", description: "" })
                             setShowCreditModal(true)
                           }}
-                          className="text-xs text-brand-red font-semibold hover:underline whitespace-nowrap"
                         >
-                          Credit
-                        </button>
+                          <Wallet className="w-4 h-4" /> Add Credit
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -588,7 +567,7 @@ export default function WalletManagement() {
         )}
       </AnimatePresence>
 
-      <Modal isOpen={showCreditModal} onClose={() => setShowCreditModal(false)} title="Credit Wallet">
+      <Modal isOpen={showCreditModal} onClose={() => setShowCreditModal(false)} title="Add Credit to Wallet">
         <form
           onSubmit={(e) => {
             e.preventDefault()
@@ -598,40 +577,50 @@ export default function WalletManagement() {
               description: creditForm.description || undefined,
             })
           }}
-          className="space-y-4"
+          className="space-y-5"
         >
-          <div>
-            <label className="block text-sm font-medium mb-1.5">Consumer</label>
+          <div className="space-y-2">
+            <label className="block text-sm font-bold text-brand-black">Select Customer</label>
             <select
               value={creditForm.consumerId}
               onChange={(e) => setCreditForm({ ...creditForm, consumerId: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
+              className="w-full px-4 py-3 rounded-xl border border-neutral-200 text-base focus:outline-none focus:border-brand-red"
               required
             >
-              <option value="">Select consumer</option>
+              <option value="">Choose a customer...</option>
               {consumersData?.consumers?.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name} ({c.phone})
+                  {c.name} ({c.phone}) — Balance: {formatPrice(c.wallet?.balance || 0)}
                 </option>
               ))}
             </select>
           </div>
-          <Input
-            label="Amount (₹)"
-            type="number"
-            min="1"
-            value={creditForm.amount}
-            onChange={(e) => setCreditForm({ ...creditForm, amount: e.target.value })}
-            required
-          />
-          <Input
-            label="Description (optional)"
-            placeholder="Cash deposit"
-            value={creditForm.description}
-            onChange={(e) => setCreditForm({ ...creditForm, description: e.target.value })}
-          />
-          <Button type="submit" className="w-full" loading={creditWallet.isPending}>
-            Credit Wallet
+
+          <div className="space-y-2">
+            <label className="block text-sm font-bold text-brand-black">Amount to Credit (₹)</label>
+            <input
+              type="number"
+              min="1"
+              placeholder="e.g. 500"
+              value={creditForm.amount}
+              onChange={(e) => setCreditForm({ ...creditForm, amount: e.target.value })}
+              required
+              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-bold text-brand-black">Reason <span className="font-normal text-neutral-400">(optional)</span></label>
+            <input
+              placeholder="e.g. Cash deposit at counter"
+              value={creditForm.description}
+              onChange={(e) => setCreditForm({ ...creditForm, description: e.target.value })}
+              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+            />
+          </div>
+
+          <Button type="submit" size="lg" className="w-full" loading={creditWallet.isPending}>
+            <Wallet className="w-5 h-5" /> Add Credit to Wallet
           </Button>
         </form>
       </Modal>

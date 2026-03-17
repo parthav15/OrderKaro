@@ -12,7 +12,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        sans: ['"DM Sans"', "system-ui", "sans-serif"],
+        heading: ['"Instrument Sans"', '"DM Sans"', "system-ui", "sans-serif"],
       },
     },
   },

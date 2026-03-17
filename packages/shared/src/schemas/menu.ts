@@ -10,7 +10,7 @@ export const createCategorySchema = z.object({
 export const updateCategorySchema = createCategorySchema.partial()
 
 export const createMenuItemSchema = z.object({
-  categoryId: z.string().uuid(),
+  categoryId: z.string().min(1),
   name: z.string().min(1).max(150),
   description: z.string().max(500).optional(),
   price: z.number().positive(),

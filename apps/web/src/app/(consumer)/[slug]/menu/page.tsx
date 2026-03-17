@@ -55,6 +55,7 @@ interface Category {
 }
 
 export default function MenuPage({ params }: { params: { slug: string } }) {
+  const slug = params.slug
   const searchParams = useSearchParams()
   const tableToken = searchParams.get("table")
   const { addItem, getItemCount, setContext } = useCartStore()
@@ -168,8 +169,8 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
   })
 
   const { data: menuData, isLoading } = useQuery({
-    queryKey: ["menu", params.slug],
-    queryFn: () => api.get(`/api/v1/public/canteen/${params.slug}/menu`).then((r) => r.data.data),
+    queryKey: ["menu", slug],
+    queryFn: () => api.get(`/api/v1/public/canteen/${slug}/menu`).then((r) => r.data.data),
   })
 
   useEffect(() => {
@@ -387,7 +388,11 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
                   {categories.map((cat) => (
                     <button
                       key={cat.id}
-                      onClick={() => setActiveCategory(cat.id)}
+                      onClick={() => {
+                        setActiveCategory(cat.id)
+                        const el = document.getElementById(`cat-${cat.id}`)
+                        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" })
+                      }}
                       className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                         activeCategory === cat.id
                           ? "bg-brand-red text-white"
@@ -401,22 +406,21 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
               )}
             </motion.div>
 
-            <div className="px-4 py-4 space-y-6">
+            <div className="px-4 py-4 space-y-8">
               {filteredCategories.map((category, catIdx) => (
                 <motion.div
                   key={category.id}
+                  id={`cat-${category.id}`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: catIdx * 0.05 }}
+                  className="scroll-mt-44"
                 >
-                  {search && (
-                    <h2 className="text-sm font-bold text-neutral-400 uppercase tracking-wider mb-3">
-                      {category.name}
-                    </h2>
-                  )}
-                  {(search || activeCategory === category.id) && (
-                    <div className="space-y-3">
-                      {category.items.map((item, idx) => (
+                  <h2 className="text-sm font-bold text-neutral-400 uppercase tracking-wider mb-3">
+                    {category.name}
+                  </h2>
+                  <div className="space-y-3">
+                    {category.items.map((item, idx) => (
                         <motion.div
                           key={item.id}
                           initial={{ opacity: 0, y: 10 }}
@@ -434,66 +438,74 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
                               setSelectedOptions(defaults)
                             }
                           }}
-                          className={`flex gap-3 p-3 rounded-xl border border-neutral-100 ${
-                            item.isAvailable ? "cursor-pointer hover:shadow-sm transition-shadow" : "opacity-50"
+                          className={`rounded-2xl border border-neutral-100 overflow-hidden ${
+                            item.isAvailable ? "cursor-pointer hover:shadow-md transition-shadow" : "opacity-50"
                           }`}
                         >
                           {item.imageUrl && (
-                            <img
-                              src={item.imageUrl}
-                              alt={item.name}
-                              className="w-20 h-20 rounded-xl object-cover flex-shrink-0"
-                            />
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className={`w-4 h-4 border-2 rounded-sm flex items-center justify-center ${
-                                item.isVeg ? "border-brand-black" : "border-brand-red"
-                              }`}>
-                                <span className={`w-2 h-2 rounded-full ${
-                                  item.isVeg ? "bg-brand-black" : "bg-brand-red"
-                                }`} />
-                              </span>
-                              <h3 className="font-semibold text-brand-black text-sm truncate">{item.name}</h3>
+                            <div className="relative w-full h-40">
+                              <img
+                                src={item.imageUrl}
+                                alt={item.name}
+                                className="w-full h-full object-cover"
+                              />
+                              {!item.isAvailable && (
+                                <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
+                                  <span className="text-sm font-semibold text-neutral-500">Unavailable</span>
+                                </div>
+                              )}
                             </div>
-                            {item.description && (
-                              <p className="text-xs text-neutral-500 mt-1 line-clamp-2">{item.description}</p>
+                          )}
+                          <div className="p-3 flex items-center gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className={`w-4 h-4 border-2 rounded-sm flex items-center justify-center flex-shrink-0 ${
+                                  item.isVeg ? "border-brand-black" : "border-brand-red"
+                                }`}>
+                                  <span className={`w-2 h-2 rounded-full ${
+                                    item.isVeg ? "bg-brand-black" : "bg-brand-red"
+                                  }`} />
+                                </span>
+                                <h3 className="font-semibold text-brand-black text-sm truncate">{item.name}</h3>
+                              </div>
+                              {item.description && (
+                                <p className="text-xs text-neutral-500 mt-1 line-clamp-2">{item.description}</p>
+                              )}
+                              <div className="flex items-center gap-2 mt-2">
+                                <span className="font-bold text-brand-black">{formatPrice(item.price)}</span>
+                                {item.tags.map((tag) => (
+                                  <Badge key={tag} variant="danger">{tag}</Badge>
+                                ))}
+                              </div>
+                            </div>
+                            {item.isAvailable && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-shrink-0 border-brand-red text-brand-red"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  addItem({
+                                    menuItemId: item.id,
+                                    name: item.name,
+                                    price: Number(item.price),
+                                    quantity: 1,
+                                    imageUrl: item.imageUrl || undefined,
+                                    isVeg: item.isVeg,
+                                    selectedOptions: [],
+                                  })
+                                }}
+                              >
+                                ADD
+                              </Button>
                             )}
-                            <div className="flex items-center gap-2 mt-2">
-                              <span className="font-bold text-brand-black">{formatPrice(item.price)}</span>
-                              {item.tags.map((tag) => (
-                                <Badge key={tag} variant="danger">{tag}</Badge>
-                              ))}
-                            </div>
+                            {!item.isAvailable && !item.imageUrl && (
+                              <span className="text-xs text-neutral-400 font-medium flex-shrink-0">Unavailable</span>
+                            )}
                           </div>
-                          {item.isAvailable && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="self-center flex-shrink-0 border-brand-red text-brand-red"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                addItem({
-                                  menuItemId: item.id,
-                                  name: item.name,
-                                  price: Number(item.price),
-                                  quantity: 1,
-                                  imageUrl: item.imageUrl || undefined,
-                                  isVeg: item.isVeg,
-                                  selectedOptions: [],
-                                })
-                              }}
-                            >
-                              ADD
-                            </Button>
-                          )}
-                          {!item.isAvailable && (
-                            <span className="self-center text-xs text-neutral-400 font-medium">Unavailable</span>
-                          )}
                         </motion.div>
                       ))}
                     </div>
-                  )}
                 </motion.div>
               ))}
             </div>
@@ -504,7 +516,7 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
                 animate={{ y: 0 }}
                 className="fixed bottom-0 inset-x-0 p-4 bg-white border-t border-neutral-100"
               >
-                <Link href={`/${params.slug}/cart`}>
+                <Link href={`/${slug}/cart`}>
                   <Button className="w-full" size="lg">
                     <ShoppingCart className="w-5 h-5" />
                     View Cart ({itemCount} items)

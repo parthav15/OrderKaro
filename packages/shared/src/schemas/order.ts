@@ -1,13 +1,13 @@
 import { z } from "zod"
 
 export const orderItemSchema = z.object({
-  menuItemId: z.string().uuid(),
+  menuItemId: z.string().min(1),
   quantity: z.number().int().min(1).max(50),
   selectedOptions: z
     .array(
       z.object({
-        customizationId: z.string().uuid(),
-        optionIds: z.array(z.string().uuid()),
+        customizationId: z.string().min(1),
+        optionIds: z.array(z.string().min(1)),
       })
     )
     .default([]),
@@ -15,11 +15,11 @@ export const orderItemSchema = z.object({
 })
 
 export const placeOrderSchema = z.object({
-  tableId: z.string().uuid(),
+  tableId: z.string().min(1),
   items: z.array(orderItemSchema).min(1),
   specialInstructions: z.string().max(500).optional(),
   paymentMethod: z.enum(["CASH", "WALLET"]),
-  idempotencyKey: z.string().uuid(),
+  idempotencyKey: z.string().min(1),
 })
 
 export const updateOrderStatusSchema = z.object({

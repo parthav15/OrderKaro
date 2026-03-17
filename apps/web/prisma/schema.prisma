@@ -139,14 +139,26 @@ model Table {
 }
 
 model Consumer {
-  id           String   @id @default(uuid())
+  id           String        @id @default(uuid())
   name         String
-  phone        String   @unique
+  phone        String        @unique
   passwordHash String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   wallet       Wallet?
   orders       Order[]
+  deviceTokens DeviceToken[]
+}
+
+model DeviceToken {
+  id         String   @id @default(uuid())
+  consumerId String
+  consumer   Consumer @relation(fields: [consumerId], references: [id], onDelete: Cascade)
+  token      String   @unique
+  platform   String
+  createdAt  DateTime @default(now())
+
+  @@index([consumerId])
 }
 
 model Wallet {
