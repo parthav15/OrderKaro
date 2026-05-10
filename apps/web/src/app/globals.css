@@ -21,4 +21,46 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  .leader-dots {
+    flex: 1 1 auto;
+    min-width: 1.5rem;
+    height: 1px;
+    margin: 0 0.5rem 0.35em 0.5rem;
+    align-self: end;
+    background-image: radial-gradient(circle, rgba(10, 10, 10, 0.22) 1px, transparent 1.4px);
+    background-size: 7px 7px;
+    background-position: bottom;
+    background-repeat: repeat-x;
+  }
+
+  .leader-dots-light {
+    background-image: radial-gradient(circle, rgba(10, 10, 10, 0.18) 1px, transparent 1.4px);
+  }
+
+  .snap-x-mandatory {
+    scroll-snap-type: x mandatory;
+  }
+
+  .snap-start {
+    scroll-snap-align: start;
+  }
+
+  .mask-fade-x {
+    -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+  }
+
+  .pause-on-hover:hover {
+    animation-play-state: paused;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

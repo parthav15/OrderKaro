@@ -17,11 +17,44 @@ export async function GET(
   try {
     const { id } = await params
     requireRole(request, "OWNER", "MANAGER")
-    const tables = await prisma.table.findMany({
-      where: { canteenId: id },
-      orderBy: { label: "asc" },
-    })
-    return success(tables)
+
+    const todayStart = new Date()
+    todayStart.setHours(0, 0, 0, 0)
+
+    const [tables, activeGrouped, todayGrouped] = await Promise.all([
+      prisma.table.findMany({
+        where: { canteenId: id },
+        orderBy: { label: "asc" },
+      }),
+      prisma.order.groupBy({
+        by: ["tableId"],
+        where: {
+          canteenId: id,
+          status: { in: ["PLACED", "ACCEPTED", "PREPARING", "READY"] },
+        },
+        _count: { _all: true },
+      }),
+      prisma.order.groupBy({
+        by: ["tableId"],
+        where: {
+          canteenId: id,
+          placedAt: { gte: todayStart },
+          status: { not: "CANCELLED" },
+        },
+        _count: { _all: true },
+      }),
+    ])
+
+    const activeMap = new Map(activeGrouped.map((g) => [g.tableId, g._count._all]))
+    const todayMap = new Map(todayGrouped.map((g) => [g.tableId, g._count._all]))
+
+    const enriched = tables.map((t) => ({
+      ...t,
+      activeOrderCount: activeMap.get(t.id) ?? 0,
+      todayOrderCount: todayMap.get(t.id) ?? 0,
+    }))
+
+    return success(enriched)
   } catch (err) {
     return handleError(err)
   }

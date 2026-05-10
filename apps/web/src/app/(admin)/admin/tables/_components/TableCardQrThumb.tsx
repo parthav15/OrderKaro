@@ -1,0 +1,48 @@
+"use client"
+
+import { motion } from "framer-motion"
+import { QrCode } from "lucide-react"
+import { useQrThumb } from "../_hooks/useQrThumb"
+
+interface TableCardQrThumbProps {
+  canteenId: string
+  tableId: string
+  size?: number
+  hovered?: boolean
+}
+
+export function TableCardQrThumb({
+  canteenId,
+  tableId,
+  size = 88,
+  hovered = false,
+}: TableCardQrThumbProps) {
+  const { data, isLoading } = useQrThumb(canteenId, tableId)
+
+  return (
+    <motion.div
+      animate={{ scale: hovered ? 1.04 : 1 }}
+      transition={{ type: "spring", stiffness: 300, damping: 24 }}
+      style={{ width: size, height: size }}
+      className="relative rounded-xl overflow-hidden bg-neutral-50 ring-1 ring-inset ring-neutral-100 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] flex items-center justify-center"
+    >
+      {data?.qrDataUrl ? (
+        <motion.img
+          src={data.qrDataUrl}
+          alt="QR code"
+          initial={{ opacity: 0 }}
+          animate={{
+            opacity: 1,
+            filter: hovered ? "contrast(1.1)" : "contrast(1)",
+          }}
+          transition={{ duration: 0.25 }}
+          className="w-full h-full object-cover p-1.5"
+        />
+      ) : isLoading ? (
+        <div className="w-full h-full bg-gradient-to-br from-neutral-100 via-neutral-50 to-neutral-100 animate-pulse" />
+      ) : (
+        <QrCode className="w-7 h-7 text-neutral-300" />
+      )}
+    </motion.div>
+  )
+}

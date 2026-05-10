@@ -1,14 +1,32 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { useEffect, useMemo, useState } from "react"
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { Plus, QrCode, Download, Trash2, FileDown, Loader2, LayoutGrid, AlertTriangle } from "lucide-react"
+import { AlertTriangle, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Modal } from "@/components/ui/modal"
 import api from "@/lib/api"
 import { toast } from "sonner"
+
+import { TablesHeader } from "./_components/TablesHeader"
+import { Toolbar } from "./_components/Toolbar"
+import { TableCard } from "./_components/TableCard"
+import { TableListRow } from "./_components/TableListRow"
+import { TableCardSkeleton } from "./_components/TableCardSkeleton"
+import { SectionGroup } from "./_components/SectionGroup"
+import { BulkActionBar } from "./_components/BulkActionBar"
+import { AddTableModal } from "./_components/AddTableModal"
+import { EditTableModal } from "./_components/EditTableModal"
+import { QrPosterModal } from "./_components/QrPosterModal"
+import { EmptyState } from "./_components/EmptyState"
+import { TableMapView } from "./_components/map/TableMapView"
+
+import { useTablesQuery, type TableRow } from "./_hooks/useTablesQuery"
+import { useTablesUrlState } from "./_hooks/useUrlState"
+import { useBulkSelection } from "./_hooks/useBulkSelection"
+import { useTablesRealtime } from "./_hooks/useTablesRealtime"
+import { groupBySection, uniqueSections } from "./_utils/section-grouping"
 
 type BulkQrItem = {
   table: string
@@ -17,391 +35,494 @@ type BulkQrItem = {
   url: string
 }
 
-export default function TableManagement() {
+export default function TablesPage() {
   const queryClient = useQueryClient()
+  const { state: urlState, update: updateUrlState } = useTablesUrlState()
   const [canteenId, setCanteenId] = useState<string>("")
-  const [showModal, setShowModal] = useState(false)
-  const [showQr, setShowQr] = useState<any>(null)
-  const [form, setForm] = useState({ label: "", section: "" })
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [editTarget, setEditTarget] = useState<TableRow | null>(null)
+  const [posterTarget, setPosterTarget] = useState<TableRow | null>(null)
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
   const [bulkExporting, setBulkExporting] = useState(false)
-  const [downloadingTableId, setDownloadingTableId] = useState<string | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<any>(null)
+  const [bulkSelectionExporting, setBulkSelectionExporting] = useState(false)
+  const [bulkToggling, setBulkToggling] = useState(false)
+  const [downloadingId, setDownloadingId] = useState<string | null>(null)
 
-  const { data: canteens } = useQuery({
+  const { data: canteens } = useQuery<{ id: string; name: string }[]>({
     queryKey: ["canteens"],
     queryFn: () => api.get("/api/v1/canteens").then((r) => r.data.data),
   })
 
   useEffect(() => {
-    if (canteens?.[0] && !canteenId) {
-      setCanteenId(canteens[0].id)
-    }
+    if (canteens?.[0] && !canteenId) setCanteenId(canteens[0].id)
   }, [canteens, canteenId])
 
-  const { data: tables } = useQuery({
-    queryKey: ["tables", canteenId],
-    queryFn: () => api.get(`/api/v1/canteens/${canteenId}/tables`).then((r) => r.data.data),
-    enabled: !!canteenId,
-  })
+  const { data: tables, isLoading } = useTablesQuery(canteenId)
+  const { activity } = useTablesRealtime(canteenId)
+  const selection = useBulkSelection()
 
-  const createTable = useMutation({
-    mutationFn: (data: any) => api.post(`/api/v1/canteens/${canteenId}/tables`, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tables"] })
-      setShowModal(false)
-      setForm({ label: "", section: "" })
-      toast.success("Table created")
-    },
-    onError: (err: any) => toast.error(err.response?.data?.error || "Failed"),
-  })
+  useEffect(() => {
+    if (!tables) return
+    const liveIds = new Set(tables.map((t) => t.id))
+    const stale = selection.selectedIds.filter((id) => !liveIds.has(id))
+    if (stale.length) selection.deselectMany(stale)
+  }, [tables])
 
-  const deleteTable = useMutation({
+  const sections = useMemo(() => uniqueSections(tables ?? []), [tables])
+
+  const filteredTables = useMemo(() => {
+    if (!tables) return []
+    let list = tables
+    if (urlState.section) {
+      list = list.filter((t) => (t.section ?? "") === urlState.section)
+    }
+    if (urlState.query.trim()) {
+      const q = urlState.query.trim().toLowerCase()
+      list = list.filter(
+        (t) =>
+          t.label.toLowerCase().includes(q) ||
+          (t.section ?? "").toLowerCase().includes(q)
+      )
+    }
+    if (urlState.sort === "recent") {
+      list = [...list].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+    } else if (urlState.sort === "active") {
+      list = [...list].sort((a, b) => b.todayOrderCount - a.todayOrderCount)
+    } else {
+      list = [...list].sort((a, b) =>
+        a.label.localeCompare(b.label, undefined, { numeric: true })
+      )
+    }
+    return list
+  }, [tables, urlState])
+
+  const grouped = useMemo(() => groupBySection(filteredTables), [filteredTables])
+  const orderedIds = useMemo(() => filteredTables.map((t) => t.id), [filteredTables])
+
+  const totalCount = tables?.length ?? 0
+  const activeCount = (tables ?? []).filter((t) => t.isActive).length
+  const liveNowCount = (tables ?? []).filter(
+    (t) => (activity[t.id]?.activeOrderCount ?? t.activeOrderCount) > 0
+  ).length
+
+  const deleteOne = useMutation({
     mutationFn: (tableId: string) =>
       api.delete(`/api/v1/canteens/${canteenId}/tables/${tableId}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tables"] })
-      setDeleteTarget(null)
+      queryClient.invalidateQueries({ queryKey: ["tables", canteenId] })
       toast.success("Table deleted")
     },
+    onError: (err: any) => toast.error(err.response?.data?.error || "Delete failed"),
   })
 
-  async function viewQr(tableId: string) {
+  async function fetchSingleQr(tableId: string) {
+    const cached = queryClient.getQueryData<{ url: string; qrDataUrl: string }>([
+      "table-qr",
+      canteenId,
+      tableId,
+    ])
+    if (cached) return cached
     const { data } = await api.get(`/api/v1/canteens/${canteenId}/tables/${tableId}/qr`)
-    setShowQr(data.data)
+    queryClient.setQueryData(["table-qr", canteenId, tableId], data.data)
+    return data.data as { url: string; qrDataUrl: string }
   }
 
-  async function downloadSingleQr(tableId: string, tableLabel: string) {
-    setDownloadingTableId(tableId)
+  async function downloadSingleQr(table: TableRow) {
+    setDownloadingId(table.id)
     try {
-      const { data } = await api.get(`/api/v1/canteens/${canteenId}/tables/${tableId}/qr`)
+      const qr = await fetchSingleQr(table.id)
       const link = document.createElement("a")
-      link.href = data.data.qrDataUrl
-      link.download = `qr-${tableLabel.toLowerCase().replace(/\s+/g, "-")}.png`
+      link.href = qr.qrDataUrl
+      link.download = `qr-${slugify(table.label)}.png`
       link.click()
     } catch {
-      toast.error("Failed to download QR code")
+      toast.error("Download failed")
     } finally {
-      setDownloadingTableId(null)
+      setDownloadingId(null)
     }
   }
 
-  async function downloadBulkQrPdf() {
+  function handleToggleSelect(id: string, shiftKey: boolean) {
+    if (shiftKey) selection.toggleRange(id, orderedIds)
+    else selection.toggle(id)
+  }
+
+  async function downloadBulkPdf(targetIds?: string[]) {
     if (!canteenId) return
-    setBulkExporting(true)
+    const isSelection = !!targetIds
+    if (isSelection) setBulkSelectionExporting(true)
+    else setBulkExporting(true)
+
     try {
       const { data } = await api.post(`/api/v1/canteens/${canteenId}/tables/bulk-qr`)
-      const qrItems: BulkQrItem[] = data.data
-
+      let qrItems: BulkQrItem[] = data.data
+      if (targetIds) {
+        const labelSet = new Set(
+          (tables ?? [])
+            .filter((t) => targetIds.includes(t.id))
+            .map((t) => t.label)
+        )
+        qrItems = qrItems.filter((q) => labelSet.has(q.table))
+      }
       if (!qrItems.length) {
         toast.error("No active tables found")
         return
       }
-
-      const { jsPDF } = await import("jspdf")
-      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" })
-
-      const pageWidth = doc.internal.pageSize.getWidth()
-      const pageHeight = doc.internal.pageSize.getHeight()
-      const margin = 16
-      const colCount = 2
-      const colGap = 8
-      const qrSize = 60
-      const labelHeight = 10
-      const rowHeight = qrSize + labelHeight + 14
-      const colWidth = (pageWidth - margin * 2 - colGap * (colCount - 1)) / colCount
-
-      const canteenName = canteens?.find((c: any) => c.id === canteenId)?.name ?? "Canteen"
-
-      doc.setFont("helvetica", "bold")
-      doc.setFontSize(20)
-      doc.setTextColor(220, 38, 38)
-      doc.text("OrderKaro", margin, margin + 6)
-
-      doc.setFont("helvetica", "normal")
-      doc.setFontSize(10)
-      doc.setTextColor(10, 10, 10)
-      doc.text(canteenName, margin, margin + 13)
-
-      doc.setDrawColor(220, 38, 38)
-      doc.setLineWidth(0.5)
-      doc.line(margin, margin + 17, pageWidth - margin, margin + 17)
-
-      const contentStartY = margin + 24
-
-      for (let i = 0; i < qrItems.length; i++) {
-        const item = qrItems[i]
-        const col = i % colCount
-        const row = Math.floor(i / colCount)
-
-        const x = margin + col * (colWidth + colGap)
-        const y = contentStartY + row * rowHeight
-
-        if (y + rowHeight > pageHeight - margin) {
-          doc.addPage()
-        }
-
-        const renderY = y + rowHeight > pageHeight - margin ? contentStartY : y
-
-        const cardX = x
-        const cardY = renderY
-        const cardW = colWidth
-        const cardH = rowHeight - 6
-
-        doc.setFillColor(255, 255, 255)
-        doc.setDrawColor(230, 230, 230)
-        doc.setLineWidth(0.3)
-        doc.roundedRect(cardX, cardY, cardW, cardH, 3, 3, "FD")
-
-        const qrX = cardX + (cardW - qrSize) / 2
-        const qrY = cardY + 6
-        doc.addImage(item.qrDataUrl, "PNG", qrX, qrY, qrSize, qrSize)
-
-        doc.setFont("helvetica", "bold")
-        doc.setFontSize(9)
-        doc.setTextColor(10, 10, 10)
-        doc.text(item.table, cardX + cardW / 2, qrY + qrSize + 6, { align: "center" })
-
-        if (item.section) {
-          doc.setFont("helvetica", "normal")
-          doc.setFontSize(7)
-          doc.setTextColor(120, 120, 120)
-          doc.text(item.section, cardX + cardW / 2, qrY + qrSize + 11, { align: "center" })
-        }
-      }
-
-      const safeFileName = canteenName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
-      doc.save(`qr-codes-${safeFileName}.pdf`)
+      await renderQrPdf(qrItems, canteens?.find((c) => c.id === canteenId)?.name ?? "Canteen")
       toast.success("QR sheet downloaded")
+      if (isSelection) selection.clear()
     } catch {
       toast.error("Failed to generate PDF")
     } finally {
-      setBulkExporting(false)
+      if (isSelection) setBulkSelectionExporting(false)
+      else setBulkExporting(false)
     }
   }
 
-  return (
-    <div>
-      <div className="flex items-start justify-between mb-8">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-10 h-10 rounded-xl bg-brand-red/10 flex items-center justify-center">
-              <LayoutGrid className="w-5 h-5 text-brand-red" />
-            </div>
-            <h1 className="text-3xl font-extrabold text-brand-black">Tables & QR Codes</h1>
-          </div>
-          <p className="text-neutral-500">
-            {tables?.length ? `${tables.length} table${tables.length !== 1 ? "s" : ""} configured` : "Add tables and print QR codes for customers to scan"}
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {canteens && canteens.length > 1 && (
-            <select
-              value={canteenId}
-              onChange={(e) => setCanteenId(e.target.value)}
-              className="px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
-            >
-              {canteens.map((c: any) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-          )}
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            whileHover={{ y: -1 }}
-            onClick={downloadBulkQrPdf}
-            disabled={bulkExporting || !canteenId || !tables?.length}
-            className="inline-flex items-center gap-2 px-5 py-3 text-sm font-bold rounded-xl bg-white text-brand-black border-2 border-neutral-300 hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:pointer-events-none"
-          >
-            <AnimatePresence mode="wait">
-              {bulkExporting ? (
-                <motion.span key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                  <Loader2 className="w-5 h-5 animate-spin" /> Generating PDF...
-                </motion.span>
-              ) : (
-                <motion.span key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                  <FileDown className="w-5 h-5" /> Download All QR Codes
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </motion.button>
-          <Button size="lg" onClick={() => setShowModal(true)}>
-            <Plus className="w-5 h-5" /> Add Table
-          </Button>
-        </div>
-      </div>
+  async function bulkToggleActive() {
+    if (!tables) return
+    setBulkToggling(true)
+    try {
+      const targetTables = tables.filter((t) => selection.selected.has(t.id))
+      const allActive = targetTables.every((t) => t.isActive)
+      const next = !allActive
+      await Promise.all(
+        targetTables.map((t) =>
+          api.put(`/api/v1/canteens/${canteenId}/tables/${t.id}`, { isActive: next })
+        )
+      )
+      queryClient.invalidateQueries({ queryKey: ["tables", canteenId] })
+      toast.success(next ? "Tables activated" : "Tables deactivated")
+      selection.clear()
+    } catch {
+      toast.error("Bulk toggle failed")
+    } finally {
+      setBulkToggling(false)
+    }
+  }
 
-      {!tables && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-28 rounded-xl bg-neutral-100 animate-pulse" />
-          ))}
-        </div>
+  async function bulkDelete() {
+    try {
+      await Promise.all(
+        selection.selectedIds.map((id) =>
+          api.delete(`/api/v1/canteens/${canteenId}/tables/${id}`)
+        )
+      )
+      queryClient.invalidateQueries({ queryKey: ["tables", canteenId] })
+      toast.success(`Deleted ${selection.count} table${selection.count === 1 ? "" : "s"}`)
+      selection.clear()
+      setBulkDeleteOpen(false)
+    } catch {
+      toast.error("Some tables could not be deleted")
+    }
+  }
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const target = e.target as HTMLElement
+      if (target?.tagName === "INPUT" || target?.tagName === "TEXTAREA") return
+      if (e.key === "Escape" && selection.count > 0) {
+        e.preventDefault()
+        selection.clear()
+      }
+      if (e.key === "Delete" && selection.count > 0) {
+        e.preventDefault()
+        setBulkDeleteOpen(true)
+      }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [selection])
+
+  const showLoading = isLoading || !tables
+  const isEmpty = tables && tables.length === 0
+  const isFilteredEmpty = tables && tables.length > 0 && filteredTables.length === 0
+  const isMapView = urlState.view === "map"
+  const [mapSelectedId, setMapSelectedId] = useState<string | null>(null)
+
+  return (
+    <LayoutGroup>
+      <TablesHeader
+        canteens={canteens ?? []}
+        canteenId={canteenId}
+        onCanteenChange={setCanteenId}
+        total={totalCount}
+        active={activeCount}
+        liveNow={liveNowCount}
+        onAdd={() => setShowAddModal(true)}
+        onBulkDownload={() => downloadBulkPdf()}
+        bulkExporting={bulkExporting}
+        hasTables={!!tables?.length}
+      />
+
+      {!isEmpty && (
+        <Toolbar
+          query={urlState.query}
+          onQueryChange={(q) => updateUrlState({ query: q })}
+          sections={sections}
+          activeSection={urlState.section}
+          onSectionChange={(s) => updateUrlState({ section: s })}
+          sort={urlState.sort}
+          onSortChange={(s) => updateUrlState({ sort: s })}
+          view={urlState.view}
+          onViewChange={(v) => updateUrlState({ view: v })}
+        />
       )}
 
-      {tables && tables.length === 0 && (
+      {showLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <TableCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : isEmpty ? (
+        <EmptyState
+          onAdd={() => setShowAddModal(true)}
+          onBulkAdd={() => setShowAddModal(true)}
+        />
+      ) : isMapView ? (
+        <TableMapView
+          tables={filteredTables}
+          canteenId={canteenId}
+          activity={activity}
+          onSelectTable={setMapSelectedId}
+          selectedTableId={mapSelectedId}
+        />
+      ) : isFilteredEmpty ? (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center py-24 border-2 border-dashed border-neutral-200 rounded-2xl"
+          className="text-center py-20"
         >
-          <LayoutGrid className="w-16 h-16 text-neutral-200 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-brand-black mb-2">No tables yet</h3>
-          <p className="text-neutral-400 mb-6">Add tables so customers can scan QR codes to place orders</p>
-          <Button size="lg" onClick={() => setShowModal(true)}>
-            <Plus className="w-5 h-5" /> Add First Table
-          </Button>
+          <p className="text-sm font-bold text-brand-black mb-1">No tables match</p>
+          <p className="text-sm text-neutral-500">
+            Try a different search term or section.
+          </p>
         </motion.div>
-      )}
-
-      {tables && tables.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {tables.map((table: any, idx: number) => (
-            <motion.div
-              key={table.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05 }}
-            >
-              <Card>
-                <CardContent className="py-5">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="text-lg font-extrabold text-brand-black">{table.label}</h3>
-                      {table.section && (
-                        <p className="text-sm text-neutral-500 mt-0.5">{table.section}</p>
-                      )}
+      ) : (
+        <div className="space-y-10">
+          {grouped.map((group) => {
+            const groupIds = group.items.map((t) => t.id)
+            const groupSelected = groupIds.filter((id) => selection.selected.has(id)).length
+            return (
+              <SectionGroup
+                key={group.section}
+                title={group.displaySection}
+                count={group.items.length}
+                selectedCount={groupSelected}
+                onSelectAll={() => selection.selectMany(groupIds)}
+                onClearAll={() => selection.deselectMany(groupIds)}
+              >
+                {urlState.view === "grid" ? (
+                  <motion.div
+                    layout
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+                  >
+                    <AnimatePresence>
+                      {group.items.map((table, idx) => (
+                        <motion.div
+                          key={table.id}
+                          layout
+                          initial={{ opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.96 }}
+                          transition={{ delay: idx * 0.04, type: "spring", stiffness: 280, damping: 26 }}
+                        >
+                          <TableCard
+                            table={table}
+                            canteenId={canteenId}
+                            selected={selection.isSelected(table.id)}
+                            selectionMode={selection.count > 0}
+                            onToggleSelect={handleToggleSelect}
+                            onView={(t) => setPosterTarget(t)}
+                            onEdit={(t) => setEditTarget(t)}
+                            onDownload={(t) => downloadSingleQr(t)}
+                            onDelete={(t) => deleteOne.mutate(t.id)}
+                            isDownloading={downloadingId === table.id}
+                            pulseAt={activity[table.id]?.pulseAt}
+                            liveActiveCount={activity[table.id]?.activeOrderCount}
+                          />
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </motion.div>
+                ) : (
+                  <motion.div layout className="rounded-2xl border border-neutral-100 bg-white p-2">
+                    <div className="grid grid-cols-[24px_60px_1fr_140px_120px_140px_180px] items-center gap-4 px-4 py-2.5 text-[10px] uppercase tracking-[0.18em] font-bold text-neutral-400">
+                      <span />
+                      <span>Code</span>
+                      <span>Label</span>
+                      <span>Status</span>
+                      <span>Today</span>
+                      <span>State</span>
+                      <span className="text-right">Actions</span>
                     </div>
-                    <div className="w-10 h-10 rounded-xl bg-neutral-100 flex items-center justify-center">
-                      <QrCode className="w-5 h-5 text-neutral-600" />
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <motion.button
-                      whileTap={{ scale: 0.93 }}
-                      whileHover={{ y: -1 }}
-                      onClick={() => viewQr(table.id)}
-                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-neutral-200 text-sm font-semibold text-brand-black hover:bg-neutral-50 transition-colors"
-                    >
-                      <QrCode className="w-4 h-4" /> View QR
-                    </motion.button>
-                    <motion.button
-                      whileTap={{ scale: 0.93 }}
-                      whileHover={{ y: -1 }}
-                      onClick={() => downloadSingleQr(table.id, table.label)}
-                      disabled={downloadingTableId === table.id}
-                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-neutral-200 text-sm font-semibold text-brand-black hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:pointer-events-none"
-                    >
-                      <AnimatePresence mode="wait">
-                        {downloadingTableId === table.id ? (
-                          <motion.span key="spin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                            <Loader2 className="w-4 h-4 animate-spin" /> Downloading...
-                          </motion.span>
-                        ) : (
-                          <motion.span key="dl" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                            <Download className="w-4 h-4" /> Download
-                          </motion.span>
-                        )}
+                    <div className="space-y-1">
+                      <AnimatePresence>
+                        {group.items.map((table) => (
+                          <TableListRow
+                            key={table.id}
+                            table={table}
+                            canteenId={canteenId}
+                            selected={selection.isSelected(table.id)}
+                            onToggleSelect={handleToggleSelect}
+                            onView={(t) => setPosterTarget(t)}
+                            onEdit={(t) => setEditTarget(t)}
+                            onDownload={(t) => downloadSingleQr(t)}
+                            onDelete={(t) => deleteOne.mutate(t.id)}
+                            isDownloading={downloadingId === table.id}
+                            pulseAt={activity[table.id]?.pulseAt}
+                            liveActiveCount={activity[table.id]?.activeOrderCount}
+                          />
+                        ))}
                       </AnimatePresence>
-                    </motion.button>
-                    <motion.button
-                      whileTap={{ scale: 0.93 }}
-                      whileHover={{ y: -1 }}
-                      onClick={() => setDeleteTarget(table)}
-                      className="p-2.5 rounded-xl border border-brand-red/30 text-brand-red hover:bg-red-50 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </motion.button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+                    </div>
+                  </motion.div>
+                )}
+              </SectionGroup>
+            )
+          })}
         </div>
       )}
 
-      <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Delete Table">
-        {deleteTarget && (
-          <div className="space-y-5">
-            <div className="flex items-start gap-4 p-4 bg-red-50 border border-brand-red/20 rounded-xl">
-              <AlertTriangle className="w-6 h-6 text-brand-red flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-bold text-brand-black">Delete "{deleteTarget.label}"?</p>
-                <p className="text-sm text-neutral-600 mt-1">
-                  The QR code for this table will stop working. Existing orders will not be affected.
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <Button size="lg" variant="outline" className="flex-1" onClick={() => setDeleteTarget(null)}>
-                Cancel
-              </Button>
-              <Button
-                size="lg"
-                variant="danger"
-                className="flex-1"
-                loading={deleteTable.isPending}
-                onClick={() => deleteTable.mutate(deleteTarget.id)}
-              >
-                <Trash2 className="w-4 h-4" /> Delete Table
-              </Button>
-            </div>
-          </div>
-        )}
-      </Modal>
+      <BulkActionBar
+        count={selection.count}
+        onClear={selection.clear}
+        onDownload={() => downloadBulkPdf(selection.selectedIds)}
+        onToggleActive={bulkToggleActive}
+        onDelete={() => setBulkDeleteOpen(true)}
+        downloading={bulkSelectionExporting}
+        toggling={bulkToggling}
+      />
 
-      <Modal isOpen={showModal} onClose={() => { setShowModal(false); setForm({ label: "", section: "" }) }} title="Add New Table">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            createTable.mutate({ label: form.label, section: form.section || undefined })
-          }}
-          className="space-y-5"
-        >
-          <div className="space-y-2">
-            <label className="block text-sm font-bold text-brand-black">Table Name or Number</label>
-            <input
-              placeholder="e.g. Table 1, Corner Table, Terrace A"
-              value={form.label}
-              onChange={(e) => setForm({ ...form, label: e.target.value })}
-              required
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="block text-sm font-bold text-brand-black">Section <span className="font-normal text-neutral-400">(optional)</span></label>
-            <input
-              placeholder="e.g. Ground Floor, Outdoor, Hall B"
-              value={form.section}
-              onChange={(e) => setForm({ ...form, section: e.target.value })}
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
-            />
-          </div>
-          <Button type="submit" size="lg" className="w-full" loading={createTable.isPending}>
-            <Plus className="w-5 h-5" /> Create Table
-          </Button>
-        </form>
-      </Modal>
+      <AddTableModal
+        isOpen={showAddModal}
+        canteenId={canteenId}
+        sections={sections}
+        onClose={() => setShowAddModal(false)}
+      />
 
-      <Modal isOpen={!!showQr} onClose={() => setShowQr(null)} title={showQr?.table?.label ? `QR Code — ${showQr.table.label}` : "QR Code"}>
-        {showQr && (
-          <div className="text-center space-y-5">
-            <div className="bg-neutral-50 rounded-2xl p-6 inline-block">
-              <img src={showQr.qrDataUrl} alt="QR Code" className="w-64 h-64 mx-auto" />
-            </div>
+      <EditTableModal
+        table={editTarget}
+        canteenId={canteenId}
+        sections={sections}
+        onClose={() => setEditTarget(null)}
+      />
+
+      <QrPosterModal
+        table={posterTarget}
+        canteenId={canteenId}
+        canteenName={canteens?.find((c) => c.id === canteenId)?.name ?? "Canteen"}
+        onClose={() => setPosterTarget(null)}
+      />
+
+      <Modal isOpen={bulkDeleteOpen} onClose={() => setBulkDeleteOpen(false)} title="Delete tables">
+        <div className="space-y-5">
+          <div className="flex items-start gap-4 p-4 bg-red-50 border border-brand-red/20 rounded-xl">
+            <AlertTriangle className="w-6 h-6 text-brand-red flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-lg font-extrabold text-brand-black">{showQr.table?.label}</p>
-              <p className="text-sm text-neutral-400 break-all mt-1">{showQr.url}</p>
+              <p className="font-bold text-brand-black">
+                Delete {selection.count} table{selection.count === 1 ? "" : "s"}?
+              </p>
+              <p className="text-sm text-neutral-600 mt-1">
+                Their QR codes will stop working. Existing orders are unaffected.
+              </p>
             </div>
-            <p className="text-sm text-neutral-500">Print this QR code and place it on the table. Customers scan it to order.</p>
-            <a href={showQr.qrDataUrl} download={`qr-${showQr.table?.label}.png`} className="block">
-              <Button size="lg" variant="outline" className="w-full">
-                <Download className="w-5 h-5" /> Download QR Code Image
-              </Button>
-            </a>
           </div>
-        )}
+          <div className="flex gap-3">
+            <Button size="lg" variant="outline" className="flex-1" onClick={() => setBulkDeleteOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              size="lg"
+              variant="danger"
+              className="flex-1"
+              onClick={bulkDelete}
+            >
+              <Trash2 className="w-4 h-4" /> Delete {selection.count}
+            </Button>
+          </div>
+        </div>
       </Modal>
-    </div>
+    </LayoutGroup>
   )
+}
+
+function slugify(text: string) {
+  return text.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
+}
+
+async function renderQrPdf(qrItems: BulkQrItem[], canteenName: string) {
+  const { jsPDF } = await import("jspdf")
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" })
+
+  const pageWidth = doc.internal.pageSize.getWidth()
+  const pageHeight = doc.internal.pageSize.getHeight()
+  const margin = 16
+  const colCount = 2
+  const colGap = 8
+  const qrSize = 60
+  const labelHeight = 10
+  const rowHeight = qrSize + labelHeight + 14
+  const colWidth = (pageWidth - margin * 2 - colGap * (colCount - 1)) / colCount
+
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(20)
+  doc.setTextColor(220, 38, 38)
+  doc.text("OrderKaro", margin, margin + 6)
+
+  doc.setFont("helvetica", "normal")
+  doc.setFontSize(10)
+  doc.setTextColor(10, 10, 10)
+  doc.text(canteenName, margin, margin + 13)
+
+  doc.setDrawColor(220, 38, 38)
+  doc.setLineWidth(0.5)
+  doc.line(margin, margin + 17, pageWidth - margin, margin + 17)
+
+  const contentStartY = margin + 24
+
+  for (let i = 0; i < qrItems.length; i++) {
+    const item = qrItems[i]
+    const col = i % colCount
+    const row = Math.floor(i / colCount)
+    const x = margin + col * (colWidth + colGap)
+    const y = contentStartY + row * rowHeight
+
+    if (y + rowHeight > pageHeight - margin) {
+      doc.addPage()
+    }
+
+    const renderY = y + rowHeight > pageHeight - margin ? contentStartY : y
+    const cardX = x
+    const cardY = renderY
+    const cardW = colWidth
+    const cardH = rowHeight - 6
+
+    doc.setFillColor(255, 255, 255)
+    doc.setDrawColor(230, 230, 230)
+    doc.setLineWidth(0.3)
+    doc.roundedRect(cardX, cardY, cardW, cardH, 3, 3, "FD")
+
+    const qrX = cardX + (cardW - qrSize) / 2
+    const qrY = cardY + 6
+    doc.addImage(item.qrDataUrl, "PNG", qrX, qrY, qrSize, qrSize)
+
+    doc.setFont("helvetica", "bold")
+    doc.setFontSize(9)
+    doc.setTextColor(10, 10, 10)
+    doc.text(item.table, cardX + cardW / 2, qrY + qrSize + 6, { align: "center" })
+
+    if (item.section) {
+      doc.setFont("helvetica", "normal")
+      doc.setFontSize(7)
+      doc.setTextColor(120, 120, 120)
+      doc.text(item.section, cardX + cardW / 2, qrY + qrSize + 11, { align: "center" })
+    }
+  }
+
+  const safeFileName = canteenName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
+  doc.save(`qr-codes-${safeFileName}.pdf`)
 }

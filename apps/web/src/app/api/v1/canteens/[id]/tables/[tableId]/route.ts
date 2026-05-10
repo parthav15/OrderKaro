@@ -6,13 +6,7 @@ import {
   requireRole,
   AuthError,
 } from "@/lib/api-utils"
-import { z } from "zod"
-
-const updateTableSchema = z.object({
-  label: z.string().min(1).max(50).optional(),
-  section: z.string().max(100).optional(),
-  isActive: z.boolean().optional(),
-})
+import { updateTableSchema } from "@orderkaro/shared"
 
 async function resolveTable(canteenId: string, tableId: string) {
   const table = await prisma.table.findFirst({

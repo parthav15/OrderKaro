@@ -1,23 +1,33 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useMemo } from "react"
 import { useSearchParams } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
-import { ShoppingCart, Search, Wallet } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 import api from "@/lib/api"
-import Link from "next/link"
 import { useCartStore } from "@/stores/cart"
 import { useAuthStore } from "@/stores/auth"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
-import { BottomSheet } from "@/components/ui/bottom-sheet"
-import { Input } from "@/components/ui/input"
-import { formatPrice } from "@/lib/utils"
-import { Logo } from "@/components/ui/logo"
+import { useScrollSpy } from "@/hooks/use-scroll-spy"
+import { triggerFlyToCart } from "@/hooks/use-fly-to-cart"
+
+import { MenuHero } from "@/components/consumer/menu/menu-hero"
+import { MenuStickyHeader } from "@/components/consumer/menu/menu-sticky-header"
+import { CategoryNav } from "@/components/consumer/menu/category-nav"
+import { AnnouncementMarquee } from "@/components/consumer/menu/announcement-marquee"
+import { SignatureRail } from "@/components/consumer/menu/signature-rail"
+import { SectionHeading } from "@/components/consumer/menu/section-heading"
+import { ItemRow } from "@/components/consumer/menu/item-row"
+import { CartDrawer } from "@/components/consumer/menu/cart-drawer"
+import { ItemDetailSheet } from "@/components/consumer/menu/item-detail-sheet"
+import { IdentifyModal } from "@/components/consumer/menu/identify-modal"
+import { EmptySearch } from "@/components/consumer/menu/empty-search"
+import { MenuSkeleton } from "@/components/consumer/menu/menu-skeleton"
+import { FlyToCartLayer } from "@/components/consumer/menu/fly-to-cart-layer"
+
+import type { Category, MenuItem, Announcement, ResolvedTable } from "@/components/consumer/menu/types"
 
 const CONSUMER_STORAGE_KEY = "orderkaro-consumer"
+const SIGNATURE_TAG_PATTERN = /popular|chef|signature|special|featured|bestseller/i
+const STICKY_OFFSET = 132
 
 interface StoredConsumer {
   id: string
@@ -26,120 +36,92 @@ interface StoredConsumer {
   accessToken: string
 }
 
-interface MenuItem {
-  id: string
-  name: string
-  description: string | null
-  price: string
-  imageUrl: string | null
-  isVeg: boolean
-  isAvailable: boolean
-  tags: string[]
-  customizations: Array<{
-    id: string
-    name: string
-    type: string
-    isRequired: boolean
-    options: Array<{
-      id: string
-      name: string
-      priceAdjustment: string
-      isDefault: boolean
-    }>
-  }>
-}
-
-interface Category {
-  id: string
-  name: string
-  items: MenuItem[]
+interface IdentifyResult {
+  consumer: { id: string; name: string; phone: string }
+  wallet: { balance: number }
+  accessToken: string
 }
 
 export default function MenuPage({ params }: { params: { slug: string } }) {
   const slug = params.slug
   const searchParams = useSearchParams()
   const tableToken = searchParams.get("table")
-  const { addItem, getItemCount, setContext } = useCartStore()
+
+  const setContext = useCartStore((s) => s.setContext)
+  const cartItems = useCartStore((s) => s.items)
+  const addItem = useCartStore((s) => s.addItem)
+  const removeItem = useCartStore((s) => s.removeItem)
+  const updateQuantity = useCartStore((s) => s.updateQuantity)
   const setAuth = useAuthStore((s) => s.setAuth)
+  const user = useAuthStore((s) => s.user)
 
-  const [activeCategory, setActiveCategory] = useState<string>("")
   const [search, setSearch] = useState("")
+  const [activeCategoryId, setActiveCategoryId] = useState<string>("")
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
-  const [quantity, setQuantity] = useState(1)
-  const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>({})
-
-  const [consumerReady, setConsumerReady] = useState(false)
   const [walletBalance, setWalletBalance] = useState<number | null>(null)
+
   const [showIdentifyModal, setShowIdentifyModal] = useState(false)
-  const [identifyForm, setIdentifyForm] = useState({ name: "", phone: "" })
   const [identifyLoading, setIdentifyLoading] = useState(false)
   const [identifyError, setIdentifyError] = useState("")
 
-  const identifyConsumer = useCallback(async (name: string, phone: string) => {
-    const { data } = await api.post("/api/v1/public/identify", { name, phone })
-    return data.data as {
-      consumer: { id: string; name: string; phone: string }
-      wallet: { balance: number }
-      accessToken: string
-    }
-  }, [])
+  const identifyConsumer = useCallback(
+    async (name: string, phone: string): Promise<IdentifyResult> => {
+      const { data } = await api.post("/api/v1/public/identify", { name, phone })
+      return data.data as IdentifyResult
+    },
+    []
+  )
 
   useEffect(() => {
+    let cancelled = false
+
     async function bootstrap() {
-      const raw = localStorage.getItem(CONSUMER_STORAGE_KEY)
+      const raw = typeof window !== "undefined" ? localStorage.getItem(CONSUMER_STORAGE_KEY) : null
       if (!raw) {
         setShowIdentifyModal(true)
         return
       }
-
       try {
         const stored: StoredConsumer = JSON.parse(raw)
         const result = await identifyConsumer(stored.name, stored.phone)
-
-        const updatedConsumer: StoredConsumer = {
+        if (cancelled) return
+        const updated: StoredConsumer = {
           id: result.consumer.id,
           name: result.consumer.name,
           phone: result.consumer.phone,
           accessToken: result.accessToken,
         }
-        localStorage.setItem(CONSUMER_STORAGE_KEY, JSON.stringify(updatedConsumer))
-
+        localStorage.setItem(CONSUMER_STORAGE_KEY, JSON.stringify(updated))
         setAuth(
-          { id: result.consumer.id, name: result.consumer.name, phone: result.consumer.phone, role: "CONSUMER" },
+          {
+            id: result.consumer.id,
+            name: result.consumer.name,
+            phone: result.consumer.phone,
+            role: "CONSUMER",
+          },
           result.accessToken,
           ""
         )
         setWalletBalance(result.wallet.balance)
-        setConsumerReady(true)
       } catch {
-        localStorage.removeItem(CONSUMER_STORAGE_KEY)
-        setShowIdentifyModal(true)
+        if (!cancelled) {
+          localStorage.removeItem(CONSUMER_STORAGE_KEY)
+          setShowIdentifyModal(true)
+        }
       }
     }
 
     bootstrap()
+    return () => {
+      cancelled = true
+    }
   }, [identifyConsumer, setAuth])
 
-  async function handleIdentifySubmit(e: React.FormEvent) {
-    e.preventDefault()
+  async function handleIdentifySubmit({ name, phone }: { name: string; phone: string }) {
     setIdentifyError("")
-
-    const phone = identifyForm.phone.trim()
-    const name = identifyForm.name.trim()
-
-    if (!name) {
-      setIdentifyError("Please enter your name")
-      return
-    }
-    if (!/^\d{10}$/.test(phone)) {
-      setIdentifyError("Enter a valid 10-digit phone number")
-      return
-    }
-
     setIdentifyLoading(true)
     try {
       const result = await identifyConsumer(name, phone)
-
       const stored: StoredConsumer = {
         id: result.consumer.id,
         name: result.consumer.name,
@@ -147,15 +129,18 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
         accessToken: result.accessToken,
       }
       localStorage.setItem(CONSUMER_STORAGE_KEY, JSON.stringify(stored))
-
       setAuth(
-        { id: result.consumer.id, name: result.consumer.name, phone: result.consumer.phone, role: "CONSUMER" },
+        {
+          id: result.consumer.id,
+          name: result.consumer.name,
+          phone: result.consumer.phone,
+          role: "CONSUMER",
+        },
         result.accessToken,
         ""
       )
       setWalletBalance(result.wallet.balance)
       setShowIdentifyModal(false)
-      setConsumerReady(true)
     } catch (err: any) {
       setIdentifyError(err.response?.data?.error || "Something went wrong. Please try again.")
     } finally {
@@ -174,11 +159,42 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
     queryFn: () => api.get(`/api/v1/public/canteen/${slug}/menu`).then((r) => r.data.data),
   })
 
+  const categories: Category[] = useMemo(() => menuData?.categories ?? [], [menuData])
+
+  const filteredCategories = useMemo(() => {
+    if (!search.trim()) return categories
+    const q = search.toLowerCase()
+    return categories
+      .map((cat) => ({
+        ...cat,
+        items: cat.items.filter(
+          (item) =>
+            item.name.toLowerCase().includes(q) ||
+            item.description?.toLowerCase().includes(q) ||
+            item.tags.some((t) => t.toLowerCase().includes(q))
+        ),
+      }))
+      .filter((cat) => cat.items.length > 0)
+  }, [search, categories])
+
+  const sectionIds = useMemo(
+    () => filteredCategories.map((c) => `cat-${c.id}`),
+    [filteredCategories]
+  )
+  const spiedId = useScrollSpy(sectionIds)
+
   useEffect(() => {
-    if (menuData?.categories?.[0]) {
-      setActiveCategory(menuData.categories[0].id)
+    if (spiedId) {
+      const id = spiedId.replace("cat-", "")
+      setActiveCategoryId(id)
     }
-  }, [menuData])
+  }, [spiedId])
+
+  useEffect(() => {
+    if (filteredCategories[0] && !activeCategoryId) {
+      setActiveCategoryId(filteredCategories[0].id)
+    }
+  }, [filteredCategories, activeCategoryId])
 
   useEffect(() => {
     if (qrData?.canteen?.id && qrData?.table?.id) {
@@ -186,427 +202,244 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
     }
   }, [qrData, setContext])
 
-  const categories: Category[] = menuData?.categories || []
+  const signatureItems = useMemo(() => {
+    const tagged: MenuItem[] = []
+    for (const cat of categories) {
+      for (const item of cat.items) {
+        if (!item.isAvailable) continue
+        if (item.tags.some((t) => SIGNATURE_TAG_PATTERN.test(t))) {
+          tagged.push(item)
+        }
+      }
+    }
+    if (tagged.length >= 2) return tagged.slice(0, 6)
+    const fallback: MenuItem[] = []
+    for (const cat of categories.slice(0, 4)) {
+      const first = cat.items.find((i) => i.isAvailable && i.imageUrl)
+      if (first) fallback.push(first)
+    }
+    return fallback.slice(0, 4)
+  }, [categories])
 
-  const filteredCategories = search
-    ? categories.map((cat) => ({
-        ...cat,
-        items: cat.items.filter((item) =>
-          item.name.toLowerCase().includes(search.toLowerCase())
-        ),
-      })).filter((cat) => cat.items.length > 0)
-    : categories
+  const inlineQuantities = useMemo(() => {
+    const map: Record<string, number> = {}
+    for (const item of cartItems) {
+      const noOptions = item.selectedOptions.length === 0 && !item.notes
+      if (!noOptions) continue
+      map[item.menuItemId] = (map[item.menuItemId] ?? 0) + item.quantity
+    }
+    return map
+  }, [cartItems])
 
-  function handleAddToCart() {
-    if (!selectedItem) return
+  function findInlineCartIndex(menuItemId: string): number {
+    return cartItems.findIndex(
+      (i) => i.menuItemId === menuItemId && i.selectedOptions.length === 0 && !i.notes
+    )
+  }
 
+  function handleQuickAdd(item: MenuItem, sourceEl: HTMLElement | null) {
+    addItem({
+      menuItemId: item.id,
+      name: item.name,
+      price: Number(item.price),
+      quantity: 1,
+      imageUrl: item.imageUrl || undefined,
+      isVeg: item.isVeg,
+      selectedOptions: [],
+    })
+    triggerFlyToCart({
+      source: sourceEl,
+      src: item.imageUrl,
+      label: item.name,
+      isVeg: item.isVeg,
+    })
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      navigator.vibrate?.(8)
+    }
+  }
+
+  function handleIncrement(item: MenuItem) {
+    const idx = findInlineCartIndex(item.id)
+    if (idx === -1) {
+      handleQuickAdd(item, null)
+      return
+    }
+    updateQuantity(idx, cartItems[idx].quantity + 1)
+  }
+
+  function handleDecrement(item: MenuItem) {
+    const idx = findInlineCartIndex(item.id)
+    if (idx === -1) return
+    const next = cartItems[idx].quantity - 1
+    if (next <= 0) {
+      removeItem(idx)
+      return
+    }
+    updateQuantity(idx, next)
+  }
+
+  function handleSelectCategory(categoryId: string) {
+    setActiveCategoryId(categoryId)
+    const el = document.getElementById(`cat-${categoryId}`)
+    if (!el) return
+    const top = el.getBoundingClientRect().top + window.scrollY - STICKY_OFFSET
+    window.scrollTo({ top, behavior: "smooth" })
+  }
+
+  function handleAddFromSheet(params: {
+    item: MenuItem
+    quantity: number
+    selectedOptions: Record<string, string[]>
+  }) {
+    const { item, quantity, selectedOptions } = params
     const opts = Object.entries(selectedOptions).map(([custId, optIds]) => {
-      const cust = selectedItem.customizations.find((c) => c.id === custId)
-      const selectedOpts = cust?.options.filter((o) => optIds.includes(o.id)) || []
+      const cust = item.customizations.find((c) => c.id === custId)
+      const selected = cust?.options.filter((o) => optIds.includes(o.id)) || []
       return {
         customizationId: custId,
         customizationName: cust?.name || "",
         optionIds: optIds,
-        optionNames: selectedOpts.map((o) => o.name),
-        priceAdjustment: selectedOpts.reduce((s, o) => s + Number(o.priceAdjustment), 0),
+        optionNames: selected.map((o) => o.name),
+        priceAdjustment: selected.reduce((s, o) => s + Number(o.priceAdjustment), 0),
       }
     })
-
     addItem({
-      menuItemId: selectedItem.id,
-      name: selectedItem.name,
-      price: Number(selectedItem.price),
+      menuItemId: item.id,
+      name: item.name,
+      price: Number(item.price),
       quantity,
-      imageUrl: selectedItem.imageUrl || undefined,
-      isVeg: selectedItem.isVeg,
+      imageUrl: item.imageUrl || undefined,
+      isVeg: item.isVeg,
       selectedOptions: opts,
     })
-
     setSelectedItem(null)
-    setQuantity(1)
-    setSelectedOptions({})
   }
 
-  function toggleOption(customizationId: string, optionId: string, type: string) {
-    setSelectedOptions((prev) => {
-      const current = prev[customizationId] || []
-      if (type === "SINGLE_SELECT") {
-        return { ...prev, [customizationId]: [optionId] }
-      }
-      if (current.includes(optionId)) {
-        return { ...prev, [customizationId]: current.filter((id) => id !== optionId) }
-      }
-      return { ...prev, [customizationId]: [...current, optionId] }
-    })
-  }
+  const announcements: Announcement[] | undefined = qrData?.announcements
+  const tableInfo: ResolvedTable | undefined = qrData?.table
+  const canteenName = menuData?.canteen?.name ?? "Menu"
+  const closingTime = menuData?.canteen?.closingTime ?? qrData?.canteen?.closingTime ?? null
+  const isOpen = qrData?.isOpen ?? true
+  const consumerFirstName = user?.name?.split(" ")[0] ?? null
 
-  const itemCount = getItemCount()
+  const selectedItemNumber = useMemo(() => {
+    if (!selectedItem) return null
+    for (const cat of filteredCategories) {
+      const idx = cat.items.findIndex((i) => i.id === selectedItem.id)
+      if (idx !== -1) return idx + 1
+    }
+    return null
+  }, [selectedItem, filteredCategories])
+
+  const searchSuggestions = useMemo(() => {
+    if (!search.trim()) return []
+    return categories
+      .flatMap((c) => c.items.map((i) => i.name))
+      .slice(0, 3)
+  }, [search, categories])
 
   return (
     <>
-      <AnimatePresence>
-        {showIdentifyModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black flex items-center justify-center px-4"
-          >
-            <img
-              src="https://res.cloudinary.com/dpjw3fe8d/image/upload/v1773754347/orderkaro/branding/orderkaro-hero-3.png"
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover opacity-40"
-            />
-            <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/30 to-black/60" />
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 30 }}
-              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-              className="relative z-10 w-full max-w-md"
-            >
-              <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-black/20 p-8">
-                <div className="mb-8 text-center flex flex-col items-center">
-                  <Logo size="lg" />
-                  <p className="text-neutral-500 mt-2 text-base font-medium">
-                    {menuData?.canteen?.name
-                      ? `Welcome to ${menuData.canteen.name}`
-                      : "Welcome!"}
-                  </p>
-                </div>
+      <IdentifyModal
+        isOpen={showIdentifyModal}
+        canteenName={menuData?.canteen?.name}
+        loading={identifyLoading}
+        error={identifyError}
+        onSubmit={handleIdentifySubmit}
+      />
 
-                <form onSubmit={handleIdentifySubmit} className="space-y-5">
-                  <Input
-                    label="Your Name"
-                    placeholder="Enter your full name"
-                    value={identifyForm.name}
-                    onChange={(e) => setIdentifyForm({ ...identifyForm, name: e.target.value })}
-                    required
-                    autoFocus
-                  />
-                  <Input
-                    label="Phone Number"
-                    type="tel"
-                    placeholder="10-digit mobile number"
-                    value={identifyForm.phone}
-                    onChange={(e) => setIdentifyForm({ ...identifyForm, phone: e.target.value })}
-                    maxLength={10}
-                    required
-                  />
+      <FlyToCartLayer />
 
-                  <AnimatePresence>
-                    {identifyError && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -4 }}
-                        className="text-xs text-[#DC2626] font-medium"
-                      >
-                        {identifyError}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
-
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    size="lg"
-                    loading={identifyLoading}
-                  >
-                    Continue to Menu
-                  </Button>
-                </form>
-
-                <p className="text-center text-xs text-neutral-400 mt-7">
-                  Your info is used only for this order session
-                </p>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div className="min-h-screen bg-white pb-24">
+      <div className="min-h-screen bg-white pb-32">
         {isLoading ? (
-          <div className="p-4 space-y-4">
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <div className="grid gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <Skeleton key={i} className="h-28 w-full" />
-              ))}
-            </div>
-          </div>
+          <MenuSkeleton />
         ) : (
           <>
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="sticky top-0 z-30 bg-white border-b border-neutral-100"
+            <AnnouncementMarquee announcements={announcements} />
+
+            <MenuHero
+              consumerFirstName={consumerFirstName}
+              canteenName={canteenName}
+              tableLabel={tableInfo?.label ?? null}
+              walletBalance={walletBalance}
+              closingTime={closingTime}
+              isOpen={isOpen}
+            />
+
+            <MenuStickyHeader
+              canteenName={canteenName}
+              walletBalance={walletBalance}
+              search={search}
+              onSearchChange={setSearch}
             >
-              <div className="px-4 py-4 flex items-start justify-between">
-                <div>
-                  <h1 className="text-xl font-extrabold text-brand-black">
-                    {menuData?.canteen?.name || "Menu"}
-                  </h1>
-                  {qrData?.table && (
-                    <p className="text-sm text-neutral-500">{qrData.table.label}</p>
-                  )}
-                </div>
-                {consumerReady && walletBalance !== null && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="flex items-center gap-1.5 bg-neutral-100 rounded-xl px-3 py-1.5"
-                  >
-                    <Wallet className="w-3.5 h-3.5 text-brand-black" />
-                    <span className="text-xs font-bold text-brand-black">
-                      {formatPrice(walletBalance)}
-                    </span>
-                  </motion.div>
-                )}
-              </div>
-
-              {qrData?.announcements?.length > 0 && (
-                <div className="px-4 pb-2">
-                  {qrData.announcements.map((a: any) => (
-                    <div key={a.id} className="bg-brand-red/10 text-brand-red text-sm px-3 py-2 rounded-lg">
-                      {a.message}
-                    </div>
-                  ))}
-                </div>
+              {!search.trim() && (
+                <CategoryNav
+                  categories={categories}
+                  activeId={activeCategoryId}
+                  onSelect={handleSelectCategory}
+                />
               )}
+            </MenuStickyHeader>
 
-              <div className="px-4 pb-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                  <input
-                    type="text"
-                    placeholder="Search menu..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
-                  />
-                </div>
-              </div>
-
-              {!search && (
-                <div className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide">
-                  {categories.map((cat) => (
-                    <button
-                      key={cat.id}
-                      onClick={() => {
-                        setActiveCategory(cat.id)
-                        const el = document.getElementById(`cat-${cat.id}`)
-                        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" })
-                      }}
-                      className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                        activeCategory === cat.id
-                          ? "bg-brand-red text-white"
-                          : "bg-neutral-100 text-neutral-600"
-                      }`}
-                    >
-                      {cat.name}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </motion.div>
-
-            <div className="px-4 py-4 space-y-8">
-              {filteredCategories.map((category, catIdx) => (
-                <motion.div
-                  key={category.id}
-                  id={`cat-${category.id}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: catIdx * 0.05 }}
-                  className="scroll-mt-44"
-                >
-                  <h2 className="text-sm font-bold text-neutral-400 uppercase tracking-wider mb-3">
-                    {category.name}
-                  </h2>
-                  <div className="space-y-3">
-                    {category.items.map((item, idx) => (
-                        <motion.div
-                          key={item.id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: idx * 0.03 }}
-                          onClick={() => {
-                            if (item.isAvailable) {
-                              setSelectedItem(item)
-                              setQuantity(1)
-                              const defaults: Record<string, string[]> = {}
-                              item.customizations.forEach((c) => {
-                                const def = c.options.filter((o) => o.isDefault).map((o) => o.id)
-                                if (def.length) defaults[c.id] = def
-                              })
-                              setSelectedOptions(defaults)
-                            }
-                          }}
-                          className={`rounded-2xl border border-neutral-100 overflow-hidden ${
-                            item.isAvailable ? "cursor-pointer hover:shadow-md transition-shadow" : "opacity-50"
-                          }`}
-                        >
-                          {item.imageUrl && (
-                            <div className="relative w-full h-40">
-                              <img
-                                src={item.imageUrl}
-                                alt={item.name}
-                                className="w-full h-full object-cover"
-                              />
-                              {!item.isAvailable && (
-                                <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
-                                  <span className="text-sm font-semibold text-neutral-500">Unavailable</span>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          <div className="p-3 flex items-center gap-3">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <span className={`w-4 h-4 border-2 rounded-sm flex items-center justify-center flex-shrink-0 ${
-                                  item.isVeg ? "border-brand-black" : "border-brand-red"
-                                }`}>
-                                  <span className={`w-2 h-2 rounded-full ${
-                                    item.isVeg ? "bg-brand-black" : "bg-brand-red"
-                                  }`} />
-                                </span>
-                                <h3 className="font-semibold text-brand-black text-sm truncate">{item.name}</h3>
-                              </div>
-                              {item.description && (
-                                <p className="text-xs text-neutral-500 mt-1 line-clamp-2">{item.description}</p>
-                              )}
-                              <div className="flex items-center gap-2 mt-2">
-                                <span className="font-bold text-brand-black">{formatPrice(item.price)}</span>
-                                {item.tags.map((tag) => (
-                                  <Badge key={tag} variant="danger">{tag}</Badge>
-                                ))}
-                              </div>
-                            </div>
-                            {item.isAvailable && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="flex-shrink-0 border-brand-red text-brand-red"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  addItem({
-                                    menuItemId: item.id,
-                                    name: item.name,
-                                    price: Number(item.price),
-                                    quantity: 1,
-                                    imageUrl: item.imageUrl || undefined,
-                                    isVeg: item.isVeg,
-                                    selectedOptions: [],
-                                  })
-                                }}
-                              >
-                                ADD
-                              </Button>
-                            )}
-                            {!item.isAvailable && !item.imageUrl && (
-                              <span className="text-xs text-neutral-400 font-medium flex-shrink-0">Unavailable</span>
-                            )}
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                </motion.div>
-              ))}
-            </div>
-
-            {itemCount > 0 && (
-              <motion.div
-                initial={{ y: 100 }}
-                animate={{ y: 0 }}
-                className="fixed bottom-0 inset-x-0 p-4 bg-white border-t border-neutral-100"
-              >
-                <Link href={`/${slug}/cart`}>
-                  <Button className="w-full" size="lg">
-                    <ShoppingCart className="w-5 h-5" />
-                    View Cart ({itemCount} items)
-                  </Button>
-                </Link>
-              </motion.div>
+            {!search.trim() && signatureItems.length > 0 && (
+              <SignatureRail
+                items={signatureItems}
+                inlineQuantities={inlineQuantities}
+                onOpen={(item) => setSelectedItem(item)}
+                onAdd={(item, el) => handleQuickAdd(item, el)}
+                onIncrement={handleIncrement}
+                onDecrement={handleDecrement}
+              />
             )}
 
-            <BottomSheet
-              isOpen={!!selectedItem}
-              onClose={() => setSelectedItem(null)}
-              title={selectedItem?.name}
-            >
-              {selectedItem && (
-                <div className="space-y-4">
-                  {selectedItem.imageUrl && (
-                    <img
-                      src={selectedItem.imageUrl}
-                      alt={selectedItem.name}
-                      className="w-full h-48 object-cover rounded-xl"
-                    />
-                  )}
-                  {selectedItem.description && (
-                    <p className="text-sm text-neutral-600">{selectedItem.description}</p>
-                  )}
-                  <p className="text-xl font-bold">{formatPrice(selectedItem.price)}</p>
-
-                  {selectedItem.customizations.map((cust) => (
-                    <div key={cust.id}>
-                      <h4 className="font-semibold text-sm mb-2">
-                        {cust.name}
-                        {cust.isRequired && <span className="text-brand-red"> *</span>}
-                      </h4>
-                      <div className="space-y-2">
-                        {cust.options.map((opt) => {
-                          const isSelected = (selectedOptions[cust.id] || []).includes(opt.id)
-                          return (
-                            <button
-                              key={opt.id}
-                              onClick={() => toggleOption(cust.id, opt.id, cust.type)}
-                              className={`w-full flex items-center justify-between p-3 rounded-xl border text-sm transition-colors ${
-                                isSelected
-                                  ? "border-brand-red bg-red-50"
-                                  : "border-neutral-200"
-                              }`}
-                            >
-                              <span>{opt.name}</span>
-                              {Number(opt.priceAdjustment) > 0 && (
-                                <span className="text-neutral-500">+{formatPrice(opt.priceAdjustment)}</span>
-                              )}
-                            </button>
-                          )
-                        })}
+            <main className="px-5 pt-6 pb-12">
+              {filteredCategories.length === 0 ? (
+                <EmptySearch
+                  query={search}
+                  suggestions={searchSuggestions}
+                  onSuggestionClick={(s) => setSearch(s)}
+                  onReset={() => setSearch("")}
+                />
+              ) : (
+                <div className="space-y-14">
+                  {filteredCategories.map((category) => (
+                    <section
+                      key={category.id}
+                      id={`cat-${category.id}`}
+                      className="scroll-mt-[140px]"
+                    >
+                      <SectionHeading title={category.name} count={category.items.length} />
+                      <div>
+                        {category.items.map((item, idx) => (
+                          <ItemRow
+                            key={item.id}
+                            item={item}
+                            number={idx + 1}
+                            inlineQuantity={inlineQuantities[item.id] ?? 0}
+                            onOpen={() => setSelectedItem(item)}
+                            onAdd={(el) => handleQuickAdd(item, el)}
+                            onIncrement={() => handleIncrement(item)}
+                            onDecrement={() => handleDecrement(item)}
+                          />
+                        ))}
                       </div>
-                    </div>
+                    </section>
                   ))}
-
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center border border-neutral-200 rounded-xl">
-                      <button
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="px-4 py-2 text-lg font-bold"
-                      >
-                        -
-                      </button>
-                      <span className="px-4 py-2 font-semibold">{quantity}</span>
-                      <button
-                        onClick={() => setQuantity(quantity + 1)}
-                        className="px-4 py-2 text-lg font-bold"
-                      >
-                        +
-                      </button>
-                    </div>
-                    <Button className="flex-1" size="lg" onClick={handleAddToCart}>
-                      Add {formatPrice(Number(selectedItem.price) * quantity)}
-                    </Button>
-                  </div>
                 </div>
               )}
-            </BottomSheet>
+            </main>
           </>
         )}
       </div>
+
+      <CartDrawer slug={slug} />
+
+      <ItemDetailSheet
+        item={selectedItem}
+        number={selectedItemNumber}
+        onClose={() => setSelectedItem(null)}
+        onAddToCart={handleAddFromSheet}
+      />
     </>
   )
 }

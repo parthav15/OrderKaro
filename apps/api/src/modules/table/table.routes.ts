@@ -1,7 +1,11 @@
 import { Router } from "express"
 import { authenticate, authorize } from "../../middleware/auth"
 import { validate } from "../../middleware/validate"
-import { createTableSchema, updateTableSchema } from "@orderkaro/shared"
+import {
+  createTableSchema,
+  updateTableSchema,
+  bulkUpdatePositionsSchema,
+} from "@orderkaro/shared"
 import * as controller from "./table.controller"
 
 const router: ReturnType<typeof Router> = Router()
@@ -14,5 +18,11 @@ router.put("/:canteenId/tables/:tableId", ...auth, validate(updateTableSchema), 
 router.delete("/:canteenId/tables/:tableId", ...auth, controller.deleteTable)
 router.get("/:canteenId/tables/:tableId/qr", ...auth, controller.getQrCode)
 router.post("/:canteenId/tables/bulk-qr", ...auth, controller.bulkQrCodes)
+router.patch(
+  "/:canteenId/tables/positions",
+  ...auth,
+  validate(bulkUpdatePositionsSchema),
+  controller.bulkUpdatePositions
+)
 
 export default router
