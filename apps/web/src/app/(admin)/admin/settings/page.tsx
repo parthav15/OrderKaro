@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { Settings, Clock, Store, CheckCircle2 } from "lucide-react"
+import { Settings, Clock, Store, CheckCircle2, Link2, Copy } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import api from "@/lib/api"
@@ -14,6 +14,7 @@ export default function SettingsPage() {
   const [canteenId, setCanteenId] = useState<string>("")
   const [form, setForm] = useState({
     name: "",
+    slug: "",
     openingTime: "08:00",
     closingTime: "22:00",
     avgPrepTime: 15,
@@ -36,6 +37,7 @@ export default function SettingsPage() {
     if (canteen) {
       setForm({
         name: canteen.name || "",
+        slug: canteen.slug || "",
         openingTime: canteen.openingTime || "08:00",
         closingTime: canteen.closingTime || "22:00",
         avgPrepTime: canteen.avgPrepTime || 15,
@@ -82,6 +84,7 @@ export default function SettingsPage() {
           e.preventDefault()
           update.mutate({
             name: form.name,
+            slug: form.slug,
             openingTime: form.openingTime,
             closingTime: form.closingTime,
             avgPrepTime: Number(form.avgPrepTime),
@@ -113,6 +116,65 @@ export default function SettingsPage() {
                 placeholder="e.g. Main Campus Cafeteria"
                 className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
               />
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.08 }}
+        >
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-neutral-100 flex items-center justify-center">
+                  <Link2 className="w-5 h-5 text-neutral-600" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-brand-black">Menu URL Slug</h2>
+                  <p className="text-sm text-neutral-400">The URL path students use to access your menu</p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <input
+                value={form.slug}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    slug: e.target.value
+                      .toLowerCase()
+                      .replace(/[^a-z0-9-]/g, "-")
+                      .replace(/-+/g, "-")
+                      .replace(/^-/, ""),
+                  })
+                }
+                placeholder="e.g. campus-cafe"
+                className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+              />
+              {form.slug && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex items-center gap-2 p-3 bg-neutral-50 rounded-xl"
+                >
+                  <Link2 className="w-4 h-4 text-neutral-400 shrink-0" />
+                  <p className="text-sm text-neutral-600 truncate flex-1">
+                    order-karo-frontend.vercel.app/<strong>{form.slug}</strong>/menu
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(`https://order-karo-frontend.vercel.app/${form.slug}/menu`)
+                      toast.success("URL copied!")
+                    }}
+                    className="p-1.5 rounded-lg hover:bg-neutral-200 transition-colors shrink-0"
+                  >
+                    <Copy className="w-4 h-4 text-neutral-500" />
+                  </button>
+                </motion.div>
+              )}
             </CardContent>
           </Card>
         </motion.div>

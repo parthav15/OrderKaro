@@ -11,4 +11,5 @@ dist
 
 apps/web/prisma/generate-images.ts
 apps/web/prisma/generate-remaining.ts
+apps/web/prisma/generate-branding.ts
 apps/web/prisma/upload-images.ts

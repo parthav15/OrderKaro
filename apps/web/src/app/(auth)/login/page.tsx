@@ -1,9 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { motion } from "framer-motion"
+import Image from "next/image"
+import Link from "next/link"
+import { motion, AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { Logo } from "@/components/ui/logo"
 import { Input } from "@/components/ui/input"
 import { useAuthStore } from "@/stores/auth"
 import api from "@/lib/api"
@@ -75,101 +78,127 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white px-4">
+    <div className="relative min-h-dvh w-full overflow-hidden bg-black flex items-center justify-center">
+      <Image
+        src="https://res.cloudinary.com/dpjw3fe8d/image/upload/v1773754328/orderkaro/branding/orderkaro-hero-2.png"
+        alt=""
+        fill
+        priority
+        className="object-cover opacity-40"
+      />
+      <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/30 to-black/60" />
+
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-sm"
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        className="relative z-10 w-full max-w-md mx-4"
       >
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold text-brand-black">
-            Order<span className="text-brand-red">Karo</span>
-          </h1>
-          <p className="text-neutral-500 mt-2">Sign in to continue</p>
-        </div>
+        <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-black/20 p-8 md:p-10">
+          <div className="text-center mb-8">
+            <Link href="/">
+              <Logo size="lg" />
+            </Link>
+            <p className="text-neutral-500 mt-2 text-base font-medium">Welcome back</p>
+          </div>
 
-        <div className="flex gap-2 mb-6">
-          {(["owner", "staff"] as LoginMode[]).map((m) => (
-            <button
-              key={m}
-              onClick={() => setMode(m)}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                mode === m
-                  ? "bg-brand-black text-white"
-                  : "bg-neutral-100 text-neutral-600"
-              }`}
+          <div className="flex gap-2 mb-7 bg-neutral-100 p-1 rounded-xl">
+            {(["owner", "staff"] as LoginMode[]).map((m) => (
+              <button
+                key={m}
+                onClick={() => setMode(m)}
+                className={`relative flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-200 ${
+                  mode === m
+                    ? "bg-[#0A0A0A] text-white shadow-sm"
+                    : "text-neutral-500 hover:text-neutral-700"
+                }`}
+              >
+                {m === "owner" ? "Owner" : "Staff"}
+              </button>
+            ))}
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <AnimatePresence mode="wait">
+              {mode === "owner" ? (
+                <motion.div
+                  key="owner"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 10 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-5"
+                >
+                  <Input
+                    label="Email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    required
+                  />
+                  <Input
+                    label="Password"
+                    type="password"
+                    placeholder="Enter password"
+                    value={form.password}
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    required
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="staff"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 10 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-5"
+                >
+                  <Input
+                    label="Canteen Slug"
+                    placeholder="e.g. campus-cafe"
+                    value={form.canteenSlug}
+                    onChange={(e) =>
+                      setForm({ ...form, canteenSlug: e.target.value })
+                    }
+                    required
+                  />
+                  <Input
+                    label="Email"
+                    type="email"
+                    placeholder="staff@example.com"
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    required
+                  />
+                  <Input
+                    label="Password"
+                    type="password"
+                    placeholder="Enter password"
+                    value={form.password}
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    required
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <Button type="submit" className="w-full" size="lg" loading={loading}>
+              Sign In
+            </Button>
+          </form>
+
+          <p className="text-center text-sm text-neutral-500 mt-7">
+            Don&apos;t have an account?{" "}
+            <Link
+              href="/register"
+              className="text-[#DC2626] font-bold hover:underline"
             >
-              {m === "owner" ? "Owner" : "Staff"}
-            </button>
-          ))}
+              Register
+            </Link>
+          </p>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {mode === "owner" && (
-            <>
-              <Input
-                label="Email"
-                type="email"
-                placeholder="you@example.com"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                required
-              />
-              <Input
-                label="Password"
-                type="password"
-                placeholder="Enter password"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                required
-              />
-            </>
-          )}
-
-          {mode === "staff" && (
-            <>
-              <Input
-                label="Canteen Slug"
-                placeholder="e.g. campus-cafe"
-                value={form.canteenSlug}
-                onChange={(e) =>
-                  setForm({ ...form, canteenSlug: e.target.value })
-                }
-                required
-              />
-              <Input
-                label="Email"
-                type="email"
-                placeholder="staff@example.com"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                required
-              />
-              <Input
-                label="Password"
-                type="password"
-                placeholder="Enter password"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                required
-              />
-            </>
-          )}
-
-          <Button type="submit" className="w-full" size="lg" loading={loading}>
-            Sign In
-          </Button>
-        </form>
-
-        <p className="text-center text-sm text-neutral-500 mt-6">
-          Don&apos;t have an account?{" "}
-          <a
-            href="/register"
-            className="text-brand-red font-semibold hover:underline"
-          >
-            Register
-          </a>
-        </p>
       </motion.div>
     </div>
   )

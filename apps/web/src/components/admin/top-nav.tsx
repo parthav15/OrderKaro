@@ -17,6 +17,7 @@ import {
 } from "lucide-react"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
+import { Logo } from "@/components/ui/logo"
 import { useAuthStore } from "@/stores/auth"
 
 const SUPER_ADMIN_EMAIL =
@@ -68,9 +69,8 @@ export function AdminTopNav() {
             transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="text-xl font-extrabold text-[#0A0A0A] tracking-tight select-none"
           >
-            Order<span className="text-[#DC2626]">Karo</span>
+            <Logo size="sm" />
           </motion.span>
         </Link>
 

@@ -1,82 +1,79 @@
 "use client"
 
+import Image from "next/image"
+import { Logo } from "@/components/ui/logo"
+import Link from "next/link"
 import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { ArrowRight, QrCode, ChefHat, BarChart3 } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-white">
-      <nav className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
-        <h1 className="text-xl font-extrabold text-brand-black">
-          Order<span className="text-brand-red">Karo</span>
-        </h1>
-        <div className="flex gap-3">
-          <a href="/login">
-            <Button variant="outline" size="sm">Sign In</Button>
-          </a>
-          <a href="/register">
-            <Button size="sm">Get Started</Button>
-          </a>
-        </div>
-      </nav>
+    <div className="relative h-dvh w-full overflow-hidden bg-black">
+      <Image
+        src="https://res.cloudinary.com/dpjw3fe8d/image/upload/v1773754306/orderkaro/branding/orderkaro-hero-1.png"
+        alt="OrderKaro"
+        fill
+        priority
+        className="object-cover opacity-60"
+      />
 
-      <main className="max-w-4xl mx-auto px-6 py-20">
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+      <div className="relative z-10 flex flex-col items-center justify-center h-full px-6 text-center">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center"
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="mb-6"
         >
-          <h2 className="text-5xl font-extrabold text-brand-black leading-tight">
-            Smart Canteen
-            <br />
-            <span className="text-brand-red">Management</span>
-          </h2>
-          <p className="text-lg text-neutral-500 mt-4 max-w-xl mx-auto">
-            QR-based ordering system for college canteens. Students scan, order, and pick up. Zero queues.
-          </p>
-          <div className="flex gap-3 justify-center mt-8">
-            <a href="/register">
-              <Button size="lg">
-                Start Free <ArrowRight className="w-4 h-4" />
-              </Button>
-            </a>
-          </div>
+          <Logo size="lg" variant="dark" />
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20">
-          {[
-            {
-              icon: QrCode,
-              title: "QR Ordering",
-              desc: "Students scan a table QR code and order directly from their phone",
-            },
-            {
-              icon: ChefHat,
-              title: "Kitchen Display",
-              desc: "Real-time order management with kanban board for kitchen staff",
-            },
-            {
-              icon: BarChart3,
-              title: "Analytics",
-              desc: "Track revenue, popular items, and peak hours",
-            },
-          ].map((feature, idx) => (
-            <motion.div
-              key={feature.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + idx * 0.1 }}
-              className="p-6 rounded-2xl border border-neutral-100 hover:shadow-md transition-shadow"
+        <motion.h1
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+          className="font-heading text-5xl md:text-7xl lg:text-8xl font-extrabold text-white tracking-tight leading-[0.9] max-w-4xl"
+        >
+          Your Canteen, Reimagined
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-6 text-lg md:text-xl text-neutral-300 max-w-xl font-medium"
+        >
+          Scan. Order. Eat. No apps, no queues, no hassle.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-10 flex items-center gap-4"
+        >
+          <Link href="/register">
+            <motion.button
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              className="px-8 py-4 bg-[#DC2626] text-white text-base font-bold rounded-xl shadow-lg shadow-red-900/30 flex items-center gap-2"
             >
-              <feature.icon className="w-8 h-8 text-brand-red mb-4" />
-              <h3 className="font-bold text-brand-black text-lg">{feature.title}</h3>
-              <p className="text-sm text-neutral-500 mt-2">{feature.desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </main>
+              Get Started
+              <ArrowRight size={18} />
+            </motion.button>
+          </Link>
+          <Link href="/login">
+            <motion.button
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              className="px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/20 text-white text-base font-bold rounded-xl"
+            >
+              Login
+            </motion.button>
+          </Link>
+        </motion.div>
+      </div>
     </div>
   )
 }

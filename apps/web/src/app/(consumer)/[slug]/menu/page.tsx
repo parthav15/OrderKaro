@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { BottomSheet } from "@/components/ui/bottom-sheet"
 import { Input } from "@/components/ui/input"
 import { formatPrice } from "@/lib/utils"
+import { Logo } from "@/components/ui/logo"
 
 const CONSUMER_STORAGE_KEY = "orderkaro-consumer"
 
@@ -249,71 +250,77 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center px-6"
+            className="fixed inset-0 z-50 bg-black flex items-center justify-center px-4"
           >
+            <img
+              src="https://res.cloudinary.com/dpjw3fe8d/image/upload/v1773754347/orderkaro/branding/orderkaro-hero-3.png"
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover opacity-40"
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/30 to-black/60" />
             <motion.div
-              initial={{ opacity: 0, y: 32, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 32, scale: 0.96 }}
-              transition={{ type: "spring", stiffness: 300, damping: 28 }}
-              className="w-full max-w-sm"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 30 }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              className="relative z-10 w-full max-w-md"
             >
-              <div className="mb-8 text-center">
-                <h1 className="text-3xl font-extrabold text-brand-black">
-                  Order<span className="text-brand-red">Karo</span>
-                </h1>
-                <p className="text-neutral-500 mt-2 text-sm">
-                  {menuData?.canteen?.name
-                    ? `Welcome to ${menuData.canteen.name}`
-                    : "Welcome!"}
+              <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-black/20 p-8">
+                <div className="mb-8 text-center flex flex-col items-center">
+                  <Logo size="lg" />
+                  <p className="text-neutral-500 mt-2 text-base font-medium">
+                    {menuData?.canteen?.name
+                      ? `Welcome to ${menuData.canteen.name}`
+                      : "Welcome!"}
+                  </p>
+                </div>
+
+                <form onSubmit={handleIdentifySubmit} className="space-y-5">
+                  <Input
+                    label="Your Name"
+                    placeholder="Enter your full name"
+                    value={identifyForm.name}
+                    onChange={(e) => setIdentifyForm({ ...identifyForm, name: e.target.value })}
+                    required
+                    autoFocus
+                  />
+                  <Input
+                    label="Phone Number"
+                    type="tel"
+                    placeholder="10-digit mobile number"
+                    value={identifyForm.phone}
+                    onChange={(e) => setIdentifyForm({ ...identifyForm, phone: e.target.value })}
+                    maxLength={10}
+                    required
+                  />
+
+                  <AnimatePresence>
+                    {identifyError && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        className="text-xs text-[#DC2626] font-medium"
+                      >
+                        {identifyError}
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    size="lg"
+                    loading={identifyLoading}
+                  >
+                    Continue to Menu
+                  </Button>
+                </form>
+
+                <p className="text-center text-xs text-neutral-400 mt-7">
+                  Your info is used only for this order session
                 </p>
               </div>
-
-              <form onSubmit={handleIdentifySubmit} className="space-y-4">
-                <Input
-                  label="Your Name"
-                  placeholder="Enter your full name"
-                  value={identifyForm.name}
-                  onChange={(e) => setIdentifyForm({ ...identifyForm, name: e.target.value })}
-                  required
-                  autoFocus
-                />
-                <Input
-                  label="Phone Number"
-                  type="tel"
-                  placeholder="10-digit mobile number"
-                  value={identifyForm.phone}
-                  onChange={(e) => setIdentifyForm({ ...identifyForm, phone: e.target.value })}
-                  maxLength={10}
-                  required
-                />
-
-                <AnimatePresence>
-                  {identifyError && (
-                    <motion.p
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      className="text-xs text-brand-red font-medium"
-                    >
-                      {identifyError}
-                    </motion.p>
-                  )}
-                </AnimatePresence>
-
-                <Button
-                  type="submit"
-                  className="w-full"
-                  size="lg"
-                  loading={identifyLoading}
-                >
-                  Continue to Menu
-                </Button>
-              </form>
-
-              <p className="text-center text-xs text-neutral-400 mt-6">
-                Your info is used only for this order session
-              </p>
             </motion.div>
           </motion.div>
         )}
