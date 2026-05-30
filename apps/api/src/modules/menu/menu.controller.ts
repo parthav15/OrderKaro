@@ -38,7 +38,7 @@ export async function getFullMenu(req: Request, res: Response) {
     },
   })
 
-  return success(res, { canteen, categories })
+  return success(res, categories)
 }
 
 export async function getCategories(req: Request, res: Response) {
