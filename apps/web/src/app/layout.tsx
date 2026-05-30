@@ -22,7 +22,15 @@ export default function RootLayout({
   )
 
   useEffect(() => {
-    registerServiceWorker()
+    if (process.env.NODE_ENV === "production") {
+      registerServiceWorker()
+      return
+    }
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .getRegistrations()
+        .then((regs) => regs.forEach((r) => r.unregister()))
+    }
   }, [])
 
   return (
