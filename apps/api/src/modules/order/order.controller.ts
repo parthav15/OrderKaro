@@ -200,7 +200,7 @@ export async function placeOrder(req: Request, res: Response) {
     }
 
     return newOrder
-    })
+    }, { maxWait: 10000, timeout: 20000 })
   } catch (err) {
     if (err instanceof Error && err.message === "INSUFFICIENT_BALANCE") {
       return error(res, "Insufficient wallet balance", 400)

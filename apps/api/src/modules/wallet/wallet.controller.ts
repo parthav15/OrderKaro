@@ -1,7 +1,18 @@
 import type { Request, Response } from "express"
 import prisma from "../../config/database"
 import { success, error, created } from "../../utils/response"
-import type { RechargeRequestInput, CreditWalletInput, ApproveRechargeInput } from "@orderkaro/shared"
+import {
+  createRazorpayOrder,
+  verifyRazorpaySignature,
+  isRazorpayConfigured,
+} from "../../utils/razorpay"
+import type {
+  RechargeRequestInput,
+  CreditWalletInput,
+  ApproveRechargeInput,
+  RazorpayCreateOrderInput,
+  RazorpayVerifyInput,
+} from "@orderkaro/shared"
 
 export async function getWallet(req: Request, res: Response) {
   const wallet = await prisma.wallet.findUnique({
@@ -236,4 +247,102 @@ export async function getConsumers(req: Request, res: Response) {
     consumers,
     pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
   })
+}
+
+export async function createRazorpayWalletOrder(req: Request, res: Response) {
+  if (!isRazorpayConfigured()) {
+    return error(res, "Payment gateway not configured", 503)
+  }
+  const { amount } = req.body as RazorpayCreateOrderInput
+
+  let wallet = await prisma.wallet.findUnique({
+    where: { consumerId: req.user!.id },
+  })
+  if (!wallet) {
+    wallet = await prisma.wallet.create({ data: { consumerId: req.user!.id } })
+  }
+
+  const order = await createRazorpayOrder(amount, `wlt_${wallet.id.slice(0, 8)}_${Date.now()}`)
+
+  await prisma.walletTransaction.create({
+    data: {
+      walletId: wallet.id,
+      type: "CREDIT",
+      amount,
+      balanceBefore: wallet.balance,
+      balanceAfter: wallet.balance,
+      source: "ONLINE",
+      description: "Wallet top-up via Razorpay",
+      reference: order.id,
+      status: "PENDING",
+    },
+  })
+
+  return created(res, {
+    orderId: order.id,
+    amount: order.amount,
+    currency: order.currency,
+    keyId: process.env.RAZORPAY_KEY_ID,
+  })
+}
+
+export async function verifyRazorpayWalletPayment(req: Request, res: Response) {
+  const { razorpayOrderId, razorpayPaymentId, razorpaySignature } =
+    req.body as RazorpayVerifyInput
+
+  if (!verifyRazorpaySignature(razorpayOrderId, razorpayPaymentId, razorpaySignature)) {
+    return error(res, "Invalid payment signature", 400)
+  }
+
+  const wallet = await prisma.wallet.findUnique({
+    where: { consumerId: req.user!.id },
+  })
+  if (!wallet) {
+    return error(res, "Wallet not found", 404)
+  }
+
+  const pending = await prisma.walletTransaction.findFirst({
+    where: {
+      walletId: wallet.id,
+      reference: razorpayOrderId,
+      source: "ONLINE",
+      status: "PENDING",
+    },
+  })
+
+  if (!pending) {
+    const credited = await prisma.walletTransaction.findFirst({
+      where: {
+        walletId: wallet.id,
+        reference: razorpayOrderId,
+        source: "ONLINE",
+        status: "APPROVED",
+      },
+    })
+    if (credited) {
+      const current = await prisma.wallet.findUnique({ where: { id: wallet.id } })
+      return success(res, { balance: current!.balance })
+    }
+    return error(res, "Recharge order not found", 404)
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    const before = await tx.wallet.findUnique({ where: { id: wallet.id } })
+    const updated = await tx.wallet.update({
+      where: { id: wallet.id },
+      data: { balance: { increment: pending.amount } },
+    })
+    await tx.walletTransaction.update({
+      where: { id: pending.id },
+      data: {
+        status: "APPROVED",
+        balanceBefore: before!.balance,
+        balanceAfter: updated.balance,
+        description: `Wallet top-up via Razorpay (${razorpayPaymentId})`,
+      },
+    })
+    return updated
+  })
+
+  return success(res, { balance: result.balance })
 }

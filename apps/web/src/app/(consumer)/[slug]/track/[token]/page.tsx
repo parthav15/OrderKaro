@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useQuery } from "@tanstack/react-query"
 import { CheckCircle, Clock, ChefHat, Bell, ShoppingBag } from "lucide-react"
@@ -21,23 +20,21 @@ function getStepIndex(status: string) {
 }
 
 interface TrackingData {
-  order: {
-    id: string
-    orderNumber: number
-    status: string
-    totalAmount: string
-    placedAt: string
-    specialInstructions: string | null
-    canteen: { name: string }
-    table: { label: string } | null
-    items: Array<{
-      id: string
-      quantity: number
-      unitPrice: string
-      menuItem: { name: string }
-      selectedOptions: Array<{ optionName: string }>
-    }>
-  }
+  orderNumber: number
+  status: string
+  totalAmount: string
+  placedAt: string
+  specialInstructions: string | null
+  canteen: { name: string }
+  table: { label: string } | null
+  items: Array<{
+    id?: string
+    quantity: number
+    unitPrice: string
+    name?: string
+    menuItem?: { name: string }
+    selectedOptions?: Array<{ optionName?: string }>
+  }>
 }
 
 function formatTime(dateStr: string) {
@@ -57,13 +54,13 @@ export default function TrackOrderPage({
     queryFn: () =>
       api.get(`/api/v1/public/track/${params.token}`).then((r) => r.data.data),
     refetchInterval: (query) => {
-      const status = query.state.data?.order?.status
+      const status = query.state.data?.status
       if (status === "PICKED_UP" || status === "CANCELLED") return false
       return 5000
     },
   })
 
-  const order = data?.order
+  const order = data
   const currentStepIndex = order ? getStepIndex(order.status) : -1
   const isReady = order?.status === "READY"
   const isPickedUp = order?.status === "PICKED_UP"
@@ -232,15 +229,18 @@ export default function TrackOrderPage({
         >
           <h2 className="text-sm font-bold text-brand-black mb-4">Items Ordered</h2>
           <div className="space-y-3">
-            {order.items.map((item) => (
-              <div key={item.id} className="flex items-start justify-between gap-3">
+            {order.items.map((item, idx) => (
+              <div key={item.id ?? idx} className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-brand-black">
-                    {item.quantity}x {item.menuItem.name}
+                    {item.quantity}x {item.menuItem?.name ?? item.name}
                   </p>
-                  {item.selectedOptions.length > 0 && (
+                  {(item.selectedOptions ?? []).some((o) => o.optionName) && (
                     <p className="text-xs text-neutral-400 mt-0.5">
-                      {item.selectedOptions.map((o) => o.optionName).join(", ")}
+                      {(item.selectedOptions ?? [])
+                        .map((o) => o.optionName)
+                        .filter(Boolean)
+                        .join(", ")}
                     </p>
                   )}
                 </div>

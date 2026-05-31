@@ -20,3 +20,16 @@ export const approveRechargeSchema = z.object({
 export type RechargeRequestInput = z.infer<typeof rechargeRequestSchema>
 export type CreditWalletInput = z.infer<typeof creditWalletSchema>
 export type ApproveRechargeInput = z.infer<typeof approveRechargeSchema>
+
+export const razorpayCreateOrderSchema = z.object({
+  amount: z.number().positive().max(100000),
+})
+
+export const razorpayVerifySchema = z.object({
+  razorpayOrderId: z.string().min(1),
+  razorpayPaymentId: z.string().min(1),
+  razorpaySignature: z.string().min(1),
+})
+
+export type RazorpayCreateOrderInput = z.infer<typeof razorpayCreateOrderSchema>
+export type RazorpayVerifyInput = z.infer<typeof razorpayVerifySchema>

@@ -290,6 +290,7 @@ enum WalletTransactionSource {
   BANK_TRANSFER
   ORDER_PAYMENT
   REFUND
+  ONLINE
 }
 
 enum WalletRequestStatus {

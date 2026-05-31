@@ -5,6 +5,8 @@ import {
   rechargeRequestSchema,
   creditWalletSchema,
   approveRechargeSchema,
+  razorpayCreateOrderSchema,
+  razorpayVerifySchema,
 } from "@orderkaro/shared"
 import * as controller from "./wallet.controller"
 
@@ -19,6 +21,18 @@ router.post(
   authorize("CONSUMER"),
   validate(rechargeRequestSchema),
   controller.submitRechargeRequest
+)
+router.post(
+  "/consumer/wallet/recharge/razorpay/order",
+  authorize("CONSUMER"),
+  validate(razorpayCreateOrderSchema),
+  controller.createRazorpayWalletOrder
+)
+router.post(
+  "/consumer/wallet/recharge/razorpay/verify",
+  authorize("CONSUMER"),
+  validate(razorpayVerifySchema),
+  controller.verifyRazorpayWalletPayment
 )
 
 router.get(

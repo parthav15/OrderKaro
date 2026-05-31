@@ -1,26 +1,87 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Minus, Plus, Trash2, Wallet, Banknote, ShoppingCart } from "lucide-react"
 import { useCartStore } from "@/stores/cart"
 import { useAuthStore } from "@/stores/auth"
 import { Button } from "@/components/ui/button"
-import { formatPrice } from "@/lib/utils"
+import { formatPrice, generateUUID } from "@/lib/utils"
 import api from "@/lib/api"
 import { toast } from "sonner"
 import { requestNotificationPermission, getNotificationPermission, isNotificationSupported } from "@/lib/pwa"
-import { generateUUID } from "@/lib/utils"
+import { useWalletRecharge } from "@/hooks/use-wallet-recharge"
 
 export default function CartPage({ params }: { params: { slug: string } }) {
   const router = useRouter()
   const { items, removeItem, updateQuantity, clearCart, getTotal, canteenId, tableId } = useCartStore()
+  const user = useAuthStore((s) => s.user)
   const [paymentMethod, setPaymentMethod] = useState<"CASH" | "WALLET">("CASH")
   const [specialInstructions, setSpecialInstructions] = useState("")
   const [loading, setLoading] = useState(false)
+  const [walletBalance, setWalletBalance] = useState<number | null>(null)
+  const { recharging, recharge } = useWalletRecharge()
 
   const total = getTotal()
+  const shortfall = Math.max(0, Math.ceil(total - (walletBalance ?? 0)))
+  const walletInsufficient =
+    paymentMethod === "WALLET" && walletBalance !== null && walletBalance < total
+
+  async function reidentifyFromStorage(): Promise<boolean> {
+    const raw = typeof window !== "undefined" ? localStorage.getItem("orderkaro-consumer") : null
+    if (!raw) return false
+    try {
+      const stored = JSON.parse(raw)
+      const { data } = await api.post("/api/v1/public/identify", {
+        name: stored.name,
+        phone: stored.phone,
+      })
+      const result = data.data
+      useAuthStore.getState().setAuth(
+        {
+          id: result.consumer.id,
+          name: result.consumer.name,
+          phone: result.consumer.phone,
+          role: "CONSUMER",
+        },
+        result.accessToken,
+        ""
+      )
+      localStorage.setItem(
+        "orderkaro-consumer",
+        JSON.stringify({ ...stored, accessToken: result.accessToken })
+      )
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  async function loadBalance() {
+    try {
+      const { data } = await api.get("/api/v1/consumer/wallet")
+      setWalletBalance(Number(data.data.balance))
+    } catch (err) {
+      const status = (err as { response?: { status?: number } }).response?.status
+      if (status === 401 && (await reidentifyFromStorage())) {
+        try {
+          const { data } = await api.get("/api/v1/consumer/wallet")
+          setWalletBalance(Number(data.data.balance))
+        } catch {}
+      }
+    }
+  }
+
+  useEffect(() => {
+    loadBalance()
+  }, [])
+
+  async function handleTopUp() {
+    if (shortfall <= 0) return
+    const newBalance = await recharge(shortfall, { name: user?.name, contact: user?.phone })
+    if (newBalance !== null) setWalletBalance(newBalance)
+  }
 
   async function handlePlaceOrder() {
     if (!canteenId || !tableId) {
@@ -62,31 +123,8 @@ export default function CartPage({ params }: { params: { slug: string } }) {
         router.push(`/${params.slug}/order/${data.data.id}`)
       }
     } catch (err: any) {
-      if (err.response?.status === 401) {
-        const raw = localStorage.getItem("orderkaro-consumer")
-        if (raw) {
-          try {
-            const stored = JSON.parse(raw)
-            const { data: identifyData } = await api.post("/api/v1/public/identify", {
-              name: stored.name,
-              phone: stored.phone,
-            })
-            const result = identifyData.data
-            useAuthStore.getState().setAuth(
-              { id: result.consumer.id, name: result.consumer.name, phone: result.consumer.phone, role: "CONSUMER" },
-              result.accessToken,
-              ""
-            )
-            localStorage.setItem(
-              "orderkaro-consumer",
-              JSON.stringify({ ...stored, accessToken: result.accessToken })
-            )
-            toast.error("Session refreshed. Please try again.")
-            setLoading(false)
-            return
-          } catch {}
-        }
-        toast.error("Session expired. Please go back and re-enter your details.")
+      if (err.response?.status === 401 && (await reidentifyFromStorage())) {
+        toast.error("Session refreshed. Please try again.")
       } else {
         toast.error(err.response?.data?.error || "Failed to place order")
       }
@@ -205,6 +243,19 @@ export default function CartPage({ params }: { params: { slug: string } }) {
             Wallet
           </button>
         </div>
+        {paymentMethod === "WALLET" && (
+          <div className="flex items-center justify-between text-sm px-1">
+            <span className="text-neutral-500">
+              Wallet balance:{" "}
+              <span className="font-semibold text-brand-black">
+                {walletBalance === null ? "…" : formatPrice(walletBalance)}
+              </span>
+            </span>
+            {walletInsufficient && (
+              <span className="text-brand-red font-medium">Short by {formatPrice(shortfall)}</span>
+            )}
+          </div>
+        )}
       </div>
 
       <motion.div
@@ -216,9 +267,16 @@ export default function CartPage({ params }: { params: { slug: string } }) {
           <span className="text-sm text-neutral-500">Total</span>
           <span className="text-xl font-extrabold text-brand-black">{formatPrice(total)}</span>
         </div>
-        <Button className="w-full" size="lg" loading={loading} onClick={handlePlaceOrder}>
-          Place Order
-        </Button>
+        {walletInsufficient ? (
+          <Button className="w-full" size="lg" loading={recharging} onClick={handleTopUp}>
+            <Wallet className="w-4 h-4" />
+            Add {formatPrice(shortfall)} to wallet
+          </Button>
+        ) : (
+          <Button className="w-full" size="lg" loading={loading} onClick={handlePlaceOrder}>
+            Place Order
+          </Button>
+        )}
       </motion.div>
     </div>
   )
