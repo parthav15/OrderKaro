@@ -18,7 +18,14 @@ export async function GET(
 
     const activeStatuses: OrderStatus[] = ["PLACED", "ACCEPTED", "PREPARING", "READY"]
 
-    const [todayOrders, revenueResult, completedOrders, activeOrders] = await Promise.all([
+    const [
+      todayOrders,
+      revenueResult,
+      completedOrders,
+      activeOrders,
+      totalOrders,
+      totalRevenueResult,
+    ] = await Promise.all([
       prisma.order.count({
         where: {
           canteenId,
@@ -47,6 +54,19 @@ export async function GET(
           status: { in: activeStatuses },
         },
       }),
+      prisma.order.count({
+        where: {
+          canteenId,
+          status: { not: "CANCELLED" },
+        },
+      }),
+      prisma.order.aggregate({
+        where: {
+          canteenId,
+          paymentStatus: "PAID",
+        },
+        _sum: { totalAmount: true },
+      }),
     ])
 
     let avgPrepTimeMinutes: number | null = null
@@ -60,6 +80,8 @@ export async function GET(
     }
 
     return success({
+      totalOrders,
+      totalRevenue: totalRevenueResult._sum.totalAmount ?? 0,
       todayOrders,
       todayRevenue: revenueResult._sum.totalAmount ?? 0,
       avgPrepTimeMinutes,

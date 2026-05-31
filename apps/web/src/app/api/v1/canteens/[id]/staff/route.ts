@@ -13,12 +13,13 @@ export async function GET(
     requireRole(request, "OWNER", "MANAGER")
 
     const staff = await prisma.staff.findMany({
-      where: { id: canteenId },
+      where: { canteenId },
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
+        pin: true,
         isActive: true,
         createdAt: true,
         updatedAt: true,

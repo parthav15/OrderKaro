@@ -11,7 +11,7 @@ export async function GET(
     requireRole(request, "OWNER", "MANAGER")
 
     const consumerIds = await prisma.order.findMany({
-      where: { id: canteenId },
+      where: { canteenId },
       select: { consumerId: true },
       distinct: ["consumerId"],
     })
@@ -32,7 +32,7 @@ export async function GET(
       orderBy: { name: "asc" },
     })
 
-    return success(consumers)
+    return success({ consumers })
   } catch (err) {
     return handleError(err)
   }

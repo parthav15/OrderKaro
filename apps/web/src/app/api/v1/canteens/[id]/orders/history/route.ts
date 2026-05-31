@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server"
 import prisma from "@/lib/prisma"
-import { success, handleError, requireRole } from "@/lib/api-utils"
+import { handleError, requireRole } from "@/lib/api-utils"
 import { NextResponse } from "next/server"
 
 export async function GET(
@@ -19,7 +19,7 @@ export async function GET(
     const dateFrom = searchParams.get("dateFrom") ?? undefined
     const dateTo = searchParams.get("dateTo") ?? undefined
 
-    const where: Record<string, unknown> = { id: canteenId }
+    const where: Record<string, unknown> = { canteenId }
     if (status) where.status = status
     if (paymentMethod) where.paymentMethod = paymentMethod
     if (dateFrom || dateTo) {
@@ -50,12 +50,14 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: orders,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+      data: {
+        orders,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
       },
     })
   } catch (err) {

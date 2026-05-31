@@ -85,11 +85,11 @@ export async function POST(
     return success({
       orderId: order.id,
       orderNumber: order.orderNumber,
-      orderAmount: totalAmount,
-      amountReceived,
-      changeAmount,
+      orderAmount: Number(totalAmount),
+      amountReceived: Number(amountReceived),
+      changeAmount: Number(changeAmount),
       walletCredited,
-      newWalletBalance,
+      newWalletBalance: newWalletBalance === null ? null : Number(newWalletBalance),
       consumerName: order.consumer.name,
     })
   } catch (err) {

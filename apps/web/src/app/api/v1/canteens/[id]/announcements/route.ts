@@ -12,7 +12,7 @@ export async function GET(
     requireRole(request, "OWNER", "MANAGER")
 
     const announcements = await prisma.announcement.findMany({
-      where: { id: canteenId },
+      where: { canteenId },
       orderBy: { createdAt: "desc" },
     })
 
