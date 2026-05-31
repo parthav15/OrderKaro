@@ -86,7 +86,7 @@ export async function GET(
 
     const peakHoursMap = new Map<number, number>()
     const allOrdersForHours = await prisma.order.findMany({
-      where: { id: canteenId, placedAt: { gte: startDate } },
+      where: { canteenId, placedAt: { gte: startDate } },
       select: { placedAt: true },
     })
     for (const order of allOrdersForHours) {

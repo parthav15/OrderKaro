@@ -27,6 +27,7 @@ router.put("/:canteenId/menu/items/:itemId", ...auth, validate(updateMenuItemSch
 router.delete("/:canteenId/menu/items/:itemId", ...auth, controller.deleteMenuItem)
 router.patch("/:canteenId/menu/items/:itemId/availability", ...auth, controller.toggleAvailability)
 
+router.get("/:canteenId/menu/items/:itemId/customizations", ...auth, controller.getCustomizations)
 router.post("/:canteenId/menu/items/:itemId/customizations", ...auth, validate(createCustomizationSchema), controller.createCustomization)
 router.put("/:canteenId/menu/items/:itemId/customizations/:custId", ...auth, validate(updateCustomizationSchema), controller.updateCustomization)
 router.delete("/:canteenId/menu/items/:itemId/customizations/:custId", ...auth, controller.deleteCustomization)

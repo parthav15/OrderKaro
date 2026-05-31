@@ -165,6 +165,22 @@ async function resolveMenuItemForCanteen(
   return item !== null
 }
 
+export async function getCustomizations(req: Request, res: Response) {
+  const itemId = req.params.itemId as string
+  const canteenId = req.params.canteenId as string
+
+  const itemExists = await resolveMenuItemForCanteen(itemId, canteenId)
+  if (!itemExists) {
+    return error(res, "Menu item not found", 404)
+  }
+
+  const customizations = await prisma.customization.findMany({
+    where: { menuItemId: itemId },
+    include: { options: { orderBy: { sortOrder: "asc" } } },
+  })
+  return success(res, customizations)
+}
+
 export async function createCustomization(req: Request, res: Response) {
   const data = req.body as CreateCustomizationInput
   const itemId = req.params.itemId as string
