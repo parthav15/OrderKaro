@@ -22,7 +22,7 @@ interface CartState {
   items: CartItem[]
   canteenId: string | null
   tableId: string | null
-  setContext: (canteenId: string, tableId: string) => void
+  setContext: (canteenId: string, tableId: string | null) => void
   addItem: (item: CartItem) => void
   removeItem: (index: number) => void
   updateQuantity: (index: number, quantity: number) => void

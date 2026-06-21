@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Modal } from "@/components/ui/modal"
 import api from "@/lib/api"
-import { formatPrice, formatTime } from "@/lib/utils"
+import { formatPrice, formatTime, orderDestinationLabel } from "@/lib/utils"
 import { toast } from "sonner"
 
 interface OrderItem {
@@ -33,7 +33,9 @@ interface Order {
   totalAmount: string
   specialInstructions: string | null
   placedAt: string
-  table?: { label: string }
+  orderType?: string
+  deliveryLocation?: string | null
+  table?: { label: string } | null
   items: OrderItem[]
 }
 
@@ -339,8 +341,7 @@ export default function OrderHistory() {
                             </span>
                           </div>
                           <p className="text-sm text-neutral-500 mt-1">
-                            {order.table?.label && `${order.table.label} · `}
-                            {formatTime(order.placedAt)}
+                            {orderDestinationLabel(order)} · {formatTime(order.placedAt)}
                           </p>
                           <p className="text-sm text-neutral-600 mt-1.5 truncate">
                             {order.items.slice(0, 3).map((i) => `${i.quantity}× ${i.menuItem.name}`).join(", ")}
@@ -418,9 +419,7 @@ export default function OrderHistory() {
             </div>
 
             <div className="bg-neutral-50 rounded-xl p-4 space-y-1.5 text-sm">
-              {selectedOrder.table?.label && (
-                <p className="text-neutral-600"><span className="font-semibold text-brand-black">Table:</span> {selectedOrder.table.label}</p>
-              )}
+              <p className="text-neutral-600"><span className="font-semibold text-brand-black">Destination:</span> {orderDestinationLabel(selectedOrder)}</p>
               <p className="text-neutral-600"><span className="font-semibold text-brand-black">Placed at:</span> {formatTime(selectedOrder.placedAt)}</p>
             </div>
 

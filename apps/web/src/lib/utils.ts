@@ -34,3 +34,15 @@ export function getTimeSince(date: string | Date) {
   if (minutes < 60) return `${minutes}m ago`
   return `${Math.floor(minutes / 60)}h ${minutes % 60}m ago`
 }
+
+export function orderDestinationLabel(order: {
+  orderType?: string | null
+  deliveryLocation?: string | null
+  table?: { label?: string | null } | null
+}): string {
+  if (order.orderType === "TAKEAWAY") return "Takeaway"
+  if (order.orderType === "DELIVERY") {
+    return order.deliveryLocation ? `Delivery — ${order.deliveryLocation}` : "Delivery"
+  }
+  return order.table?.label || "Takeaway"
+}

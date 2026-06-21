@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useQuery } from "@tanstack/react-query"
 import { CheckCircle, Clock, ChefHat, Bell, ShoppingBag } from "lucide-react"
 import api from "@/lib/api"
-import { formatPrice } from "@/lib/utils"
+import { formatPrice, orderDestinationLabel } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 
 const STATUS_STEPS = [
@@ -25,6 +25,8 @@ interface TrackingData {
   totalAmount: string
   placedAt: string
   specialInstructions: string | null
+  orderType?: string
+  deliveryLocation?: string | null
   canteen: { name: string }
   table: { label: string } | null
   items: Array<{
@@ -102,8 +104,7 @@ export default function TrackOrderPage({
         className="bg-white border-b border-neutral-100 px-5 py-5"
       >
         <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
-          {order.canteen.name}
-          {order.table ? ` · ${order.table.label}` : ""}
+          {order.canteen.name} · {orderDestinationLabel(order)}
         </p>
         <h1 className="text-2xl font-extrabold text-brand-black mt-1">
           Order #{order.orderNumber}

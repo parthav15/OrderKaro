@@ -9,7 +9,7 @@ import api from "@/lib/api"
 import { connectSocket } from "@/lib/socket"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { formatPrice, formatTime, getTimeSince } from "@/lib/utils"
+import { formatPrice, formatTime, getTimeSince, orderDestinationLabel } from "@/lib/utils"
 import { toast } from "sonner"
 import {
   requestNotificationPermission,
@@ -287,6 +287,13 @@ export default function OrderTrackingPage({
                 <p className="text-white text-3xl font-extrabold mt-2">#{displayOrder.orderNumber}</p>
               </motion.div>
             )}
+
+            <div className="flex items-center gap-2 mb-2">
+              <Package className="w-4 h-4 text-neutral-400" />
+              <span className="text-sm font-semibold text-brand-black">
+                {orderDestinationLabel(displayOrder)}
+              </span>
+            </div>
 
             <div className="flex items-center gap-2 mb-6">
               <Clock className="w-4 h-4 text-neutral-400" />

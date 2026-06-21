@@ -3,7 +3,18 @@
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Minus, Plus, Trash2, Wallet, Banknote, ShoppingCart } from "lucide-react"
+import {
+  ArrowLeft,
+  Minus,
+  Plus,
+  Trash2,
+  Wallet,
+  Banknote,
+  ShoppingCart,
+  ShoppingBag,
+  Utensils,
+  Bike,
+} from "lucide-react"
 import { useCartStore } from "@/stores/cart"
 import { useAuthStore } from "@/stores/auth"
 import { Button } from "@/components/ui/button"
@@ -12,6 +23,14 @@ import api from "@/lib/api"
 import { toast } from "sonner"
 import { requestNotificationPermission, getNotificationPermission, isNotificationSupported } from "@/lib/pwa"
 import { useWalletRecharge } from "@/hooks/use-wallet-recharge"
+
+type OrderType = "DINE_IN" | "TAKEAWAY" | "DELIVERY"
+
+const FULFILLMENT_OPTIONS: Array<{ value: OrderType; label: string; icon: typeof Utensils }> = [
+  { value: "TAKEAWAY", label: "Takeaway", icon: ShoppingBag },
+  { value: "DINE_IN", label: "Dine-in", icon: Utensils },
+  { value: "DELIVERY", label: "Delivery", icon: Bike },
+]
 
 export default function CartPage({ params }: { params: { slug: string } }) {
   const router = useRouter()
@@ -22,6 +41,14 @@ export default function CartPage({ params }: { params: { slug: string } }) {
   const [loading, setLoading] = useState(false)
   const [walletBalance, setWalletBalance] = useState<number | null>(null)
   const { recharging, recharge } = useWalletRecharge()
+
+  const [orderType, setOrderType] = useState<OrderType>("TAKEAWAY")
+  const [pickedTableId, setPickedTableId] = useState("")
+  const [deliveryLocation, setDeliveryLocation] = useState("")
+  const [tables, setTables] = useState<Array<{ id: string; label: string }>>([])
+
+  const fixedTable = !!tableId
+  const tableLabel = tables.find((t) => t.id === tableId)?.label
 
   const total = getTotal()
   const shortfall = Math.max(0, Math.ceil(total - (walletBalance ?? 0)))
@@ -75,7 +102,11 @@ export default function CartPage({ params }: { params: { slug: string } }) {
 
   useEffect(() => {
     loadBalance()
-  }, [])
+    api
+      .get(`/api/v1/public/canteen/${params.slug}/menu`)
+      .then((r) => setTables(r.data.data.tables ?? []))
+      .catch(() => {})
+  }, [params.slug])
 
   async function handleTopUp() {
     if (shortfall <= 0) return
@@ -84,15 +115,32 @@ export default function CartPage({ params }: { params: { slug: string } }) {
   }
 
   async function handlePlaceOrder() {
-    if (!canteenId || !tableId) {
+    if (!canteenId) {
       toast.error("Please scan a QR code first")
+      return
+    }
+
+    const finalOrderType: OrderType = fixedTable ? "DINE_IN" : orderType
+    const finalTableId =
+      finalOrderType === "DINE_IN" ? (fixedTable ? tableId : pickedTableId) : undefined
+    const finalDeliveryLocation =
+      finalOrderType === "DELIVERY" ? deliveryLocation.trim() : undefined
+
+    if (finalOrderType === "DINE_IN" && !finalTableId) {
+      toast.error("Please select your table")
+      return
+    }
+    if (finalOrderType === "DELIVERY" && !finalDeliveryLocation) {
+      toast.error("Please enter a delivery location")
       return
     }
 
     setLoading(true)
     try {
       const { data } = await api.post(`/api/v1/canteens/${canteenId}/orders`, {
-        tableId,
+        orderType: finalOrderType,
+        tableId: finalTableId,
+        deliveryLocation: finalDeliveryLocation,
         items: items.map((item) => ({
           menuItemId: item.menuItemId,
           quantity: item.quantity,
@@ -209,6 +257,58 @@ export default function CartPage({ params }: { params: { slug: string } }) {
             </div>
           </motion.div>
         ))}
+      </div>
+
+      <div className="px-4 space-y-3">
+        <h3 className="font-semibold text-sm">Fulfillment</h3>
+        {fixedTable ? (
+          <div className="flex items-center gap-2 p-3 rounded-xl border border-neutral-200 text-sm font-medium">
+            <Utensils className="w-5 h-5 text-brand-red" />
+            Dine-in{tableLabel ? ` · ${tableLabel}` : ""}
+          </div>
+        ) : (
+          <>
+            <div className="flex gap-2">
+              {FULFILLMENT_OPTIONS.map((m) => (
+                <button
+                  key={m.value}
+                  onClick={() => setOrderType(m.value)}
+                  className={`flex-1 flex flex-col items-center gap-1 p-3 rounded-xl border text-xs font-semibold transition-colors ${
+                    orderType === m.value
+                      ? "border-brand-red bg-red-50 text-brand-red"
+                      : "border-neutral-200 text-brand-black"
+                  }`}
+                >
+                  <m.icon className="w-5 h-5" />
+                  {m.label}
+                </button>
+              ))}
+            </div>
+            {orderType === "DINE_IN" && (
+              <select
+                value={pickedTableId}
+                onChange={(e) => setPickedTableId(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-neutral-200 text-sm bg-white focus:outline-none focus:border-brand-red"
+              >
+                <option value="">Select your table</option>
+                {tables.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            )}
+            {orderType === "DELIVERY" && (
+              <input
+                value={deliveryLocation}
+                onChange={(e) => setDeliveryLocation(e.target.value)}
+                placeholder="Where should we deliver? (room / desk / hostel)"
+                maxLength={200}
+                className="w-full px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
+              />
+            )}
+          </>
+        )}
       </div>
 
       <div className="px-4 py-4">

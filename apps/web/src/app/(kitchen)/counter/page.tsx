@@ -17,12 +17,16 @@ import { connectSocket } from "@/lib/socket"
 import { useAuthStore } from "@/stores/auth"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { orderDestinationLabel } from "@/lib/utils"
 
 interface ReadyOrder {
   id: string
   orderNumber: number
   status: string
   placedAt: string
+  orderType?: string
+  deliveryLocation?: string | null
+  table?: { label?: string | null } | null
   items: Array<{
     id: string
     quantity: number
@@ -259,10 +263,14 @@ export default function CounterDisplay() {
                     <motion.span
                       animate={{ scale: [1, 1.04, 1] }}
                       transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
-                      className="text-7xl font-extrabold text-white group-hover:text-brand-red transition-colors leading-none mb-5"
+                      className="text-7xl font-extrabold text-white group-hover:text-brand-red transition-colors leading-none mb-2"
                     >
                       #{order.orderNumber}
                     </motion.span>
+
+                    <span className="text-base font-bold text-neutral-400 uppercase tracking-wide mb-5">
+                      {orderDestinationLabel(order)}
+                    </span>
 
                     <div className="w-full space-y-2 mb-5">
                       {order.items.map((item) => (

@@ -20,7 +20,7 @@ import {
 import api from "@/lib/api"
 import { connectSocket } from "@/lib/socket"
 import { useAuthStore } from "@/stores/auth"
-import { getTimeSince } from "@/lib/utils"
+import { getTimeSince, orderDestinationLabel } from "@/lib/utils"
 import { STALE_ORDER_MINUTES } from "@orderkaro/shared"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
@@ -140,7 +140,7 @@ function OrderCard({
         <div className="flex items-center gap-2 mb-4">
           <TableProperties className="w-5 h-5 text-neutral-400 shrink-0" />
           <span className="text-lg font-semibold text-neutral-300">
-            {order.table?.label || "Takeaway"}
+            {orderDestinationLabel(order)}
           </span>
         </div>
 

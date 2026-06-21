@@ -202,6 +202,12 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
     }
   }, [qrData, setContext])
 
+  useEffect(() => {
+    if (!tableToken && menuData?.canteen?.id) {
+      setContext(menuData.canteen.id, null)
+    }
+  }, [tableToken, menuData, setContext])
+
   const signatureItems = useMemo(() => {
     const tagged: MenuItem[] = []
     for (const cat of categories) {

@@ -86,7 +86,13 @@ export async function getPublicMenu(req: Request, res: Response) {
     },
   })
 
-  return success(res, { canteen, categories })
+  const tables = await prisma.table.findMany({
+    where: { canteenId: canteen.id, isActive: true },
+    select: { id: true, label: true },
+    orderBy: { label: "asc" },
+  })
+
+  return success(res, { canteen, categories, tables })
 }
 
 export async function identifyConsumer(req: Request, res: Response) {
@@ -140,6 +146,8 @@ export async function trackOrder(req: Request, res: Response) {
   return success(res, {
     orderNumber: order.orderNumber,
     status: order.status,
+    orderType: order.orderType,
+    deliveryLocation: order.deliveryLocation,
     totalAmount: order.totalAmount,
     specialInstructions: order.specialInstructions,
     estimatedReadyAt: order.estimatedReadyAt,

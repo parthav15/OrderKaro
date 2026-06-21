@@ -54,7 +54,13 @@ export async function GET(
       orderBy: { sortOrder: "asc" },
     })
 
-    return success({ canteen, categories })
+    const tables = await prisma.table.findMany({
+      where: { canteenId: canteen.id, isActive: true },
+      select: { id: true, label: true },
+      orderBy: { label: "asc" },
+    })
+
+    return success({ canteen, categories, tables })
   } catch (err) {
     return handleError(err)
   }
