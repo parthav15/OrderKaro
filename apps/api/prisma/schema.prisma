@@ -184,8 +184,10 @@ model Order {
   orderNumber         Int
   canteenId           String
   canteen             Canteen        @relation(fields: [canteenId], references: [id])
-  tableId             String
-  table               Table          @relation(fields: [tableId], references: [id])
+  tableId             String?
+  table               Table?         @relation(fields: [tableId], references: [id])
+  orderType           OrderType      @default(DINE_IN)
+  deliveryLocation    String?
   consumerId          String
   consumer            Consumer       @relation(fields: [consumerId], references: [id])
   status              OrderStatus    @default(PLACED)
@@ -258,6 +260,12 @@ enum StaffRole {
 enum CustomizationType {
   SINGLE_SELECT
   MULTI_SELECT
+}
+
+enum OrderType {
+  DINE_IN
+  TAKEAWAY
+  DELIVERY
 }
 
 enum OrderStatus {

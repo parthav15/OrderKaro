@@ -14,13 +14,24 @@ export const orderItemSchema = z.object({
   notes: z.string().max(200).optional(),
 })
 
-export const placeOrderSchema = z.object({
-  tableId: z.string().min(1),
-  items: z.array(orderItemSchema).min(1),
-  specialInstructions: z.string().max(500).optional(),
-  paymentMethod: z.enum(["CASH", "WALLET"]),
-  idempotencyKey: z.string().min(1),
-})
+export const placeOrderSchema = z
+  .object({
+    orderType: z.enum(["DINE_IN", "TAKEAWAY", "DELIVERY"]).default("DINE_IN"),
+    tableId: z.string().min(1).optional(),
+    deliveryLocation: z.string().min(1).max(200).optional(),
+    items: z.array(orderItemSchema).min(1),
+    specialInstructions: z.string().max(500).optional(),
+    paymentMethod: z.enum(["CASH", "WALLET"]),
+    idempotencyKey: z.string().min(1),
+  })
+  .refine((d) => d.orderType !== "DINE_IN" || !!d.tableId, {
+    message: "Table is required for dine-in orders",
+    path: ["tableId"],
+  })
+  .refine((d) => d.orderType !== "DELIVERY" || !!d.deliveryLocation, {
+    message: "Delivery location is required for delivery orders",
+    path: ["deliveryLocation"],
+  })
 
 export const updateOrderStatusSchema = z.object({
   status: z.enum(["ACCEPTED", "PREPARING", "READY", "PICKED_UP", "CANCELLED"]),

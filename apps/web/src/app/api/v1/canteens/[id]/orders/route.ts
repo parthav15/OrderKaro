@@ -50,10 +50,12 @@ export async function POST(
     })
     if (consumerActiveCount >= 3) throw new AuthError("You already have 3 active orders", 429)
 
-    const table = await prisma.table.findFirst({
-      where: { id: data.tableId, canteenId, isActive: true },
-    })
-    if (!table) throw new AuthError("Table not found or inactive", 404)
+    if (data.orderType === "DINE_IN") {
+      const table = await prisma.table.findFirst({
+        where: { id: data.tableId, canteenId, isActive: true },
+      })
+      if (!table) throw new AuthError("Table not found or inactive", 404)
+    }
 
     const menuItemIds = data.items.map((i) => i.menuItemId)
     const menuItems = await prisma.menuItem.findMany({
@@ -155,7 +157,9 @@ export async function POST(
       data: {
         orderNumber,
         canteenId,
-        tableId: data.tableId,
+        orderType: data.orderType,
+        tableId: data.orderType === "DINE_IN" ? data.tableId : null,
+        deliveryLocation: data.orderType === "DELIVERY" ? data.deliveryLocation : null,
         consumerId: user.id,
         status: "PLACED",
         totalAmount,

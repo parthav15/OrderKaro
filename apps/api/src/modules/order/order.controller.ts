@@ -49,11 +49,13 @@ export async function placeOrder(req: Request, res: Response) {
     return error(res, "You already have too many active orders. Please wait for them to be picked up.", 429)
   }
 
-  const table = await prisma.table.findFirst({
-    where: { id: data.tableId, canteenId, isActive: true },
-  })
-  if (!table) {
-    return error(res, "Invalid table", 400)
+  if (data.orderType === "DINE_IN") {
+    const table = await prisma.table.findFirst({
+      where: { id: data.tableId, canteenId, isActive: true },
+    })
+    if (!table) {
+      return error(res, "Invalid table", 400)
+    }
   }
 
   const menuItemIds = data.items.map((i) => i.menuItemId)
@@ -158,7 +160,9 @@ export async function placeOrder(req: Request, res: Response) {
       data: {
         orderNumber,
         canteenId,
-        tableId: data.tableId,
+        orderType: data.orderType,
+        tableId: data.orderType === "DINE_IN" ? data.tableId : null,
+        deliveryLocation: data.orderType === "DELIVERY" ? data.deliveryLocation : null,
         consumerId,
         totalAmount,
         specialInstructions: data.specialInstructions,
