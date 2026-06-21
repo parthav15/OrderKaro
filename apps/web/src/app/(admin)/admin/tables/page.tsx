@@ -19,6 +19,7 @@ import { BulkActionBar } from "./_components/BulkActionBar"
 import { AddTableModal } from "./_components/AddTableModal"
 import { EditTableModal } from "./_components/EditTableModal"
 import { QrPosterModal } from "./_components/QrPosterModal"
+import { AnywhereQrCard } from "./_components/AnywhereQrCard"
 import { EmptyState } from "./_components/EmptyState"
 import { TableMapView } from "./_components/map/TableMapView"
 
@@ -48,10 +49,12 @@ export default function TablesPage() {
   const [bulkToggling, setBulkToggling] = useState(false)
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
 
-  const { data: canteens } = useQuery<{ id: string; name: string }[]>({
+  const { data: canteens } = useQuery<{ id: string; name: string; slug: string }[]>({
     queryKey: ["canteens"],
     queryFn: () => api.get("/api/v1/canteens").then((r) => r.data.data),
   })
+
+  const selectedCanteen = canteens?.find((c) => c.id === canteenId)
 
   useEffect(() => {
     if (canteens?.[0] && !canteenId) setCanteenId(canteens[0].id)
@@ -255,6 +258,11 @@ export default function TablesPage() {
         onBulkDownload={() => downloadBulkPdf()}
         bulkExporting={bulkExporting}
         hasTables={!!tables?.length}
+      />
+
+      <AnywhereQrCard
+        slug={selectedCanteen?.slug ?? null}
+        canteenName={selectedCanteen?.name ?? "Canteen"}
       />
 
       {!isEmpty && (
