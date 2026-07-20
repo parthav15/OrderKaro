@@ -2,6 +2,7 @@ import { NextRequest } from "next/server"
 import prisma from "@/lib/prisma"
 import { success, error, handleError } from "@/lib/api-utils"
 import { hasFeature } from "@/lib/plans"
+import { gatewayForRestaurant } from "@/lib/payments"
 import { DEFAULT_BRAND_COLOR } from "@/lib/brand-color"
 
 export async function GET(
@@ -32,6 +33,7 @@ export async function GET(
         longitude: true,
         plan: true,
         planValidUntil: true,
+        country: true,
       },
     })
 
@@ -72,9 +74,14 @@ export async function GET(
       orderBy: { label: "asc" },
     })
 
-    const { plan, planValidUntil, latitude, longitude, ...publicRestaurant } = restaurant
+    const { plan, planValidUntil, latitude, longitude, country, ...publicRestaurant } = restaurant
     const arEnabled = hasFeature({ plan, planValidUntil }, "ar")
     const brandingEnabled = hasFeature({ plan, planValidUntil }, "branding")
+
+    const paymentAccount = await prisma.restaurantPaymentAccount.findUnique({
+      where: { restaurantId: restaurant.id },
+    })
+    const onlinePaymentEnabled = gatewayForRestaurant({ country }).isReady(paymentAccount)
 
     return success({
       restaurant: {
@@ -83,6 +90,7 @@ export async function GET(
         themeMode: brandingEnabled ? restaurant.themeMode : "LIGHT",
         hasLocation: latitude != null && longitude != null,
         arEnabled,
+        onlinePaymentEnabled,
       },
       categories: arEnabled
         ? categories

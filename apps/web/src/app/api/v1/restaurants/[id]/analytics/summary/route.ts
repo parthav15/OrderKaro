@@ -29,6 +29,7 @@ export async function GET(
       prisma.order.count({
         where: {
           restaurantId,
+          status: { not: "AWAITING_PAYMENT" },
           placedAt: { gte: todayStart, lte: todayEnd },
         },
       }),
@@ -57,7 +58,7 @@ export async function GET(
       prisma.order.count({
         where: {
           restaurantId,
-          status: { not: "CANCELLED" },
+          status: { notIn: ["CANCELLED", "AWAITING_PAYMENT"] },
         },
       }),
       prisma.order.aggregate({

@@ -41,6 +41,9 @@ model Restaurant {
   plan           Plan      @default(FREE)
   planValidUntil DateTime?
 
+  country           String  @default("IN")
+  commissionPercent Decimal @default(0) @db.Decimal(5, 2)
+
   primaryColor String    @default("#DC2626")
   themeMode    ThemeMode @default(LIGHT)
 
@@ -51,16 +54,40 @@ model Restaurant {
   deliveryFee      Decimal @default(0) @db.Decimal(10, 2)
   minOrderValue    Decimal @default(0) @db.Decimal(10, 2)
 
-  staff         Staff[]
-  categories    Category[]
-  tables        Table[]
-  orders        Order[]
-  announcements Announcement[]
-  subscriptions Subscription[]
-  menuViews     MenuView[]
-  modelRequests ModelRequest[]
+  staff          Staff[]
+  categories     Category[]
+  tables         Table[]
+  orders         Order[]
+  announcements  Announcement[]
+  subscriptions  Subscription[]
+  menuViews      MenuView[]
+  modelRequests  ModelRequest[]
+  paymentAccount RestaurantPaymentAccount?
 
   @@map("Canteen")
+}
+
+model RestaurantPaymentAccount {
+  id           String     @id @default(uuid())
+  restaurantId String     @unique
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  provider PaymentProvider
+  status   PaymentAccountStatus @default(PENDING)
+
+  paypurKeyCipher  String?
+  paypurSaltCipher String?
+
+  stripeAccountId        String? @unique
+  stripeChargesEnabled   Boolean @default(false)
+  stripePayoutsEnabled   Boolean @default(false)
+  stripeDetailsSubmitted Boolean @default(false)
+
+  lastCheckedAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([provider, status])
 }
 
 model Subscription {
@@ -283,6 +310,12 @@ model Order {
   paymentStatus       PaymentStatus    @default(PENDING)
   paymentMethod       PaymentMethod
   walletTransactionId String?
+  paymentProvider     PaymentProvider?
+  paymentOrderId      String?
+  paymentTxnId        String?
+  paymentRedirectUrl  String?
+  platformFee         Decimal?         @db.Decimal(10, 2)
+  paidAt              DateTime?
   idempotencyKey      String?          @unique
   trackingToken       String?          @unique
   placedAt            DateTime         @default(now())
@@ -379,7 +412,19 @@ enum OrderType {
   DELIVERY
 }
 
+enum PaymentProvider {
+  PAYPUR
+  STRIPE
+}
+
+enum PaymentAccountStatus {
+  PENDING
+  ACTIVE
+  DISABLED
+}
+
 enum OrderStatus {
+  AWAITING_PAYMENT
   PLACED
   ACCEPTED
   PREPARING
@@ -397,6 +442,7 @@ enum PaymentStatus {
 enum PaymentMethod {
   CASH
   WALLET
+  ONLINE
 }
 
 enum WalletTransactionType {

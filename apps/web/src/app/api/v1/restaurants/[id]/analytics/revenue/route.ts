@@ -20,7 +20,7 @@ export async function GET(
       where: {
         restaurantId,
         placedAt: { gte: startDate },
-        status: { not: "CANCELLED" },
+        status: { notIn: ["CANCELLED", "AWAITING_PAYMENT"] },
       },
       select: { totalAmount: true, placedAt: true },
     })

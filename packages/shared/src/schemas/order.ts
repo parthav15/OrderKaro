@@ -23,7 +23,7 @@ export const placeOrderSchema = z
     deliveryLongitude: z.number().min(-180).max(180).optional(),
     items: z.array(orderItemSchema).min(1),
     specialInstructions: z.string().max(500).optional(),
-    paymentMethod: z.enum(["CASH", "WALLET"]),
+    paymentMethod: z.enum(["CASH", "WALLET", "ONLINE"]),
     idempotencyKey: z.string().min(1),
   })
   .refine((d) => d.orderType !== "DINE_IN" || !!d.tableId, {

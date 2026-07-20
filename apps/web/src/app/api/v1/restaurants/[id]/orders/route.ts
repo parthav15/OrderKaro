@@ -18,6 +18,8 @@ import {
 } from "@orderkaro/shared"
 import type { OrderStatus } from "@prisma/client"
 import { distanceInKm, roundKm } from "@/lib/geo"
+import { gatewayForRestaurant, currencyForCountry } from "@/lib/payments"
+import { resolveAppUrl } from "@/lib/app-url"
 
 export async function POST(
   request: NextRequest,
@@ -180,6 +182,23 @@ export async function POST(
       walletTransactionId = walletTx.id
     }
 
+    let onlinePaymentAccount: Awaited<
+      ReturnType<typeof prisma.restaurantPaymentAccount.findUnique>
+    > = null
+
+    if (data.paymentMethod === "ONLINE") {
+      onlinePaymentAccount = await prisma.restaurantPaymentAccount.findUnique({
+        where: { restaurantId },
+      })
+      const gateway = gatewayForRestaurant(restaurant)
+      if (!onlinePaymentAccount || !gateway.isReady(onlinePaymentAccount)) {
+        throw new AuthError(
+          `${restaurant.name} has not set up online payments yet. Please choose cash or wallet.`,
+          422
+        )
+      }
+    }
+
     const todayStart = new Date()
     todayStart.setHours(0, 0, 0, 0)
     const todayEnd = new Date()
@@ -206,7 +225,7 @@ export async function POST(
         deliveryDistanceKm,
         deliveryFee: deliveryZoneEnforced ? deliveryFee : null,
         consumerId: user.id,
-        status: "PLACED",
+        status: data.paymentMethod === "ONLINE" ? "AWAITING_PAYMENT" : "PLACED",
         totalAmount,
         specialInstructions: data.specialInstructions,
         paymentMethod: data.paymentMethod,
@@ -220,17 +239,67 @@ export async function POST(
         statusLogs: {
           create: {
             fromStatus: null,
-            toStatus: "PLACED",
+            toStatus: data.paymentMethod === "ONLINE" ? "AWAITING_PAYMENT" : "PLACED",
             changedBy: user.id,
-            note: "Order placed",
+            note: data.paymentMethod === "ONLINE" ? "Awaiting online payment" : "Order placed",
           },
         },
       },
       include: { items: true, table: true },
     })
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ""
+    const appUrl = resolveAppUrl(request)
     const trackingUrl = `${appUrl}/${restaurant.slug}/track/${trackingToken}`
+
+    if (data.paymentMethod === "ONLINE" && onlinePaymentAccount) {
+      const gateway = gatewayForRestaurant(restaurant)
+      const commissionPercent = new Decimal(restaurant.commissionPercent.toString())
+      const platformFee = gateway.supportsPlatformFee
+        ? totalAmount.mul(commissionPercent).div(100)
+        : new Decimal(0)
+
+      const returnUrl = `${appUrl}/api/v1/payments/return/${order.id}`
+      const payer = await prisma.consumer.findUnique({
+        where: { id: user.id },
+        select: { name: true, phone: true },
+      })
+
+      try {
+        const session = await gateway.createCheckout(onlinePaymentAccount, {
+          orderId: order.id,
+          amount: Number(totalAmount.toFixed(2)),
+          currency: currencyForCountry(restaurant.country),
+          platformFee: Number(platformFee.toFixed(2)),
+          description: `Order #${order.orderNumber} at ${restaurant.name}`,
+          customer: { name: payer?.name ?? "Guest", phone: payer?.phone },
+          successUrl: returnUrl,
+          failureUrl: returnUrl,
+        })
+
+        const withPayment = await prisma.order.update({
+          where: { id: order.id },
+          data: {
+            paymentProvider: gateway.provider,
+            paymentOrderId: session.providerOrderId,
+            paymentRedirectUrl: session.redirectUrl,
+            platformFee,
+          },
+          include: { items: true, table: true },
+        })
+
+        return created({
+          ...withPayment,
+          trackingUrl,
+          paymentRedirectUrl: session.redirectUrl,
+        })
+      } catch (paymentError) {
+        await prisma.order.update({
+          where: { id: order.id },
+          data: { status: "CANCELLED", cancelledAt: new Date() },
+        })
+        throw paymentError
+      }
+    }
 
     return created({ ...order, trackingUrl })
   } catch (err) {

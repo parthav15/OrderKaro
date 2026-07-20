@@ -15,6 +15,7 @@ import {
   Utensils,
   Bike,
   MapPin,
+  Smartphone,
 } from "lucide-react"
 import { useCartStore } from "@/stores/cart"
 import { useAuthStore } from "@/stores/auth"
@@ -36,6 +37,7 @@ interface StorefrontConfig {
   deliveryFee?: string
   minOrderValue?: string
   hasLocation?: boolean
+  onlinePaymentEnabled?: boolean
 }
 
 const FULFILLMENT_OPTIONS: Array<{ value: OrderType; label: string; icon: typeof Utensils }> = [
@@ -48,7 +50,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
   const router = useRouter()
   const { items, removeItem, updateQuantity, clearCart, getTotal, restaurantId, tableId } = useCartStore()
   const user = useAuthStore((s) => s.user)
-  const [paymentMethod, setPaymentMethod] = useState<"CASH" | "WALLET">("CASH")
+  const [paymentMethod, setPaymentMethod] = useState<"CASH" | "WALLET" | "ONLINE">("CASH")
   const [specialInstructions, setSpecialInstructions] = useState("")
   const [loading, setLoading] = useState(false)
   const [walletBalance, setWalletBalance] = useState<number | null>(null)
@@ -65,6 +67,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
   const fixedTable = !!tableId
   const tableLabel = tables.find((t) => t.id === tableId)?.label
 
+  const onlinePaymentAvailable = Boolean(storefront?.onlinePaymentEnabled)
   const deliveryZoneActive = Boolean(storefront?.deliveryEnabled && storefront?.hasLocation)
   const deliveryFeeAmount =
     deliveryZoneActive && orderType === "DELIVERY" ? Number(storefront?.deliveryFee ?? 0) : 0
@@ -212,6 +215,13 @@ export default function CartPage({ params }: { params: { slug: string } }) {
 
       if (isNotificationSupported() && getNotificationPermission() === "default") {
         requestNotificationPermission()
+      }
+
+      const paymentRedirectUrl = data.data.paymentRedirectUrl
+      if (paymentRedirectUrl) {
+        toast.success("Redirecting to payment...")
+        window.location.href = paymentRedirectUrl
+        return
       }
 
       toast.success("Order placed! Track your order")
@@ -432,7 +442,26 @@ export default function CartPage({ params }: { params: { slug: string } }) {
             <Wallet className="w-5 h-5" />
             Wallet
           </button>
+          {onlinePaymentAvailable && (
+            <button
+              onClick={() => setPaymentMethod("ONLINE")}
+              className={`flex-1 flex items-center gap-2 p-3 rounded-xl border text-sm font-medium transition-colors ${
+                paymentMethod === "ONLINE"
+                  ? "border-brand-red bg-red-50 text-brand-red"
+                  : "border-neutral-200"
+              }`}
+            >
+              <Smartphone className="w-5 h-5" />
+              Pay online
+            </button>
+          )}
         </div>
+        {paymentMethod === "ONLINE" && (
+          <p className="text-xs text-neutral-500 px-1">
+            You will be taken to a secure payment page. Your order reaches the kitchen once the
+            payment is confirmed.
+          </p>
+        )}
         {paymentMethod === "WALLET" && (
           <div className="flex items-center justify-between text-sm px-1">
             <span className="text-neutral-500">

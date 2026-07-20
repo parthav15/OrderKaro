@@ -21,7 +21,7 @@ export async function GET(
         order: {
           restaurantId,
           placedAt: { gte: startDate },
-          status: { not: "CANCELLED" },
+          status: { notIn: ["CANCELLED", "AWAITING_PAYMENT"] },
         },
       },
       _sum: { quantity: true, totalPrice: true },
