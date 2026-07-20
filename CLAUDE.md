@@ -67,7 +67,7 @@ pnpm dev          # Next.js on http://localhost:3000 (UI + API together)
 
 ## Key Patterns
 
-- Wallet: cash deposits credited by a manager, bank transfers need approval, and **online top-up via Razorpay** directly from the cart
+- Wallet is **per-restaurant** (`Wallet` unique on `(consumerId, restaurantId)`): cash deposits credited by a manager, bank transfers need approval, and online top-up via the restaurant's own PayPur/Stripe. A balance is spendable only at the restaurant it was loaded at. Resolve wallets by `consumerId_restaurantId`, never `consumerId` alone; use `getOrCreateWallet()`
 - Order fulfillment types: `DINE_IN` (table QR or picked table), `TAKEAWAY`, `DELIVERY` (with `deliveryLocation`); `Order.tableId` is nullable
 - Prices snapshotted in OrderItem at placement time
 - Sequential order numbers per restaurant per day
