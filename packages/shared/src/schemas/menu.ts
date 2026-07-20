@@ -1,5 +1,12 @@
 import { z } from "zod"
 
+export const menuItemModelSchema = z.object({
+  model3dUrl: z.string().url().nullable(),
+  model3dPosterUrl: z.string().url().nullable().optional(),
+})
+
+export type MenuItemModelInput = z.infer<typeof menuItemModelSchema>
+
 export const createCategorySchema = z.object({
   name: z.string().min(1).max(100),
   description: z.string().max(300).optional(),

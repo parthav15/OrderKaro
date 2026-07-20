@@ -19,6 +19,8 @@ export const placeOrderSchema = z
     orderType: z.enum(["DINE_IN", "TAKEAWAY", "DELIVERY"]).default("DINE_IN"),
     tableId: z.string().min(1).optional(),
     deliveryLocation: z.string().min(1).max(200).optional(),
+    deliveryLatitude: z.number().min(-90).max(90).optional(),
+    deliveryLongitude: z.number().min(-180).max(180).optional(),
     items: z.array(orderItemSchema).min(1),
     specialInstructions: z.string().max(500).optional(),
     paymentMethod: z.enum(["CASH", "WALLET"]),

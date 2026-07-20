@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@google/model-viewer": "^4.3.1",
     "@orderkaro/shared": "workspace:*",
     "@prisma/client": "^6.19.2",
     "@tanstack/react-query": "^5.62.0",

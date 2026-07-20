@@ -22,6 +22,9 @@ import { IdentifyModal } from "@/components/consumer/menu/identify-modal"
 import { EmptySearch } from "@/components/consumer/menu/empty-search"
 import { MenuSkeleton } from "@/components/consumer/menu/menu-skeleton"
 import { FlyToCartLayer } from "@/components/consumer/menu/fly-to-cart-layer"
+import { ArViewer } from "@/components/consumer/menu/ar-viewer"
+import { StorefrontTheme } from "@/components/consumer/storefront-theme"
+import { useViewTracking } from "@/hooks/use-view-tracking"
 
 import type { Category, MenuItem, Announcement, ResolvedTable } from "@/components/consumer/menu/types"
 
@@ -58,6 +61,7 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
   const [search, setSearch] = useState("")
   const [activeCategoryId, setActiveCategoryId] = useState<string>("")
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
+  const [arItem, setArItem] = useState<MenuItem | null>(null)
   const [walletBalance, setWalletBalance] = useState<number | null>(null)
 
   const [showIdentifyModal, setShowIdentifyModal] = useState(false)
@@ -321,6 +325,24 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
     setSelectedItem(null)
   }
 
+  const { trackItemView } = useViewTracking(slug, !!menuData)
+
+  const handleOpenItem = useCallback(
+    (item: MenuItem) => {
+      setSelectedItem(item)
+      trackItemView(item.id, "ITEM")
+    },
+    [trackItemView]
+  )
+
+  const handleOpenAr = useCallback(
+    (item: MenuItem) => {
+      setArItem(item)
+      trackItemView(item.id, "AR")
+    },
+    [trackItemView]
+  )
+
   const announcements: Announcement[] | undefined = qrData?.announcements
   const tableInfo: ResolvedTable | undefined = qrData?.table
   const restaurantName = menuData?.restaurant?.name ?? "Menu"
@@ -356,7 +378,19 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
 
       <FlyToCartLayer />
 
-      <div className="min-h-screen bg-white pb-32">
+      {arItem?.model3dUrl && (
+        <ArViewer
+          modelUrl={arItem.model3dUrl}
+          posterUrl={arItem.model3dPosterUrl}
+          itemName={arItem.name}
+          onClose={() => setArItem(null)}
+        />
+      )}
+
+      <StorefrontTheme
+        primaryColor={menuData?.restaurant?.primaryColor}
+        className="min-h-screen bg-white pb-32"
+      >
         {isLoading ? (
           <MenuSkeleton />
         ) : (
@@ -391,7 +425,7 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
               <SignatureRail
                 items={signatureItems}
                 inlineQuantities={inlineQuantities}
-                onOpen={(item) => setSelectedItem(item)}
+                onOpen={(item) => handleOpenItem(item)}
                 onAdd={(item, el) => handleQuickAdd(item, el)}
                 onIncrement={handleIncrement}
                 onDecrement={handleDecrement}
@@ -422,7 +456,8 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
                             item={item}
                             number={idx + 1}
                             inlineQuantity={inlineQuantities[item.id] ?? 0}
-                            onOpen={() => setSelectedItem(item)}
+                            onOpen={() => handleOpenItem(item)}
+                            onViewAr={item.model3dUrl ? () => handleOpenAr(item) : undefined}
                             onAdd={(el) => handleQuickAdd(item, el)}
                             onIncrement={() => handleIncrement(item)}
                             onDecrement={() => handleDecrement(item)}
@@ -436,7 +471,7 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
             </main>
           </>
         )}
-      </div>
+      </StorefrontTheme>
 
       <CartDrawer slug={slug} />
 
@@ -445,6 +480,7 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
         number={selectedItemNumber}
         onClose={() => setSelectedItem(null)}
         onAddToCart={handleAddFromSheet}
+        onViewAr={selectedItem?.model3dUrl ? () => handleOpenAr(selectedItem) : undefined}
       />
     </>
   )

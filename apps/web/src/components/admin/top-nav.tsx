@@ -10,6 +10,7 @@ import {
   Users,
   Wallet,
   BarChart3,
+  CreditCard,
   Settings,
   LogOut,
   Store,
@@ -31,6 +32,7 @@ const navItems = [
   { href: "/admin/staff", label: "Staff", icon: Users },
   { href: "/admin/wallet", label: "Wallet", icon: Wallet },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/admin/billing", label: "Billing", icon: CreditCard },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ]
 

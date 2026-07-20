@@ -28,6 +28,7 @@ packages/shared/  → Shared Zod schemas, types, constants
 ## Design Rules (STRICTLY ENFORCED)
 
 - Colors: Red `#DC2626`, White `#FFFFFF`, Black `#0A0A0A` — NO other colors
+- **One deliberate exception — tenant branding.** On the CONSUMER storefront only, `brand-red` resolves from the CSS variable `--brand-red`, which `StorefrontTheme` sets from the restaurant's `primaryColor` (a paid-plan feature). Admin, kitchen and counter stay strictly red/white/black. The variable defaults to `220 38 38` in `globals.css`, so anything not wrapped in `StorefrontTheme` is unchanged.
 - Premium, simple, sober aesthetic — generous whitespace, clean typography
 - Framer Motion animations on all interactions
 - ZERO comments in ALL code files — no inline, no docstrings, no block comments
@@ -72,3 +73,21 @@ pnpm dev          # Next.js on http://localhost:3000 (UI + API together)
 - Sequential order numbers per restaurant per day
 - Idempotency keys on order placement to prevent duplicates
 - **No realtime server** — kitchen/counter refresh via TanStack Query polling. The socket client stays inert unless `NEXT_PUBLIC_SOCKET_URL` is set.
+
+## SaaS Plans
+
+- `FREE` / `BASIC` (₹499/mo) / `PRO` (₹1499/mo) — defined in `apps/web/src/lib/plans.ts`, the single source of truth for limits and features
+- Gate server-side with `requireFeature(restaurant, "branding" | "delivery" | "viewAnalytics" | "ar")` and `requireWithinLimit(...)`; both throw **402**, which the UI turns into an upgrade prompt
+- `effectivePlan()` treats a lapsed `planValidUntil` as FREE — always read the plan through it, never off `restaurant.plan` directly
+- Billing is a 30-day period paid via Razorpay (`billing/checkout` → `billing/verify`). There are **no** auto-renewals and no Razorpay webhooks — a lapsed plan silently degrades to FREE limits
+- AR needs PRO; branding, delivery zones and view analytics need BASIC
+
+## Delivery Zones
+
+- The geo zone is **opt-in**: it is only enforced when `deliveryEnabled` is true AND the restaurant has `latitude`/`longitude`. Otherwise delivery falls back to the original free-text `deliveryLocation` with no fee, so existing restaurants keep working
+- Distance is Haversine (`apps/web/src/lib/geo.ts`); the fee is added to `totalAmount` before the wallet is debited
+
+## AR / 3D
+
+- `MenuItem.model3dUrl` is a URL to a hosted `.glb`. There is **no upload path** — Cloudinary credentials are empty and Cloudinary does not host glb anyway
+- The consumer viewer lazy-loads `@google/model-viewer` client-side only; the public menu strips model URLs when the plan lacks AR

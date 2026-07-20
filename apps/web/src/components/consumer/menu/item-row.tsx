@@ -3,7 +3,7 @@
 import { useRef } from "react"
 import Image from "next/image"
 import { motion } from "framer-motion"
-import { Plus } from "lucide-react"
+import { Plus, Box } from "lucide-react"
 import { formatPrice, cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { VegMarker } from "./veg-marker"
@@ -18,6 +18,7 @@ interface ItemRowProps {
   onAdd: (sourceEl: HTMLElement | null) => void
   onIncrement: () => void
   onDecrement: () => void
+  onViewAr?: () => void
 }
 
 export function ItemRow({
@@ -28,6 +29,7 @@ export function ItemRow({
   onAdd,
   onIncrement,
   onDecrement,
+  onViewAr,
 }: ItemRowProps) {
   const thumbRef = useRef<HTMLDivElement>(null)
 
@@ -136,7 +138,22 @@ export function ItemRow({
           </div>
         )}
 
-        <div className="w-full flex justify-end">
+        <div className="w-full flex justify-end items-center gap-2">
+          {onViewAr && item.isAvailable && (
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.94 }}
+              whileHover={{ y: -1 }}
+              onClick={(e) => {
+                e.stopPropagation()
+                onViewAr()
+              }}
+              className="inline-flex items-center gap-1 px-2.5 h-9 rounded-full border border-brand-red text-brand-red text-[10px] font-bold uppercase tracking-[0.14em] hover:bg-brand-red hover:text-white transition-colors"
+            >
+              <Box size={13} strokeWidth={2.6} />
+              3D
+            </motion.button>
+          )}
           {!item.isAvailable ? (
             <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-black/40">
               Unavailable

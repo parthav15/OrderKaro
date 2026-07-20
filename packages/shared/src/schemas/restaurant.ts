@@ -17,5 +17,25 @@ export const createRestaurantSchema = z.object({
 
 export const updateRestaurantSchema = createRestaurantSchema.partial()
 
+export const brandingSchema = z.object({
+  primaryColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, "Use a 6-digit hex colour like #DC2626"),
+  themeMode: z.enum(["LIGHT", "DARK"]),
+  logoUrl: z.string().url().nullable().optional(),
+})
+
+export const deliveryZoneSchema = z.object({
+  deliveryEnabled: z.boolean(),
+  latitude: z.number().min(-90).max(90).nullable().optional(),
+  longitude: z.number().min(-180).max(180).nullable().optional(),
+  deliveryRadiusKm: z.number().min(0.1).max(50),
+  deliveryFee: z.number().min(0).max(10000),
+  minOrderValue: z.number().min(0).max(100000),
+})
+
+export type BrandingInput = z.infer<typeof brandingSchema>
+export type DeliveryZoneInput = z.infer<typeof deliveryZoneSchema>
+
 export type CreateRestaurantInput = z.infer<typeof createRestaurantSchema>
 export type UpdateRestaurantInput = z.infer<typeof updateRestaurantSchema>

@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { Plus, Pencil, Trash2, ChevronDown, ChevronUp, Settings2, UtensilsCrossed, AlertTriangle } from "lucide-react"
+import { Plus, Pencil, Trash2, ChevronDown, ChevronUp, Settings2, UtensilsCrossed, AlertTriangle, Box, Sparkles, Lock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -41,6 +42,8 @@ export default function MenuManagement() {
   const [customizationTarget, setCustomizationTarget] = useState<CustomizationPanelTarget | null>(null)
   const [deleteCategoryTarget, setDeleteCategoryTarget] = useState<any>(null)
   const [deleteItemTarget, setDeleteItemTarget] = useState<any>(null)
+  const [model3dForm, setModel3dForm] = useState({ model3dUrl: "", model3dPosterUrl: "" })
+  const [modelRequestNotes, setModelRequestNotes] = useState("")
 
   const { data: restaurants } = useQuery({
     queryKey: ["restaurants"],
@@ -129,6 +132,42 @@ export default function MenuManagement() {
     onError: (err: any) => toast.error(err.response?.data?.error || "Failed"),
   })
 
+  const saveModel3d = useMutation({
+    mutationFn: ({ itemId, data }: { itemId: string; data: any }) =>
+      api.put(`/api/v1/restaurants/${restaurantId}/menu/items/${itemId}/model`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["full-menu"] })
+      toast.success("3D model saved")
+    },
+    onError: (err: any) => {
+      if (err.response?.status === 402) {
+        toast.error(err.response?.data?.error || "Requires the Pro plan")
+        return
+      }
+      toast.error(err.response?.data?.error || "Failed")
+    },
+  })
+
+  const requestModel3d = useMutation({
+    mutationFn: ({ menuItemId, notes }: { menuItemId: string; notes: string }) =>
+      api.post(`/api/v1/restaurants/${restaurantId}/model-requests`, { menuItemId, notes: notes || undefined }),
+    onSuccess: () => {
+      setModelRequestNotes("")
+      toast.success("3D model request sent")
+    },
+    onError: (err: any) => {
+      if (err.response?.status === 409) {
+        toast.error(err.response?.data?.error || "A request is already open for this item")
+        return
+      }
+      if (err.response?.status === 402) {
+        toast.error(err.response?.data?.error || "Requires the Pro plan")
+        return
+      }
+      toast.error(err.response?.data?.error || "Failed")
+    },
+  })
+
   const toggleAvailability = useMutation({
     mutationFn: (itemId: string) =>
       api.patch(`/api/v1/restaurants/${restaurantId}/menu/items/${itemId}/availability`),
@@ -164,6 +203,8 @@ export default function MenuManagement() {
       tags: item.tags?.join(", ") || "",
       imageUrl: item.imageUrl || "",
     })
+    setModel3dForm({ model3dUrl: item.model3dUrl || "", model3dPosterUrl: item.model3dPosterUrl || "" })
+    setModelRequestNotes("")
     setShowItemModal(true)
   }
 
@@ -177,6 +218,29 @@ export default function MenuManagement() {
     setShowItemModal(false)
     setEditingItem(null)
     setItemForm({ name: "", description: "", price: "", isVeg: true, categoryId: "", tags: "", imageUrl: "" })
+    setModel3dForm({ model3dUrl: "", model3dPosterUrl: "" })
+    setModelRequestNotes("")
+  }
+
+  function isValidModel3dUrl(url: string) {
+    if (!url) return true
+    return /^https?:\/\/.+\.(glb|gltf)$/i.test(url.trim())
+  }
+
+  function handleModel3dSubmit() {
+    if (!editingItem) return
+    saveModel3d.mutate({
+      itemId: editingItem.id,
+      data: {
+        model3dUrl: model3dForm.model3dUrl.trim() || null,
+        model3dPosterUrl: model3dForm.model3dPosterUrl.trim() || null,
+      },
+    })
+  }
+
+  function handleModelRequestSubmit() {
+    if (!editingItem) return
+    requestModel3d.mutate({ menuItemId: editingItem.id, notes: modelRequestNotes.trim() })
   }
 
   function handleCategorySubmit(e: React.FormEvent) {
@@ -239,6 +303,8 @@ export default function MenuManagement() {
             onClick={() => {
               setEditingItem(null)
               setItemForm({ name: "", description: "", price: "", isVeg: true, categoryId: categories?.[0]?.id || "", tags: "", imageUrl: "" })
+              setModel3dForm({ model3dUrl: "", model3dPosterUrl: "" })
+              setModelRequestNotes("")
               setShowItemModal(true)
             }}
           >
@@ -353,6 +419,11 @@ export default function MenuManagement() {
                                       {item.customizations.length} customisation{item.customizations.length !== 1 ? "s" : ""}
                                     </Badge>
                                   )}
+                                  {item.model3dUrl && (
+                                    <Badge variant="danger" className="text-xs">
+                                      <Box className="w-2.5 h-2.5" /> AR
+                                    </Badge>
+                                  )}
                                 </div>
                                 <p className="font-bold text-brand-black">{item.name}</p>
                                 <p className="text-lg font-extrabold text-brand-red mt-0.5">{formatPrice(item.price)}</p>
@@ -408,6 +479,8 @@ export default function MenuManagement() {
                               onClick={() => {
                                 setEditingItem(null)
                                 setItemForm({ name: "", description: "", price: "", isVeg: true, categoryId: category.id, tags: "", imageUrl: "" })
+                                setModel3dForm({ model3dUrl: "", model3dPosterUrl: "" })
+                                setModelRequestNotes("")
                                 setShowItemModal(true)
                               }}
                             >
@@ -658,6 +731,80 @@ export default function MenuManagement() {
               className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
             />
           </div>
+
+          {editingItem && (
+            <div className="space-y-4 rounded-xl border border-neutral-200 p-4">
+              <div className="flex items-center gap-2">
+                <Box className="w-4 h-4 text-brand-red" />
+                <h4 className="text-sm font-bold text-brand-black">3D model (AR)</h4>
+              </div>
+
+              {((saveModel3d.error as any)?.response?.status === 402 ||
+                (requestModel3d.error as any)?.response?.status === 402) && (
+                <div className="flex items-center gap-2 rounded-lg bg-neutral-50 border border-neutral-200 px-3 py-2 text-xs font-medium text-neutral-600">
+                  <Lock className="w-3.5 h-3.5 text-brand-red" />
+                  Requires Pro —{" "}
+                  <Link href="/admin/billing" className="text-brand-red underline">
+                    upgrade your plan
+                  </Link>
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <label className="block text-sm font-bold text-brand-black">Model URL <span className="font-normal text-neutral-400">(.glb or .gltf)</span></label>
+                <input
+                  value={model3dForm.model3dUrl}
+                  onChange={(e) => setModel3dForm({ ...model3dForm, model3dUrl: e.target.value })}
+                  placeholder="https://cdn.example.com/models/dish.glb"
+                  className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                />
+                {!isValidModel3dUrl(model3dForm.model3dUrl) && (
+                  <p className="text-xs font-medium text-brand-red">Must be a URL ending in .glb or .gltf</p>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-sm font-bold text-brand-black">Poster image URL <span className="font-normal text-neutral-400">(optional)</span></label>
+                <input
+                  value={model3dForm.model3dPosterUrl}
+                  onChange={(e) => setModel3dForm({ ...model3dForm, model3dPosterUrl: e.target.value })}
+                  placeholder="https://cdn.example.com/models/dish-poster.jpg"
+                  className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                />
+              </div>
+
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                loading={saveModel3d.isPending}
+                disabled={!isValidModel3dUrl(model3dForm.model3dUrl)}
+                onClick={handleModel3dSubmit}
+              >
+                Save 3D model
+              </Button>
+
+              <div className="space-y-1.5 pt-2 border-t border-neutral-100">
+                <label className="block text-sm font-bold text-brand-black">Request a 3D model <span className="font-normal text-neutral-400">(optional notes)</span></label>
+                <textarea
+                  value={modelRequestNotes}
+                  onChange={(e) => setModelRequestNotes(e.target.value)}
+                  placeholder="Anything our team should know while modelling this dish"
+                  rows={2}
+                  className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  loading={requestModel3d.isPending}
+                  onClick={handleModelRequestSubmit}
+                >
+                  <Sparkles className="w-4 h-4" /> Request a 3D model
+                </Button>
+              </div>
+            </div>
+          )}
 
           <div className="flex gap-3 pt-2">
             <Button type="button" variant="outline" size="lg" className="flex-1" onClick={closeItemModal}>

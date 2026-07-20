@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --brand-red: 220 38 38;
+  }
+
   body {
     @apply bg-white text-brand-black antialiased;
     font-family: "DM Sans", system-ui, sans-serif;

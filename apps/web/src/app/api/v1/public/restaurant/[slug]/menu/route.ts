@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server"
 import prisma from "@/lib/prisma"
 import { success, error, handleError } from "@/lib/api-utils"
+import { hasFeature } from "@/lib/plans"
+import { DEFAULT_BRAND_COLOR } from "@/lib/brand-color"
 
 export async function GET(
   request: NextRequest,
@@ -20,6 +22,16 @@ export async function GET(
         openingTime: true,
         closingTime: true,
         avgPrepTime: true,
+        primaryColor: true,
+        themeMode: true,
+        deliveryEnabled: true,
+        deliveryRadiusKm: true,
+        deliveryFee: true,
+        minOrderValue: true,
+        latitude: true,
+        longitude: true,
+        plan: true,
+        planValidUntil: true,
       },
     })
 
@@ -60,7 +72,30 @@ export async function GET(
       orderBy: { label: "asc" },
     })
 
-    return success({ restaurant, categories, tables })
+    const { plan, planValidUntil, latitude, longitude, ...publicRestaurant } = restaurant
+    const arEnabled = hasFeature({ plan, planValidUntil }, "ar")
+    const brandingEnabled = hasFeature({ plan, planValidUntil }, "branding")
+
+    return success({
+      restaurant: {
+        ...publicRestaurant,
+        primaryColor: brandingEnabled ? restaurant.primaryColor : DEFAULT_BRAND_COLOR,
+        themeMode: brandingEnabled ? restaurant.themeMode : "LIGHT",
+        hasLocation: latitude != null && longitude != null,
+        arEnabled,
+      },
+      categories: arEnabled
+        ? categories
+        : categories.map((category) => ({
+            ...category,
+            items: category.items.map((item) => ({
+              ...item,
+              model3dUrl: null,
+              model3dPosterUrl: null,
+            })),
+          })),
+      tables,
+    })
   } catch (err) {
     return handleError(err)
   }

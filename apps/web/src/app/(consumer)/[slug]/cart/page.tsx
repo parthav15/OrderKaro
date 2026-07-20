@@ -14,6 +14,7 @@ import {
   ShoppingBag,
   Utensils,
   Bike,
+  MapPin,
 } from "lucide-react"
 import { useCartStore } from "@/stores/cart"
 import { useAuthStore } from "@/stores/auth"
@@ -23,8 +24,19 @@ import api from "@/lib/api"
 import { toast } from "sonner"
 import { requestNotificationPermission, getNotificationPermission, isNotificationSupported } from "@/lib/pwa"
 import { useWalletRecharge } from "@/hooks/use-wallet-recharge"
+import { StorefrontTheme } from "@/components/consumer/storefront-theme"
 
 type OrderType = "DINE_IN" | "TAKEAWAY" | "DELIVERY"
+
+interface StorefrontConfig {
+  name?: string
+  primaryColor?: string
+  deliveryEnabled?: boolean
+  deliveryRadiusKm?: number
+  deliveryFee?: string
+  minOrderValue?: string
+  hasLocation?: boolean
+}
 
 const FULFILLMENT_OPTIONS: Array<{ value: OrderType; label: string; icon: typeof Utensils }> = [
   { value: "TAKEAWAY", label: "Takeaway", icon: ShoppingBag },
@@ -46,11 +58,19 @@ export default function CartPage({ params }: { params: { slug: string } }) {
   const [pickedTableId, setPickedTableId] = useState("")
   const [deliveryLocation, setDeliveryLocation] = useState("")
   const [tables, setTables] = useState<Array<{ id: string; label: string }>>([])
+  const [storefront, setStorefront] = useState<StorefrontConfig | null>(null)
+  const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null)
+  const [locating, setLocating] = useState(false)
 
   const fixedTable = !!tableId
   const tableLabel = tables.find((t) => t.id === tableId)?.label
 
-  const total = getTotal()
+  const deliveryZoneActive = Boolean(storefront?.deliveryEnabled && storefront?.hasLocation)
+  const deliveryFeeAmount =
+    deliveryZoneActive && orderType === "DELIVERY" ? Number(storefront?.deliveryFee ?? 0) : 0
+
+  const itemsTotal = getTotal()
+  const total = itemsTotal + deliveryFeeAmount
   const shortfall = Math.max(0, Math.ceil(total - (walletBalance ?? 0)))
   const walletInsufficient =
     paymentMethod === "WALLET" && walletBalance !== null && walletBalance < total
@@ -104,9 +124,35 @@ export default function CartPage({ params }: { params: { slug: string } }) {
     loadBalance()
     api
       .get(`/api/v1/public/restaurant/${params.slug}/menu`)
-      .then((r) => setTables(r.data.data.tables ?? []))
+      .then((r) => {
+        setTables(r.data.data.tables ?? [])
+        setStorefront(r.data.data.restaurant ?? null)
+      })
       .catch(() => {})
   }, [params.slug])
+
+  function handleUseMyLocation() {
+    if (!navigator.geolocation) {
+      toast.error("Location is not available on this device")
+      return
+    }
+    setLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setCoords({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        })
+        setLocating(false)
+        toast.success("Location captured")
+      },
+      () => {
+        setLocating(false)
+        toast.error("Could not get your location. Please allow location access.")
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }
 
   async function handleTopUp() {
     if (shortfall <= 0) return
@@ -134,6 +180,10 @@ export default function CartPage({ params }: { params: { slug: string } }) {
       toast.error("Please enter a delivery location")
       return
     }
+    if (finalOrderType === "DELIVERY" && deliveryZoneActive && !coords) {
+      toast.error("Please share your location so we can check the delivery range")
+      return
+    }
 
     setLoading(true)
     try {
@@ -141,6 +191,8 @@ export default function CartPage({ params }: { params: { slug: string } }) {
         orderType: finalOrderType,
         tableId: finalTableId,
         deliveryLocation: finalDeliveryLocation,
+        deliveryLatitude: finalOrderType === "DELIVERY" ? coords?.latitude : undefined,
+        deliveryLongitude: finalOrderType === "DELIVERY" ? coords?.longitude : undefined,
         items: items.map((item) => ({
           menuItemId: item.menuItemId,
           quantity: item.quantity,
@@ -199,7 +251,10 @@ export default function CartPage({ params }: { params: { slug: string } }) {
   }
 
   return (
-    <div className="min-h-screen bg-white pb-32">
+    <StorefrontTheme
+      primaryColor={storefront?.primaryColor}
+      className="min-h-screen bg-white pb-32"
+    >
       <div className="sticky top-0 z-30 bg-white border-b border-neutral-100 px-4 py-4 flex items-center gap-3">
         <button onClick={() => router.back()} className="p-1">
           <ArrowLeft className="w-5 h-5" />
@@ -299,13 +354,48 @@ export default function CartPage({ params }: { params: { slug: string } }) {
               </select>
             )}
             {orderType === "DELIVERY" && (
-              <input
-                value={deliveryLocation}
-                onChange={(e) => setDeliveryLocation(e.target.value)}
-                placeholder="Where should we deliver? (room / desk / hostel)"
-                maxLength={200}
-                className="w-full px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
-              />
+              <div className="space-y-3">
+                <input
+                  value={deliveryLocation}
+                  onChange={(e) => setDeliveryLocation(e.target.value)}
+                  placeholder="Where should we deliver? (room / desk / hostel)"
+                  maxLength={200}
+                  className="w-full px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
+                />
+
+                {deliveryZoneActive && (
+                  <div className="space-y-2">
+                    <motion.button
+                      type="button"
+                      whileTap={{ scale: 0.97 }}
+                      onClick={handleUseMyLocation}
+                      disabled={locating}
+                      className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-sm font-bold transition-colors disabled:opacity-60 ${
+                        coords
+                          ? "border-brand-red text-brand-red"
+                          : "border-neutral-200 text-brand-black hover:border-brand-red"
+                      }`}
+                    >
+                      <MapPin className="w-4 h-4" />
+                      {locating
+                        ? "Getting your location..."
+                        : coords
+                          ? "Location captured — tap to update"
+                          : "Use my current location"}
+                    </motion.button>
+                    <p className="text-xs text-neutral-500">
+                      {storefront?.name ?? "This restaurant"} delivers within{" "}
+                      {storefront?.deliveryRadiusKm} km
+                      {Number(storefront?.deliveryFee ?? 0) > 0
+                        ? ` · delivery fee ${formatPrice(Number(storefront?.deliveryFee))}`
+                        : " · free delivery"}
+                      {Number(storefront?.minOrderValue ?? 0) > 0
+                        ? ` · min order ${formatPrice(Number(storefront?.minOrderValue))}`
+                        : ""}
+                    </p>
+                  </div>
+                )}
+              </div>
             )}
           </>
         )}
@@ -363,6 +453,22 @@ export default function CartPage({ params }: { params: { slug: string } }) {
         animate={{ y: 0 }}
         className="fixed bottom-0 inset-x-0 p-4 bg-white border-t border-neutral-100"
       >
+        {deliveryFeeAmount > 0 && (
+          <div className="flex justify-between items-center mb-1.5">
+            <span className="text-xs text-neutral-500">Items</span>
+            <span className="text-xs font-semibold text-neutral-600">
+              {formatPrice(itemsTotal)}
+            </span>
+          </div>
+        )}
+        {deliveryFeeAmount > 0 && (
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-xs text-neutral-500">Delivery fee</span>
+            <span className="text-xs font-semibold text-neutral-600">
+              {formatPrice(deliveryFeeAmount)}
+            </span>
+          </div>
+        )}
         <div className="flex justify-between items-center mb-3">
           <span className="text-sm text-neutral-500">Total</span>
           <span className="text-xl font-extrabold text-brand-black">{formatPrice(total)}</span>
@@ -378,6 +484,6 @@ export default function CartPage({ params }: { params: { slug: string } }) {
           </Button>
         )}
       </motion.div>
-    </div>
+    </StorefrontTheme>
   )
 }

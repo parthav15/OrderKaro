@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VISION MENU — Technical Architecture Plan</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a25;
+            --bg-card-hover: #22222f;
+            --bg-code: #0d0d14;
+            --border: #2a2a3a;
+            --border-glow: #38BDF830;
+            --gold: #D4AF37;
+            --gold-light: #F0D060;
+            --gold-dim: #B89A2F;
+            --gold-bg: #D4AF3710;
+            --cyan: #38BDF8;
+            --cyan-dim: #0EA5E9;
+            --cyan-bg: #38BDF810;
+            --cyan-bg-hover: #38BDF818;
+            --green: #4ADE80;
+            --green-bg: #4ADE8012;
+            --red: #F87171;
+            --red-bg: #F8717112;
+            --purple: #A78BFA;
+            --purple-bg: #A78BFA12;
+            --orange: #FB923C;
+            --orange-bg: #FB923C12;
+            --pink: #F472B6;
+            --pink-bg: #F472B612;
+            --text-primary: #F0F0F5;
+            --text-secondary: #9898A8;
+            --text-muted: #6A6A7A;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ========== SIDEBAR ========== */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            z-index: 100;
+            padding: 24px 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        .sidebar-logo {
+            padding: 0 24px 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+        .sidebar-logo h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            color: var(--cyan);
+            letter-spacing: 1px;
+        }
+        .sidebar-logo .doc-type {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 4px;
+        }
+
+        .sidebar-meta {
+            padding: 0 24px 16px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+        .sidebar-meta p { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+        .sidebar-meta span { color: var(--text-secondary); }
+        .sidebar-status {
+            display: inline-block;
+            background: var(--cyan-bg);
+            color: var(--cyan);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 100px;
+            letter-spacing: 0.5px;
+            margin-top: 8px;
+        }
+
+        .sidebar nav { padding: 0 12px; }
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        .sidebar nav a:hover { background: var(--cyan-bg-hover); color: var(--text-primary); }
+        .sidebar nav a.active { background: var(--cyan-bg); color: var(--cyan); font-weight: 500; }
+        .sidebar nav a .nav-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            min-width: 22px;
+        }
+
+        /* ========== MAIN ========== */
+        .main {
+            margin-left: 280px;
+            max-width: 920px;
+            padding: 48px 60px 120px;
+        }
+
+        .doc-header {
+            margin-bottom: 56px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid var(--border);
+        }
+        .doc-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 40px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+        .doc-header h1 span { color: var(--cyan); }
+        .doc-header .subtitle { font-size: 18px; color: var(--text-secondary); font-weight: 300; }
+        .header-badges { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 5px 14px;
+            border-radius: 100px;
+            border: 1px solid;
+        }
+        .badge-cyan { background: var(--cyan-bg); color: var(--cyan); border-color: #38BDF830; }
+        .badge-gold { background: var(--gold-bg); color: var(--gold); border-color: #D4AF3730; }
+        .badge-green { background: var(--green-bg); color: var(--green); border-color: #4ADE8030; }
+        .badge-purple { background: var(--purple-bg); color: var(--purple); border-color: #A78BFA30; }
+
+        /* ========== SECTIONS ========== */
+        .section {
+            margin-bottom: 56px;
+            scroll-margin-top: 32px;
+        }
+        .section h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--cyan)20;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .section h2 .section-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: var(--cyan);
+            background: var(--cyan-bg);
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+        .section h3 { font-size: 20px; font-weight: 600; margin: 32px 0 16px; }
+        .section h4 { font-size: 16px; font-weight: 600; color: var(--cyan); margin: 24px 0 12px; }
+        p { color: var(--text-secondary); margin-bottom: 16px; font-size: 15px; }
+        strong { color: var(--text-primary); font-weight: 600; }
+        ul, ol { padding-left: 20px; margin-bottom: 16px; }
+        li { color: var(--text-secondary); font-size: 15px; margin-bottom: 8px; padding-left: 4px; }
+        li::marker { color: var(--cyan-dim); }
+
+        /* ========== TABLES ========== */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 16px 0 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        thead { background: var(--bg-card); }
+        th {
+            text-align: left;
+            padding: 12px 16px;
+            font-weight: 600;
+            color: var(--cyan);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+        td { padding: 10px 16px; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+        tr:last-child td { border-bottom: none; }
+        tbody tr:hover { background: var(--bg-card-hover); }
+
+        /* ========== CODE ========== */
+        .code-block {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin: 16px 0 24px;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            position: relative;
+        }
+        .code-block-header {
+            background: var(--bg-card);
+            padding: 8px 16px;
+            font-size: 12px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .code-block-header .lang-tag {
+            background: var(--cyan-bg);
+            color: var(--cyan);
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .code-block pre {
+            padding: 16px 20px;
+            margin: 0;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            background: var(--bg-code);
+            padding: 2px 7px;
+            border-radius: 4px;
+            color: var(--cyan);
+        }
+
+        /* ========== CARDS ========== */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+            transition: border-color 0.3s ease;
+        }
+        .card:hover { border-color: var(--border-glow); }
+
+        /* ========== TECH STACK GRID ========== */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .tech-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: border-color 0.3s;
+        }
+        .tech-item:hover { border-color: var(--cyan)30; }
+        .tech-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .tech-icon-cyan { background: var(--cyan-bg); }
+        .tech-icon-gold { background: var(--gold-bg); }
+        .tech-icon-green { background: var(--green-bg); }
+        .tech-icon-purple { background: var(--purple-bg); }
+        .tech-icon-orange { background: var(--orange-bg); }
+        .tech-icon-pink { background: var(--pink-bg); }
+        .tech-icon-red { background: var(--red-bg); }
+        .tech-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+        .tech-desc { font-size: 12px; color: var(--text-muted); }
+
+        /* ========== ARCHITECTURE DIAGRAM ========== */
+        .arch-diagram {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        .arch-title {
+            font-size: 12px;
+            color: var(--cyan);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .arch-layers {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .arch-layer {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+        }
+        .arch-layer-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .arch-layer-items {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .arch-layer-item {
+            font-size: 12px;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-weight: 500;
+            border: 1px solid;
+        }
+
+        .layer-clients .arch-layer-label { color: var(--green); }
+        .layer-clients .arch-layer-item { background: var(--green-bg); color: var(--green); border-color: #4ADE8020; }
+        .layer-app .arch-layer-label { color: var(--cyan); }
+        .layer-app .arch-layer-item { background: var(--cyan-bg); color: var(--cyan); border-color: #38BDF820; }
+        .layer-data .arch-layer-label { color: var(--purple); }
+        .layer-data .arch-layer-item { background: var(--purple-bg); color: var(--purple); border-color: #A78BFA20; }
+        .layer-external .arch-layer-label { color: var(--orange); }
+        .layer-external .arch-layer-item { background: var(--orange-bg); color: var(--orange); border-color: #FB923C20; }
+
+        .arch-connector {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 18px;
+            padding: 4px 0;
+        }
+
+        /* ========== FOLDER TREE ========== */
+        .folder-tree {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 16px 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 2;
+            color: var(--text-muted);
+            overflow-x: auto;
+            white-space: pre;
+        }
+        .folder-tree .folder { color: var(--cyan); }
+        .folder-tree .file { color: var(--text-secondary); }
+        .folder-tree .comment { color: var(--text-muted); font-style: italic; }
+
+        /* ========== PHASE TIMELINE ========== */
+        .timeline {
+            position: relative;
+            margin: 20px 0;
+            padding-left: 32px;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 24px;
+            padding: 16px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            transition: border-color 0.3s;
+        }
+        .timeline-item:hover { border-color: var(--cyan)30; }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -27px;
+            top: 20px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--cyan);
+            border: 2px solid var(--bg-primary);
+        }
+        .timeline-phase {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--cyan);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .timeline-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 4px 0 8px;
+        }
+        .timeline-weeks {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        .timeline-item ul { margin: 0; padding-left: 16px; }
+        .timeline-item li { font-size: 13px; margin-bottom: 3px; }
+
+        /* ========== COST TABLE ========== */
+        .cost-highlight {
+            display: inline-block;
+            background: var(--green-bg);
+            color: var(--green);
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        /* ========== HIGHLIGHT / INFO BOX ========== */
+        .highlight-box {
+            background: var(--cyan-bg);
+            border-left: 3px solid var(--cyan);
+            border-radius: 0 8px 8px 0;
+            padding: 16px 20px;
+            margin: 16px 0;
+        }
+        .highlight-box p { color: var(--text-secondary); margin: 0; }
+        .highlight-box strong { color: var(--cyan); }
+
+        .info-box {
+            background: var(--gold-bg);
+            border-left: 3px solid var(--gold);
+            border-radius: 0 8px 8px 0;
+            padding: 16px 20px;
+            margin: 16px 0;
+        }
+        .info-box p { color: var(--text-secondary); margin: 0; }
+        .info-box strong { color: var(--gold-light); }
+
+        /* ========== OPTION CARDS ========== */
+        .option-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .option-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            transition: border-color 0.3s;
+        }
+        .option-card:hover { border-color: var(--cyan)30; }
+        .option-card.recommended {
+            border-color: var(--cyan)50;
+            position: relative;
+        }
+        .option-card.recommended::before {
+            content: 'RECOMMENDED';
+            position: absolute;
+            top: -8px;
+            left: 16px;
+            background: var(--cyan);
+            color: var(--bg-primary);
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+        }
+        .option-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        .option-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        .option-card p { font-size: 13px; margin-bottom: 8px; }
+        .option-card ul { padding-left: 16px; margin: 0; }
+        .option-card li { font-size: 12px; margin-bottom: 2px; }
+
+        /* ========== SCHEMA BLOCK ========== */
+        .schema-model {
+            margin-bottom: 24px;
+        }
+        .schema-model-header {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px 10px 0 0;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .schema-model-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--cyan);
+        }
+        .schema-model-tag {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .schema-model-body {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            padding: 16px 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 1.9;
+            color: var(--text-muted);
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        /* ========== INTEGRATION GRID ========== */
+        .integration-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .integration-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+        .integration-card:hover { border-color: var(--cyan)30; }
+        .integration-name { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+        .integration-purpose { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+        .integration-cost { font-size: 12px; color: var(--green); font-weight: 500; }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.3s ease; }
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; padding: 32px 24px 80px; }
+            .mobile-nav-toggle { display: flex; }
+            .option-grid, .tech-grid { grid-template-columns: 1fr; }
+        }
+        @media (min-width: 1025px) { .mobile-nav-toggle { display: none; } }
+
+        .mobile-nav-toggle {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 200;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--cyan);
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 90; }
+        .overlay.show { display: block; }
+
+        /* Footer */
+        .doc-footer {
+            margin-top: 80px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+        .doc-footer p { font-size: 13px; color: var(--text-muted); font-style: italic; }
+
+        /* ER Diagram */
+        .er-diagram {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 16px 0;
+            overflow-x: auto;
+        }
+        .er-entities {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+        }
+        .er-entity {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            min-width: 120px;
+            text-align: center;
+        }
+        .er-entity-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .er-entity-name.primary { color: var(--cyan); }
+        .er-entity-name.secondary { color: var(--purple); }
+        .er-entity-name.tertiary { color: var(--orange); }
+        .er-entity-rel { font-size: 11px; color: var(--text-muted); }
+
+        /* WebSocket events */
+        .ws-event {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .ws-direction {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            min-width: 56px;
+            text-align: center;
+        }
+        .ws-in { background: var(--green-bg); color: var(--green); }
+        .ws-out { background: var(--cyan-bg); color: var(--cyan); }
+        .ws-event-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+        .ws-event-desc { font-size: 12px; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+<button class="mobile-nav-toggle" onclick="toggleSidebar()">&#9776;</button>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+        <h1>VISION MENU</h1>
+        <div class="doc-type">Technical Architecture Plan</div>
+    </div>
+    <div class="sidebar-meta">
+        <p>Version <span>1.0</span></p>
+        <p>Author <span>Parthav</span></p>
+        <p>Date <span>April 12, 2026</span></p>
+        <div class="sidebar-status">DRAFT</div>
+    </div>
+    <nav>
+        <a href="#overview"><span class="nav-num">01</span> Architecture Overview</a>
+        <a href="#tech-stack"><span class="nav-num">02</span> Tech Stack</a>
+        <a href="#system-diagram"><span class="nav-num">03</span> System Diagram</a>
+        <a href="#frontend"><span class="nav-num">04</span> Frontend Architecture</a>
+        <a href="#backend"><span class="nav-num">05</span> Backend Architecture</a>
+        <a href="#database"><span class="nav-num">06</span> Database Design</a>
+        <a href="#api"><span class="nav-num">07</span> API Design</a>
+        <a href="#realtime"><span class="nav-num">08</span> Real-Time System</a>
+        <a href="#ar"><span class="nav-num">09</span> AR Module</a>
+        <a href="#whatsapp"><span class="nav-num">10</span> WhatsApp Integration</a>
+        <a href="#storage"><span class="nav-num">11</span> File Storage &amp; CDN</a>
+        <a href="#auth"><span class="nav-num">12</span> Auth &amp; Authorization</a>
+        <a href="#multitenancy"><span class="nav-num">13</span> Multi-Tenancy</a>
+        <a href="#deployment"><span class="nav-num">14</span> Deployment</a>
+        <a href="#integrations"><span class="nav-num">15</span> Integrations</a>
+        <a href="#phases"><span class="nav-num">16</span> Development Phases</a>
+        <a href="#cost"><span class="nav-num">17</span> Cost Estimation</a>
+    </nav>
+</aside>
+
+<!-- Main -->
+<main class="main">
+
+    <div class="doc-header">
+        <h1><span>VISION MENU</span> &mdash; Architecture</h1>
+        <p class="subtitle">Technical Architecture Plan for the AR-enabled Restaurant Menu SaaS Platform</p>
+        <div class="header-badges">
+            <span class="badge badge-cyan">Next.js 15</span>
+            <span class="badge badge-gold">PostgreSQL</span>
+            <span class="badge badge-green">Vercel</span>
+            <span class="badge badge-purple">WebSocket</span>
+        </div>
+    </div>
+
+    <!-- 1. Architecture Overview -->
+    <section class="section" id="overview">
+        <h2><span class="section-num">01</span> Architecture Overview</h2>
+        <p>VISION MENU follows a <strong>monorepo, full-stack architecture</strong> with clear separation between components:</p>
+        <div class="tech-grid">
+            <div class="tech-item"><div class="tech-icon tech-icon-green">&#128241;</div><div><div class="tech-name">Customer Menu App</div><div class="tech-desc">Public-facing, mobile-first (SSR)</div></div></div>
+            <div class="tech-item"><div class="tech-icon tech-icon-cyan">&#128200;</div><div><div class="tech-name">Restaurant Dashboard</div><div class="tech-desc">Authenticated SPA for owners</div></div></div>
+            <div class="tech-item"><div class="tech-icon tech-icon-purple">&#128736;</div><div><div class="tech-name">Admin Panel</div><div class="tech-desc">Internal platform management</div></div></div>
+            <div class="tech-item"><div class="tech-icon tech-icon-gold">&#9881;</div><div><div class="tech-name">Backend API</div><div class="tech-desc">tRPC serving all frontends</div></div></div>
+            <div class="tech-item"><div class="tech-icon tech-icon-orange">&#9889;</div><div><div class="tech-name">Real-Time Layer</div><div class="tech-desc">WebSocket for live notifications</div></div></div>
+            <div class="tech-item"><div class="tech-icon tech-icon-pink">&#128172;</div><div><div class="tech-name">Background Services</div><div class="tech-desc">WhatsApp, 3D model queue</div></div></div>
+        </div>
+        <div class="highlight-box">
+            <p><strong>Architecture Style:</strong> Modular monolith &mdash; start simple, extract microservices only when needed.</p>
+        </div>
+    </section>
+
+    <!-- 2. Tech Stack -->
+    <section class="section" id="tech-stack">
+        <h2><span class="section-num">02</span> Tech Stack</h2>
+
+        <h3>Frontend</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Layer</th><th>Technology</th><th>Rationale</th></tr></thead>
+                <tbody>
+                    <tr><td>Framework</td><td><strong>Next.js 15 (App Router)</strong></td><td>SSR for menu pages, SPA for dashboard, API routes</td></tr>
+                    <tr><td>Language</td><td><strong>TypeScript</strong></td><td>Type safety, better DX</td></tr>
+                    <tr><td>Styling</td><td><strong>Tailwind CSS</strong></td><td>Rapid UI development, responsive</td></tr>
+                    <tr><td>UI Components</td><td><strong>shadcn/ui</strong></td><td>Customizable, accessible</td></tr>
+                    <tr><td>State</td><td><strong>Zustand</strong></td><td>Lightweight cart &amp; dashboard state</td></tr>
+                    <tr><td>Forms</td><td><strong>React Hook Form + Zod</strong></td><td>Schema-based validation</td></tr>
+                    <tr><td>Maps</td><td><strong>Leaflet.js + OpenStreetMap</strong></td><td>Free, no API key limits</td></tr>
+                    <tr><td>AR/3D</td><td><strong>&lt;model-viewer&gt;</strong></td><td>Web component for AR, iOS + Android</td></tr>
+                    <tr><td>Real-Time</td><td><strong>Socket.io / Ably</strong></td><td>Live order updates</td></tr>
+                    <tr><td>Charts</td><td><strong>Recharts</strong></td><td>Lightweight analytics charts</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>Backend</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Layer</th><th>Technology</th><th>Rationale</th></tr></thead>
+                <tbody>
+                    <tr><td>Runtime</td><td><strong>Node.js 22 LTS</strong></td><td>JavaScript everywhere</td></tr>
+                    <tr><td>API</td><td><strong>tRPC</strong></td><td>Type-safe, co-located with frontend</td></tr>
+                    <tr><td>ORM</td><td><strong>Prisma</strong></td><td>Type-safe queries, migrations</td></tr>
+                    <tr><td>Database</td><td><strong>PostgreSQL (Neon)</strong></td><td>Relational, ACID, JSON support</td></tr>
+                    <tr><td>Cache</td><td><strong>Redis (Upstash)</strong></td><td>Session cache, rate limiting, pub/sub</td></tr>
+                    <tr><td>Auth</td><td><strong>Auth.js v5</strong></td><td>Email/password + OTP, JWT</td></tr>
+                    <tr><td>WhatsApp</td><td><strong>Meta Cloud API</strong></td><td>Free tier (1000 msgs/mo)</td></tr>
+                    <tr><td>Payment</td><td><strong>Razorpay</strong></td><td>Indian market, subscriptions</td></tr>
+                    <tr><td>Storage</td><td><strong>Cloudflare R2</strong></td><td>No egress fees, S3-compatible</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>Infrastructure</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Layer</th><th>Technology</th><th>Rationale</th></tr></thead>
+                <tbody>
+                    <tr><td>Hosting</td><td><strong>Vercel</strong></td><td>Native Next.js, global edge, auto-scaling</td></tr>
+                    <tr><td>Database</td><td><strong>Neon (Vercel Marketplace)</strong></td><td>Serverless PostgreSQL, branching</td></tr>
+                    <tr><td>Redis</td><td><strong>Upstash (Vercel Marketplace)</strong></td><td>Serverless, pay-per-request</td></tr>
+                    <tr><td>CDN</td><td><strong>Cloudflare</strong></td><td>Global edge for images, 3D models</td></tr>
+                    <tr><td>Monitoring</td><td><strong>Vercel Analytics + Sentry</strong></td><td>Performance + error tracking</td></tr>
+                    <tr><td>CI/CD</td><td><strong>Vercel (GitHub)</strong></td><td>Auto-deploy, preview per PR</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- 3. System Diagram -->
+    <section class="section" id="system-diagram">
+        <h2><span class="section-num">03</span> System Architecture Diagram</h2>
+
+        <div class="arch-diagram">
+            <div class="arch-title">System Topology</div>
+            <div class="arch-layers">
+                <div class="arch-layer layer-clients">
+                    <div class="arch-layer-label">Clients</div>
+                    <div class="arch-layer-items">
+                        <span class="arch-layer-item">Customer (Mobile Browser)</span>
+                        <span class="arch-layer-item">Restaurant Dashboard (Web)</span>
+                        <span class="arch-layer-item">Admin Panel (Web)</span>
+                    </div>
+                </div>
+                <div class="arch-connector">&#8595;</div>
+                <div class="arch-layer layer-app">
+                    <div class="arch-layer-label">Application Layer (Vercel)</div>
+                    <div class="arch-layer-items">
+                        <span class="arch-layer-item">Next.js SSR</span>
+                        <span class="arch-layer-item">tRPC API Routes</span>
+                        <span class="arch-layer-item">Auth.js</span>
+                        <span class="arch-layer-item">Webhooks</span>
+                    </div>
+                </div>
+                <div class="arch-connector">&#8595;</div>
+                <div class="arch-layer layer-data">
+                    <div class="arch-layer-label">Data Layer</div>
+                    <div class="arch-layer-items">
+                        <span class="arch-layer-item">Neon PostgreSQL</span>
+                        <span class="arch-layer-item">Upstash Redis</span>
+                        <span class="arch-layer-item">Cloudflare R2</span>
+                        <span class="arch-layer-item">Ably (Real-Time)</span>
+                    </div>
+                </div>
+                <div class="arch-connector">&#8595;</div>
+                <div class="arch-layer layer-external">
+                    <div class="arch-layer-label">External Services</div>
+                    <div class="arch-layer-items">
+                        <span class="arch-layer-item">WhatsApp Cloud API</span>
+                        <span class="arch-layer-item">Razorpay</span>
+                        <span class="arch-layer-item">Resend (Email)</span>
+                        <span class="arch-layer-item">Sentry</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Frontend Architecture -->
+    <section class="section" id="frontend">
+        <h2><span class="section-num">04</span> Frontend Architecture</h2>
+
+        <h3>Project Structure</h3>
+        <div class="folder-tree"><span class="folder">vision-menu/</span>
+├── <span class="folder">src/</span>
+│   ├── <span class="folder">app/</span>                          <span class="comment"># Next.js App Router</span>
+│   │   ├── <span class="folder">(public)/</span>                 <span class="comment"># No auth required</span>
+│   │   │   ├── <span class="folder">menu/[slug]/</span>         <span class="comment"># Dynamic restaurant menu (SSR)</span>
+│   │   │   └── <span class="file">page.tsx</span>              <span class="comment"># Landing page</span>
+│   │   ├── <span class="folder">(auth)/</span>                   <span class="comment"># Login, register, forgot-password</span>
+│   │   ├── <span class="folder">(dashboard)/</span>              <span class="comment"># Protected dashboard routes</span>
+│   │   │   ├── <span class="file">overview/</span>   <span class="file">live-orders/</span>   <span class="file">menu-items/</span>
+│   │   │   ├── <span class="file">categories/</span>   <span class="file">addons/</span>   <span class="file">tables/</span>
+│   │   │   ├── <span class="file">order-history/</span>   <span class="file">analytics/</span>   <span class="file">qr-code/</span>
+│   │   │   └── <span class="folder">settings/</span>            <span class="comment"># profile, delivery, branding, billing</span>
+│   │   ├── <span class="folder">(admin)/</span>                  <span class="comment"># Internal admin panel</span>
+│   │   └── <span class="folder">api/</span>                     <span class="comment"># tRPC handler, webhooks</span>
+│   ├── <span class="folder">components/</span>
+│   │   ├── <span class="folder">menu/</span>                    <span class="comment"># Customer menu components</span>
+│   │   ├── <span class="folder">dashboard/</span>               <span class="comment"># Dashboard components</span>
+│   │   └── <span class="folder">ui/</span>                      <span class="comment"># shadcn/ui</span>
+│   ├── <span class="folder">lib/</span>                         <span class="comment"># trpc, auth, db, socket, whatsapp, storage</span>
+│   ├── <span class="folder">hooks/</span>                       <span class="comment"># use-cart, use-socket, use-geolocation</span>
+│   ├── <span class="folder">stores/</span>                      <span class="comment"># Zustand: cart-store, order-store</span>
+│   └── <span class="folder">types/</span>                       <span class="comment"># TypeScript types</span>
+├── <span class="folder">prisma/</span>                          <span class="comment"># Schema + migrations</span>
+└── <span class="file">vercel.ts</span>                         <span class="comment"># Vercel config</span></div>
+
+        <h3>Menu Page Rendering: SSR + ISR</h3>
+        <div class="code-block">
+            <div class="code-block-header"><span class="lang-tag">TypeScript</span> src/app/(public)/menu/[slug]/page.tsx</div>
+            <pre>export const revalidate = 60; // ISR: revalidate every 60 seconds
+
+async function MenuPage({ params }: { params: { slug: string } }) {
+  const restaurant = await getRestaurantBySlug(params.slug);
+  const menuItems = await getMenuItems(restaurant.id);
+  const categories = await getCategories(restaurant.id);
+
+  return &lt;MenuPageClient
+    restaurant={restaurant}
+    menuItems={menuItems}
+    categories={categories}
+  /&gt;;
+}</pre>
+        </div>
+
+        <h3>Cart State (Zustand)</h3>
+        <div class="code-block">
+            <div class="code-block-header"><span class="lang-tag">TypeScript</span> src/stores/cart-store.ts</div>
+            <pre>interface CartStore {
+  items: CartItem[];
+  orderType: 'dine-in' | 'pickup' | 'delivery' | null;
+  tableNumber: number | null;
+  customerDetails: CustomerDetails | null;
+
+  addItem: (item: MenuItem, addOns?: AddOn[]) =&gt; void;
+  removeItem: (itemId: string) =&gt; void;
+  updateQuantity: (itemId: string, qty: number) =&gt; void;
+  clearCart: () =&gt; void;
+  getTotal: () =&gt; number;
+}</pre>
+        </div>
+    </section>
+
+    <!-- 5. Backend Architecture -->
+    <section class="section" id="backend">
+        <h2><span class="section-num">05</span> Backend Architecture</h2>
+
+        <h3>tRPC Router Structure</h3>
+        <div class="code-block">
+            <div class="code-block-header"><span class="lang-tag">Structure</span> appRouter</div>
+            <pre>appRouter
+├── restaurant   getBySlug | create | update | getOwned | updateSettings
+├── menu         getBySlug | createItem | updateItem | deleteItem | toggleStock | reorder
+├── category     getByRestaurant | create | update | delete | reorder
+├── addon        getGroups | createGroup | updateGroup | deleteGroup | addItem
+├── table        getByRestaurant | create | update | delete
+├── order        create(public) | getByRestaurant | accept | reject | updateStatus | getHistory
+├── analytics    getOverview | getOrderMetrics | getMenuMetrics | getViewMetrics
+├── model3d      requestCreation | upload(admin) | getRequests(admin) | getUsage
+└── admin        getRestaurants | getModelRequests | approveModel | managePlans</pre>
+        </div>
+
+        <h3>Example: Menu Router</h3>
+        <div class="code-block">
+            <div class="code-block-header"><span class="lang-tag">TypeScript</span> lib/trpc/routers/menu.ts</div>
+            <pre>export const menuRouter = router({
+  getBySlug: publicProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(async ({ input }) =&gt; {
+      return prisma.restaurant.findUnique({
+        where: { slug: input.slug },
+        include: { categories: { include: { items: true } }, settings: true },
+      });
+    }),
+
+  toggleStock: protectedProcedure
+    .input(z.object({ itemId: z.string(), inStock: z.boolean() }))
+    .mutation(async ({ input }) =&gt; {
+      return prisma.menuItem.update({
+        where: { id: input.itemId },
+        data: { inStock: input.inStock },
+      });
+    }),
+});</pre>
+        </div>
+    </section>
+
+    <!-- 6. Database Design -->
+    <section class="section" id="database">
+        <h2><span class="section-num">06</span> Database Design</h2>
+
+        <h3>Entity Relationship Overview</h3>
+        <div class="er-diagram">
+            <div class="er-entities">
+                <div class="er-entity"><div class="er-entity-name primary">User</div><div class="er-entity-rel">1:N &rarr; Restaurant</div></div>
+                <div class="er-entity"><div class="er-entity-name primary">Restaurant</div><div class="er-entity-rel">1:N &rarr; Category, MenuItem, Order</div></div>
+                <div class="er-entity"><div class="er-entity-name primary">RestaurantSettings</div><div class="er-entity-rel">1:1 &larr; Restaurant</div></div>
+                <div class="er-entity"><div class="er-entity-name secondary">Category</div><div class="er-entity-rel">1:N &rarr; MenuItem</div></div>
+                <div class="er-entity"><div class="er-entity-name secondary">MenuItem</div><div class="er-entity-rel">1:N &rarr; Image, OrderItem</div></div>
+                <div class="er-entity"><div class="er-entity-name secondary">MenuItemImage</div><div class="er-entity-rel">N:1 &larr; MenuItem</div></div>
+                <div class="er-entity"><div class="er-entity-name tertiary">AddOnGroup</div><div class="er-entity-rel">M:N &harr; MenuItem</div></div>
+                <div class="er-entity"><div class="er-entity-name tertiary">AddOnItem</div><div class="er-entity-rel">N:1 &larr; AddOnGroup</div></div>
+                <div class="er-entity"><div class="er-entity-name primary">Order</div><div class="er-entity-rel">1:N &rarr; OrderItem</div></div>
+                <div class="er-entity"><div class="er-entity-name secondary">OrderItem</div><div class="er-entity-rel">1:N &rarr; OrderItemAddOn</div></div>
+                <div class="er-entity"><div class="er-entity-name tertiary">RestaurantTable</div><div class="er-entity-rel">1:N &rarr; Order</div></div>
+                <div class="er-entity"><div class="er-entity-name tertiary">ModelRequest</div><div class="er-entity-rel">N:1 &larr; Restaurant</div></div>
+                <div class="er-entity"><div class="er-entity-name tertiary">MenuView</div><div class="er-entity-rel">Analytics tracking</div></div>
+            </div>
+        </div>
+
+        <h3>Key Models (Prisma Schema)</h3>
+
+        <div class="schema-model">
+            <div class="schema-model-header">
+                <span class="schema-model-name">Restaurant</span>
+                <span class="schema-model-tag" style="background:var(--cyan-bg);color:var(--cyan);">Core</span>
+            </div>
+            <div class="schema-model-body">id            String    @id @default(cuid())
+ownerId       String    → User
+name          String
+slug          String    @unique        // URL-friendly identifier
+phone         String
+cuisineTypes  String[]                 // ["Indian", "Chinese"]
+address       String    + city, state, pincode
+latitude      Float     + longitude
+logoUrl       String?   + coverImageUrl
+primaryColor  String    @default("#D4AF37")
+theme         Theme     @default(DARK)  // DARK | LIGHT | AUTO
+plan          Plan      @default(FREE)  // FREE | BASIC | PRO
+isActive      Boolean   @default(true)</div>
+        </div>
+
+        <div class="schema-model">
+            <div class="schema-model-header">
+                <span class="schema-model-name">MenuItem</span>
+                <span class="schema-model-tag" style="background:var(--green-bg);color:var(--green);">Menu</span>
+            </div>
+            <div class="schema-model-body">id                    String      @id @default(cuid())
+restaurantId          String      → Restaurant
+categoryId            String      → Category
+name                  String
+description           String?
+price                 Float
+compareAtPrice        Float?      // Discount display
+dietaryType           DietaryType // VEG | NON_VEG | VEGAN | EGG
+spiceLevel            SpiceLevel  // NONE | MILD | MEDIUM | HOT | EXTRA_HOT
+allergens             String[]    // ["nuts", "dairy"]
+inStock               Boolean     @default(true)
+availableForDineIn    Boolean     @default(true)
+availableForPickup    Boolean     @default(true)
+availableForDelivery  Boolean     @default(true)
+model3dUrl            String?     // .glb file URL
+has3dModel            Boolean     @default(false)</div>
+        </div>
+
+        <div class="schema-model">
+            <div class="schema-model-header">
+                <span class="schema-model-name">Order</span>
+                <span class="schema-model-tag" style="background:var(--orange-bg);color:var(--orange);">Orders</span>
+            </div>
+            <div class="schema-model-body">id               String       @id @default(cuid())
+restaurantId     String       → Restaurant
+orderNumber      Int          // Sequential per restaurant per day
+customerName     String
+customerPhone    String       // WhatsApp number
+orderType        OrderType    // DINE_IN | PICKUP | DELIVERY
+tableId          String?      → RestaurantTable
+deliveryAddress  String?      + deliveryLat, deliveryLng
+subtotal         Float
+deliveryCharge   Float        @default(0)
+taxAmount        Float        @default(0)
+totalAmount      Float
+status           OrderStatus  // PENDING | ACCEPTED | PREPARING | READY | COMPLETED | REJECTED
+rejectionReason  String?
+estimatedTime    Int?         // minutes</div>
+        </div>
+
+        <p>Additional models: <code>RestaurantSettings</code>, <code>Category</code>, <code>MenuItemImage</code>, <code>AddOnGroup</code>, <code>AddOnItem</code>, <code>RestaurantTable</code>, <code>OrderItem</code>, <code>OrderItemAddOn</code>, <code>ModelRequest</code>, <code>MenuView</code>, <code>MenuItemView</code></p>
+    </section>
+
+    <!-- 7. API Design -->
+    <section class="section" id="api">
+        <h2><span class="section-num">07</span> API Design</h2>
+
+        <h3>Public Endpoints (Customer-Facing)</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Method</th><th>Path</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td><code>GET</code></td><td>/api/menu/{slug}</td><td>Get restaurant + full menu data</td></tr>
+                    <tr><td><code>GET</code></td><td>/api/menu/{slug}/categories</td><td>Get categories with items</td></tr>
+                    <tr><td><code>POST</code></td><td>/api/order</td><td>Place a new order</td></tr>
+                    <tr><td><code>POST</code></td><td>/api/order/validate-delivery</td><td>Check delivery radius</td></tr>
+                    <tr><td><code>POST</code></td><td>/api/menu/{slug}/view</td><td>Track menu page view</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>Protected Endpoints (Dashboard via tRPC)</h3>
+        <p>All dashboard API calls go through tRPC &mdash; automatically typed and authenticated. See the router structure in Section 5 for the complete list of 40+ procedures.</p>
+    </section>
+
+    <!-- 8. Real-Time -->
+    <section class="section" id="realtime">
+        <h2><span class="section-num">08</span> Real-Time System (WebSockets)</h2>
+
+        <h3>Order Notification Flow</h3>
+        <div class="code-block">
+            <div class="code-block-header"><span class="lang-tag">Flow</span> Customer &rarr; Dashboard</div>
+            <pre>Customer places order
+      ↓
+Next.js API Route (POST /api/order)
+      ↓
+Save to PostgreSQL
+      ↓
+Publish to real-time channel ("orders:{restaurantId}")
+      ↓
+Dashboard receives event instantly
+      ↓
+New order card appears + notification sound plays</pre>
+        </div>
+
+        <h3>WebSocket Events</h3>
+        <div class="ws-event"><span class="ws-direction ws-out">Server</span><span class="ws-event-name">order:new</span><span class="ws-event-desc">New order received by restaurant</span></div>
+        <div class="ws-event"><span class="ws-direction ws-out">Server</span><span class="ws-event-name">order:updated</span><span class="ws-event-desc">Order status changed</span></div>
+        <div class="ws-event"><span class="ws-direction ws-in">Client</span><span class="ws-event-name">join:restaurant</span><span class="ws-event-desc">Subscribe to restaurant's order feed</span></div>
+        <div class="ws-event"><span class="ws-direction ws-in">Client</span><span class="ws-event-name">leave:restaurant</span><span class="ws-event-desc">Unsubscribe from feed</span></div>
+
+        <h3>Hosting Options</h3>
+        <div class="option-grid">
+            <div class="option-card">
+                <div class="option-label">Option A</div>
+                <div class="option-name">Socket.io on Railway</div>
+                <p>Dedicated Node.js server, $5-10/mo</p>
+                <ul><li>Always-on WebSocket</li><li>Redis pub/sub bridge</li></ul>
+            </div>
+            <div class="option-card">
+                <div class="option-label">Option B</div>
+                <div class="option-name">SSE + Upstash</div>
+                <p>Server-Sent Events via Vercel Functions</p>
+                <ul><li>Simpler deployment</li><li>Less real-time reliability</li></ul>
+            </div>
+            <div class="option-card recommended">
+                <div class="option-label">Option C</div>
+                <div class="option-name">Ably (Managed)</div>
+                <p>Zero-ops real-time messaging</p>
+                <ul><li>Free: 6M msgs/mo</li><li>Most production-ready</li></ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- 9. AR Module -->
+    <section class="section" id="ar">
+        <h2><span class="section-num">09</span> AR Module Architecture</h2>
+
+        <h3>Model Viewer Integration</h3>
+        <div class="code-block">
+            <div class="code-block-header"><span class="lang-tag">HTML</span> AR Viewer Component</div>
+            <pre>&lt;model-viewer
+  src="https://cdn.visionmenu.app/models/{model-id}.glb"
+  ar
+  ar-modes="webxr scene-viewer quick-look"
+  camera-controls
+  touch-action="pan-y"
+  auto-rotate
+  poster="https://cdn.visionmenu.app/models/{model-id}-poster.webp"
+  shadow-intensity="1"
+  loading="lazy"
+&gt;
+  &lt;button slot="ar-button"&gt;View in AR&lt;/button&gt;
+&lt;/model-viewer&gt;</pre>
+        </div>
+
+        <h3>3D Model Pipeline</h3>
+        <div class="tech-grid">
+            <div class="tech-item"><div class="tech-icon tech-icon-green">1</div><div><div class="tech-name">Capture</div><div class="tech-desc">RealityScan app &mdash; multi-angle photos</div></div></div>
+            <div class="tech-item"><div class="tech-icon tech-icon-cyan">2</div><div><div class="tech-name">Process</div><div class="tech-desc">Export .glb from RealityScan</div></div></div>
+            <div class="tech-item"><div class="tech-icon tech-icon-purple">3</div><div><div class="tech-name">Optimize</div><div class="tech-desc">Reduce polys, compress textures (&lt;5MB)</div></div></div>
+            <div class="tech-item"><div class="tech-icon tech-icon-gold">4</div><div><div class="tech-name">Deploy</div><div class="tech-desc">Upload to Cloudflare R2 + CDN</div></div></div>
+        </div>
+    </section>
+
+    <!-- 10. WhatsApp -->
+    <section class="section" id="whatsapp">
+        <h2><span class="section-num">10</span> WhatsApp Integration</h2>
+
+        <div class="code-block">
+            <div class="code-block-header"><span class="lang-tag">Flow</span> WhatsApp Cloud API</div>
+            <pre>Order placed → Backend creates order in DB
+      ↓
+POST graph.facebook.com/v21.0/{phone-id}/messages
+  Headers: Authorization: Bearer {access_token}
+  Body: { messaging_product: "whatsapp", to: "{phone}", template: {...} }
+      ↓
+WhatsApp delivers message to customer
+      ↓
+Meta sends delivery receipts to:
+POST visionmenu.app/api/webhooks/whatsapp</pre>
+        </div>
+    </section>
+
+    <!-- 11. Storage -->
+    <section class="section" id="storage">
+        <h2><span class="section-num">11</span> File Storage &amp; CDN</h2>
+
+        <div class="folder-tree"><span class="folder">Cloudflare R2 Bucket: "visionmenu-assets"</span>
+├── <span class="folder">restaurants/{restaurantId}/</span>
+│   ├── <span class="file">logo.webp</span>
+│   └── <span class="file">cover.webp</span>
+├── <span class="folder">menu-items/{menuItemId}/</span>
+│   ├── <span class="file">img-1.webp</span>  <span class="file">img-2.webp</span>  <span class="file">img-3.webp</span>
+├── <span class="folder">models/{restaurantId}/</span>
+│   ├── <span class="file">{menuItemId}.glb</span>
+│   └── <span class="file">{menuItemId}-poster.webp</span>
+└── <span class="folder">qr-codes/{restaurantId}/</span>
+    ├── <span class="file">main.png</span>
+    └── <span class="file">table-{n}.png</span></div>
+
+        <h3>Image Upload Pipeline</h3>
+        <p>Browser-side compression &rarr; Pre-signed R2 URL from API &rarr; Direct upload to R2 (bypasses server) &rarr; URL saved in database &rarr; Cloudflare CDN serves globally.</p>
+    </section>
+
+    <!-- 12. Auth -->
+    <section class="section" id="auth">
+        <h2><span class="section-num">12</span> Authentication &amp; Authorization</h2>
+
+        <h3>Auth Strategy</h3>
+        <ul>
+            <li><strong>Auth.js v5</strong> with Credentials provider (email + password)</li>
+            <li><strong>JWT strategy</strong> &mdash; stateless, no session database</li>
+            <li><strong>Refresh token rotation</strong> for security</li>
+        </ul>
+
+        <h3>Authorization Layers</h3>
+        <div class="code-block">
+            <div class="code-block-header"><span class="lang-tag">Access Control</span></div>
+            <pre>Public Routes (no auth):
+  /menu/{slug}     → Anyone can view
+  /api/order       → Anyone can place order (Pro restaurants)
+
+Protected Routes (auth required):
+  /dashboard/*     → Restaurant owner only
+  Access Control:  Owner can only access their own data
+                   Plan-based feature gating
+
+Admin Routes (admin role):
+  /admin/*         → Platform administrators only</pre>
+        </div>
+
+        <h3>Plan-Based Feature Gating</h3>
+        <div class="code-block">
+            <div class="code-block-header"><span class="lang-tag">TypeScript</span> Middleware</div>
+            <pre>function requirePlan(minimumPlan: Plan) {
+  return async (ctx: Context) =&gt; {
+    const restaurant = await getRestaurant(ctx.session.userId);
+    const planHierarchy = { FREE: 0, BASIC: 1, PRO: 2 };
+
+    if (planHierarchy[restaurant.plan] &lt; planHierarchy[minimumPlan]) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: `Requires ${minimumPlan} plan. Please upgrade.`,
+      });
+    }
+  };
+}
+
+// Usage: order.create → requirePlan('PRO')</pre>
+        </div>
+    </section>
+
+    <!-- 13. Multi-Tenancy -->
+    <section class="section" id="multitenancy">
+        <h2><span class="section-num">13</span> Multi-Tenancy Architecture</h2>
+
+        <p><strong>Strategy:</strong> Shared database, tenant-scoped queries. All restaurants share the same PostgreSQL database with <code>restaurantId</code> filtering on every query.</p>
+
+        <div class="code-block">
+            <div class="code-block-header"><span class="lang-tag">TypeScript</span> Prisma Middleware</div>
+            <pre>prisma.$use(async (params, next) =&gt; {
+  if (params.model &amp;&amp; tenantScopedModels.includes(params.model)) {
+    if (['findMany', 'findFirst', 'count'].includes(params.action)) {
+      params.args.where = {
+        ...params.args.where,
+        restaurantId: ctx.restaurantId,
+      };
+    }
+  }
+  return next(params);
+});</pre>
+        </div>
+
+        <h3>URL Routing</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Surface</th><th>URL Pattern</th><th>Resolution</th></tr></thead>
+                <tbody>
+                    <tr><td>Customer Menu</td><td><code>visionmenu.app/menu/{slug}</code></td><td>Load restaurant by slug</td></tr>
+                    <tr><td>Dashboard</td><td><code>visionmenu.app/dashboard/*</code></td><td>Load restaurant by session user</td></tr>
+                    <tr><td>API</td><td><code>visionmenu.app/api/trpc/*</code></td><td>Restaurant context from JWT</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- 14. Deployment -->
+    <section class="section" id="deployment">
+        <h2><span class="section-num">14</span> Deployment Architecture</h2>
+
+        <div class="code-block">
+            <div class="code-block-header"><span class="lang-tag">Pipeline</span> CI/CD via Vercel</div>
+            <pre>GitHub Repository
+      ↓ (push to main)
+Vercel Build
+  ├── Next.js build (SSR + static)
+  ├── API routes → Vercel Functions (Fluid Compute)
+  └── Edge middleware for routing
+      ↓
+Vercel Production
+  ├── Global Edge Network (static assets, CDN)
+  ├── Serverless Functions (API + SSR)
+  └── Fluid Compute (shared instances, reduced cold starts)
+
+Feature Branch → PR → Preview Deployment (auto)
+                  ↓  Code Review
+              Merge to main → Production (auto)</pre>
+        </div>
+
+        <h3>Edge layer &mdash; Cloudflare</h3>
+        <p>Cloudflare sits in front of the origin for four concerns in one integration: geo detection, edge caching, rate limiting, and DDoS / WAF. Free tier is sufficient for early scale.</p>
+
+        <div class="code-block">
+            <div class="code-block-header"><span class="lang-tag">Request flow</span></div>
+            <pre>Client
+  ↓
+Cloudflare edge (cache, rate-limit, WAF)
+  ↓
+Origin (Django)</pre>
+        </div>
+
+        <h4>Cache rules</h4>
+        <ul>
+            <li><code>GET /api/public/plans/**</code> &mdash; 1 hour TTL, vary by country</li>
+            <li><code>GET /api/public/menu/**</code> &mdash; 5 min TTL, vary by slug</li>
+            <li><code>GET /admin/**</code>, <code>GET /api/dashboard/**</code>, all non-GET &mdash; never cached</li>
+        </ul>
+        <p>Admin writes trigger a Cloudflare cache-purge via API on <code>post_save</code> for <code>billing.PlanPrice</code> and menu models.</p>
+
+        <h4>Rate-limit rules (edge, pre-origin)</h4>
+        <ul>
+            <li>5 req/IP/min on anon auth endpoints (signup, password reset, OTP)</li>
+            <li>120 req/IP/min on public menu GETs</li>
+            <li>120 req/user/min on authenticated dashboard APIs</li>
+            <li>Admin (staff): unlimited</li>
+        </ul>
+        <p>Django fallback via <code>django-ratelimit</code> for dev and non-CF paths.</p>
+
+    </section>
+
+    <!-- 15. Integrations -->
+    <section class="section" id="integrations">
+        <h2><span class="section-num">15</span> Third-Party Integrations</h2>
+
+        <div class="integration-grid">
+            <div class="integration-card"><div class="integration-name">Neon</div><div class="integration-purpose">PostgreSQL Database</div><div class="integration-cost">Free: 0.5 GB</div></div>
+            <div class="integration-card"><div class="integration-name">Upstash</div><div class="integration-purpose">Redis (Cache + PubSub)</div><div class="integration-cost">Free: 10K/day</div></div>
+            <div class="integration-card"><div class="integration-name">Cloudflare R2</div><div class="integration-purpose">Object Storage</div><div class="integration-cost">Free: 10 GB</div></div>
+            <div class="integration-card"><div class="integration-name">Ably</div><div class="integration-purpose">Real-Time Messaging</div><div class="integration-cost">Free: 6M msgs/mo</div></div>
+            <div class="integration-card"><div class="integration-name">WhatsApp API</div><div class="integration-purpose">Customer Notifications</div><div class="integration-cost">Free: 1000/mo</div></div>
+            <div class="integration-card"><div class="integration-name">Stripe</div><div class="integration-purpose">Payments + Stripe Tax (global, USD)</div><div class="integration-cost">2.9% + $0.30 + $0.50 tax</div></div>
+            <div class="integration-card"><div class="integration-name">Cloudflare</div><div class="integration-purpose">Edge cache, rate limit, WAF</div><div class="integration-cost">Free tier</div></div>
+            <div class="integration-card"><div class="integration-name">n8n + whapi.cloud</div><div class="integration-purpose">WhatsApp OTP &amp; messaging relay</div><div class="integration-cost">Self-hosted + whapi plan</div></div>
+            <div class="integration-card"><div class="integration-name">Resend</div><div class="integration-purpose">Transactional Email</div><div class="integration-cost">Free: 3000/mo</div></div>
+            <div class="integration-card"><div class="integration-name">Sentry</div><div class="integration-purpose">Error Tracking</div><div class="integration-cost">Free: 5K events/mo</div></div>
+            <div class="integration-card"><div class="integration-name">Vercel Analytics</div><div class="integration-purpose">Web Analytics</div><div class="integration-cost">Free tier included</div></div>
+        </div>
+
+        <div class="info-box">
+            <p><strong>Total estimated monthly cost (early stage):</strong> $0-30/mo &mdash; mostly free tiers cover initial scale.</p>
+        </div>
+    </section>
+
+    <!-- 16. Development Phases -->
+    <section class="section" id="phases">
+        <h2><span class="section-num">16</span> Development Phases</h2>
+
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-phase">Phase 1</div>
+                <div class="timeline-title">Foundation</div>
+                <div class="timeline-weeks">Weeks 1&ndash;3</div>
+                <ul>
+                    <li>Project setup: Next.js, Prisma, Tailwind, shadcn/ui</li>
+                    <li>Database schema + migrations</li>
+                    <li>Auth system (sign up, login, JWT)</li>
+                    <li>Restaurant CRUD + basic dashboard layout</li>
+                </ul>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-phase">Phase 2</div>
+                <div class="timeline-title">Menu System</div>
+                <div class="timeline-weeks">Weeks 4&ndash;6</div>
+                <ul>
+                    <li>Category &amp; menu item CRUD with images</li>
+                    <li>Image upload pipeline (Cloudflare R2)</li>
+                    <li>Customer menu page (SSR, dynamic slug)</li>
+                    <li>Menu page design + QR code generation</li>
+                </ul>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-phase">Phase 3</div>
+                <div class="timeline-title">Dashboard Features</div>
+                <div class="timeline-weeks">Weeks 7&ndash;9</div>
+                <ul>
+                    <li>Add-ons, tables, stock management</li>
+                    <li>Restaurant settings (hours, branding, delivery)</li>
+                    <li>Basic analytics (menu views, popular items)</li>
+                </ul>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-phase">Phase 4</div>
+                <div class="timeline-title">Ordering System</div>
+                <div class="timeline-weeks">Weeks 10&ndash;13</div>
+                <ul>
+                    <li>Cart + order placement flow</li>
+                    <li>Delivery map + radius validation (Leaflet)</li>
+                    <li>Real-time orders (Ably) + Live Orders Kanban</li>
+                    <li>WhatsApp integration for notifications</li>
+                </ul>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-phase">Phase 5</div>
+                <div class="timeline-title">AR Module</div>
+                <div class="timeline-weeks">Weeks 14&ndash;16</div>
+                <ul>
+                    <li>&lt;model-viewer&gt; integration + AR viewer</li>
+                    <li>3D model upload &amp; management</li>
+                    <li>Model request flow + free tier tracking</li>
+                </ul>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-phase">Phase 6</div>
+                <div class="timeline-title">Monetization &amp; Polish</div>
+                <div class="timeline-weeks">Weeks 17&ndash;19</div>
+                <ul>
+                    <li>Plan management + feature gating</li>
+                    <li>Razorpay integration (subscriptions)</li>
+                    <li>Onboarding wizard + landing page</li>
+                </ul>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-phase">Phase 7</div>
+                <div class="timeline-title">Testing &amp; Launch</div>
+                <div class="timeline-weeks">Week 20</div>
+                <ul>
+                    <li>E2E testing + performance optimization</li>
+                    <li>Security audit + Lighthouse &gt; 90</li>
+                    <li>Beta testing with 3-5 restaurants</li>
+                    <li>Production launch</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- 17. Cost Estimation -->
+    <section class="section" id="cost">
+        <h2><span class="section-num">17</span> Cost Estimation</h2>
+
+        <h3>Infrastructure (Monthly)</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Service</th><th>Free Tier</th><th>After Free Tier</th></tr></thead>
+                <tbody>
+                    <tr><td>Vercel (Pro)</td><td>$0 (Hobby)</td><td>$20/mo</td></tr>
+                    <tr><td>Neon PostgreSQL</td><td>0.5 GB free</td><td>~$19/mo</td></tr>
+                    <tr><td>Upstash Redis</td><td>10K/day free</td><td>~$10/mo</td></tr>
+                    <tr><td>Cloudflare R2</td><td>10 GB free</td><td>$0.015/GB</td></tr>
+                    <tr><td>Ably</td><td>6M msgs/mo</td><td>$29/mo</td></tr>
+                    <tr><td>WhatsApp Cloud API</td><td>1000 convos/mo</td><td>~$0.05/convo</td></tr>
+                    <tr><td>Resend</td><td>3000 emails/mo</td><td>$20/mo</td></tr>
+                    <tr><td>Domain</td><td>&mdash;</td><td>$12/yr</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="tech-grid">
+            <div class="tech-item"><div class="tech-icon tech-icon-green">&#36;</div><div><div class="tech-name">Early Stage (&lt;50 restaurants)</div><div class="tech-desc">~$0-30/mo (free tiers)</div></div></div>
+            <div class="tech-item"><div class="tech-icon tech-icon-cyan">&#36;</div><div><div class="tech-name">Growth (50-200 restaurants)</div><div class="tech-desc">~$100-200/mo</div></div></div>
+            <div class="tech-item"><div class="tech-icon tech-icon-gold">&#36;</div><div><div class="tech-name">Scale (200+ restaurants)</div><div class="tech-desc">~$300-500/mo</div></div></div>
+        </div>
+
+        <h3>Per 3D Model Cost</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Component</th><th>Estimated Cost</th></tr></thead>
+                <tbody>
+                    <tr><td>RealityScan capture time</td><td>30-60 min (labor)</td></tr>
+                    <tr><td>Cleanup + optimization</td><td>30-60 min (labor)</td></tr>
+                    <tr><td>Storage cost per model</td><td>~$0.001/mo</td></tr>
+                    <tr><td><strong>Total cost (labor)</strong></td><td><strong>~&#8377;500-1000</strong></td></tr>
+                    <tr><td><strong>Suggested charge</strong></td><td><strong>&#8377;1500-2500 per model</strong></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <div class="doc-footer">
+        <p>This architecture document is a living reference and will evolve as the project develops.</p>
+        <p style="margin-top:8px;color:var(--cyan);font-size:12px;">VISION MENU &copy; 2026</p>
+    </div>
+
+</main>
+
+<script>
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('overlay').classList.toggle('show');
+    }
+
+    const sections = document.querySelectorAll('.section');
+    const navLinks = document.querySelectorAll('.sidebar nav a');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                navLinks.forEach(link => link.classList.remove('active'));
+                const activeLink = document.querySelector(`.sidebar nav a[href="#${entry.target.id}"]`);
+                if (activeLink) activeLink.classList.add('active');
+            }
+        });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    sections.forEach(section => observer.observe(section));
+</script>
+
+</body>
+</html>

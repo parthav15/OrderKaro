@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import { motion } from "framer-motion"
 import { useQuery } from "@tanstack/react-query"
 import {
@@ -9,6 +10,9 @@ import {
   Clock,
   TrendingUp,
   BarChart3,
+  Eye,
+  Users,
+  Percent,
 } from "lucide-react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import api from "@/lib/api"
@@ -44,6 +48,29 @@ interface CategoryRevenue {
   categoryName: string
   revenue: number
   orders: number
+}
+
+interface MenuViewsTimelineDay {
+  date: string
+  views: number
+  visitors: number
+}
+
+interface MenuViewsTopItem {
+  menuItemId: string
+  name: string
+  imageUrl?: string | null
+  views: number
+}
+
+interface MenuViewsData {
+  days: number
+  totalViews: number
+  uniqueVisitors: number
+  orders: number
+  conversionRate: number
+  timeline: MenuViewsTimelineDay[]
+  topItems: MenuViewsTopItem[]
 }
 
 function formatDayLabel(dateStr: string) {
@@ -103,6 +130,27 @@ export default function AnalyticsPage() {
     enabled: !!restaurantId,
   })
 
+  const [menuViewsDays, setMenuViewsDays] = useState<7 | 30>(7)
+
+  const {
+    data: menuViews,
+    error: menuViewsError,
+    isLoading: menuViewsLoading,
+  } = useQuery<MenuViewsData>({
+    queryKey: ["analytics-menu-views", restaurantId, menuViewsDays],
+    queryFn: () =>
+      api
+        .get(`/api/v1/restaurants/${restaurantId}/analytics/views?days=${menuViewsDays}`)
+        .then((r) => r.data.data),
+    enabled: !!restaurantId,
+    retry: false,
+  })
+
+  const menuViewsUpsell = (menuViewsError as any)?.response?.status === 402
+  const menuViewsUpsellMessage =
+    (menuViewsError as any)?.response?.data?.error ??
+    "Upgrade your plan to unlock menu view analytics."
+
   const summaryCards = [
     {
       label: "Total Orders",
@@ -142,6 +190,8 @@ export default function AnalyticsPage() {
   const maxItemOrders = Math.max(...(popularItems?.map((i) => i.totalOrders) ?? [1]))
   const maxCategoryRevenue = Math.max(...(categoryRevenue?.map((c) => c.revenue) ?? [1]))
   const maxHourOrders = Math.max(...(peakHours?.map((h) => h.orders) ?? [1]))
+  const maxDailyViews = Math.max(...(menuViews?.timeline.map((d) => d.views) ?? [1]))
+  const maxTopItemViews = Math.max(...(menuViews?.topItems.map((i) => i.views) ?? [1]))
 
   return (
     <div>
@@ -442,6 +492,242 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
         </motion.div>
+      </div>
+
+      <div className="mt-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.55 }}
+          className="flex items-center justify-between mb-4"
+        >
+          <div>
+            <h2 className="text-xl font-bold text-brand-black">Menu Views</h2>
+            <p className="text-sm text-neutral-400">How students are browsing your menu</p>
+          </div>
+          {!menuViewsUpsell && (
+            <div className="flex items-center gap-1 bg-neutral-100 rounded-xl p-1">
+              {([7, 30] as const).map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setMenuViewsDays(d)}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
+                    menuViewsDays === d
+                      ? "bg-white text-brand-black shadow-sm"
+                      : "text-neutral-500 hover:text-brand-black"
+                  }`}
+                >
+                  {d}d
+                </button>
+              ))}
+            </div>
+          )}
+        </motion.div>
+
+        {menuViewsUpsell ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            <Card>
+              <CardContent className="py-12 flex flex-col items-center text-center">
+                <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center mb-4">
+                  <Eye className="w-7 h-7 text-brand-red" />
+                </div>
+                <p className="text-neutral-600 font-medium max-w-md mb-5">{menuViewsUpsellMessage}</p>
+                <Link
+                  href="/admin/billing"
+                  className="px-6 py-3 rounded-xl bg-brand-red text-white text-sm font-bold hover:bg-red-700 transition-colors"
+                >
+                  View plans
+                </Link>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              {[
+                {
+                  label: "Total Views",
+                  value: menuViews?.totalViews ?? 0,
+                  sub: `Last ${menuViewsDays} days`,
+                  icon: Eye,
+                },
+                {
+                  label: "Unique Visitors",
+                  value: menuViews?.uniqueVisitors ?? 0,
+                  sub: `Last ${menuViewsDays} days`,
+                  icon: Users,
+                },
+                {
+                  label: "View-to-Order Conversion",
+                  value: `${menuViews?.conversionRate ?? 0}%`,
+                  sub: `${menuViews?.orders ?? 0} orders from views`,
+                  icon: Percent,
+                },
+              ].map((card, idx) => {
+                const Icon = card.icon
+                return (
+                  <motion.div
+                    key={card.label}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 + idx * 0.08 }}
+                  >
+                    <Card>
+                      <CardContent className="py-6">
+                        <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center flex-shrink-0">
+                            <Icon className="w-7 h-7 text-brand-red" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-neutral-500">{card.label}</p>
+                            <p className="text-3xl font-extrabold text-brand-black leading-tight mt-0.5">
+                              {card.value}
+                            </p>
+                            <p className="text-xs text-neutral-400 mt-0.5">{card.sub}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )
+              })}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.85 }}
+              >
+                <Card>
+                  <CardHeader>
+                    <h2 className="text-lg font-bold text-brand-black">
+                      Menu Views — Last {menuViewsDays} Days
+                    </h2>
+                    <p className="text-sm text-neutral-400">Daily views breakdown</p>
+                  </CardHeader>
+                  <CardContent>
+                    {menuViewsLoading && (
+                      <div className="h-48 flex items-center justify-center">
+                        <div className="animate-spin w-6 h-6 border-2 border-brand-red border-t-transparent rounded-full" />
+                      </div>
+                    )}
+                    {!menuViewsLoading && menuViews && menuViews.timeline.length === 0 && (
+                      <div className="h-48 flex flex-col items-center justify-center">
+                        <Eye className="w-12 h-12 text-neutral-200 mb-3" />
+                        <p className="text-neutral-400 text-sm font-medium">No menu views recorded yet</p>
+                      </div>
+                    )}
+                    {!menuViewsLoading && menuViews && menuViews.timeline.length > 0 && (
+                      <div className="flex items-end gap-3 h-48 mt-2 overflow-x-auto">
+                        {menuViews.timeline.map((day, idx) => {
+                          const heightPct = maxDailyViews > 0 ? (day.views / maxDailyViews) * 100 : 0
+                          return (
+                            <motion.div
+                              key={day.date}
+                              initial={{ height: 0 }}
+                              animate={{ height: "100%" }}
+                              transition={{ delay: idx * 0.05 }}
+                              className="flex-1 flex flex-col items-center justify-end gap-1 min-w-[28px]"
+                            >
+                              <span className="text-xs font-bold text-neutral-600 truncate w-full text-center">
+                                {day.views}
+                              </span>
+                              <motion.div
+                                initial={{ scaleY: 0 }}
+                                animate={{ scaleY: 1 }}
+                                transition={{ delay: idx * 0.05, type: "spring", stiffness: 200, damping: 20 }}
+                                style={{ height: `${Math.max(heightPct, 4)}%`, transformOrigin: "bottom" }}
+                                className="w-full bg-brand-red rounded-t-lg"
+                              />
+                              <span className="text-xs text-neutral-400 text-center leading-tight">
+                                {formatDayLabel(day.date)}
+                              </span>
+                            </motion.div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.9 }}
+              >
+                <Card>
+                  <CardHeader>
+                    <h2 className="text-lg font-bold text-brand-black">Most Viewed Items</h2>
+                    <p className="text-sm text-neutral-400">Menu items students look at the most</p>
+                  </CardHeader>
+                  <CardContent>
+                    {menuViewsLoading && (
+                      <div className="h-48 flex items-center justify-center">
+                        <div className="animate-spin w-6 h-6 border-2 border-brand-red border-t-transparent rounded-full" />
+                      </div>
+                    )}
+                    {!menuViewsLoading && menuViews && menuViews.topItems.length === 0 && (
+                      <div className="h-48 flex flex-col items-center justify-center">
+                        <Eye className="w-12 h-12 text-neutral-200 mb-3" />
+                        <p className="text-neutral-400 text-sm font-medium">No menu views recorded yet</p>
+                      </div>
+                    )}
+                    {!menuViewsLoading && menuViews && menuViews.topItems.length > 0 && (
+                      <div className="space-y-4 mt-1">
+                        {menuViews.topItems.slice(0, 6).map((item, idx) => {
+                          const widthPct = maxTopItemViews > 0 ? (item.views / maxTopItemViews) * 100 : 0
+                          return (
+                            <motion.div
+                              key={item.menuItemId}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: idx * 0.05 }}
+                            >
+                              <div className="flex items-center justify-between mb-1.5">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span className="text-sm font-extrabold text-neutral-300 w-5 flex-shrink-0">
+                                    {idx + 1}
+                                  </span>
+                                  {item.imageUrl && (
+                                    <img
+                                      src={item.imageUrl}
+                                      alt={item.name}
+                                      className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
+                                    />
+                                  )}
+                                  <span className="text-sm font-bold text-brand-black truncate max-w-[160px]">
+                                    {item.name}
+                                  </span>
+                                </div>
+                                <span className="text-sm font-semibold text-neutral-500 flex-shrink-0">
+                                  {item.views} views
+                                </span>
+                              </div>
+                              <div className="h-2.5 bg-neutral-100 rounded-full overflow-hidden">
+                                <motion.div
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${widthPct}%` }}
+                                  transition={{ delay: idx * 0.05, type: "spring", stiffness: 150 }}
+                                  className="h-full bg-brand-red rounded-full"
+                                />
+                              </div>
+                            </motion.div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

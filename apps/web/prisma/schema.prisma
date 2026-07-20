@@ -38,13 +38,76 @@ model Restaurant {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  plan           Plan      @default(FREE)
+  planValidUntil DateTime?
+
+  primaryColor String    @default("#DC2626")
+  themeMode    ThemeMode @default(LIGHT)
+
+  latitude         Float?
+  longitude        Float?
+  deliveryEnabled  Boolean @default(false)
+  deliveryRadiusKm Float   @default(3)
+  deliveryFee      Decimal @default(0) @db.Decimal(10, 2)
+  minOrderValue    Decimal @default(0) @db.Decimal(10, 2)
+
   staff         Staff[]
   categories    Category[]
   tables        Table[]
   orders        Order[]
   announcements Announcement[]
+  subscriptions Subscription[]
+  menuViews     MenuView[]
+  modelRequests ModelRequest[]
 
   @@map("Canteen")
+}
+
+model Subscription {
+  id                String             @id @default(uuid())
+  restaurantId      String
+  restaurant        Restaurant         @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  plan              Plan
+  status            SubscriptionStatus @default(PENDING)
+  amount            Decimal            @db.Decimal(10, 2)
+  periodStart       DateTime?
+  periodEnd         DateTime?
+  razorpayOrderId   String?            @unique
+  razorpayPaymentId String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@index([restaurantId, status])
+}
+
+model MenuView {
+  id           String     @id @default(uuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  menuItemId   String?
+  menuItem     MenuItem?  @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  sessionId    String
+  source       String?
+  createdAt    DateTime   @default(now())
+
+  @@index([restaurantId, createdAt])
+  @@index([menuItemId, createdAt])
+}
+
+model ModelRequest {
+  id           String             @id @default(uuid())
+  restaurantId String
+  restaurant   Restaurant         @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  menuItemId   String
+  menuItem     MenuItem           @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  status       ModelRequestStatus @default(PENDING)
+  notes        String?
+  resultUrl    String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@index([restaurantId, status])
+  @@index([status, createdAt])
 }
 
 model Staff {
@@ -82,22 +145,27 @@ model Category {
 }
 
 model MenuItem {
-  id             String          @id @default(uuid())
-  categoryId     String
-  category       Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  name           String
-  description    String?
-  price          Decimal         @db.Decimal(10, 2)
-  imageUrl       String?
-  isVeg          Boolean         @default(true)
-  isAvailable    Boolean         @default(true)
-  prepTimeMin    Int?
-  sortOrder      Int             @default(0)
-  tags           String[]        @default([])
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  id               String   @id @default(uuid())
+  categoryId       String
+  category         Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name             String
+  description      String?
+  price            Decimal  @db.Decimal(10, 2)
+  imageUrl         String?
+  isVeg            Boolean  @default(true)
+  isAvailable      Boolean  @default(true)
+  prepTimeMin      Int?
+  sortOrder        Int      @default(0)
+  tags             String[] @default([])
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  model3dUrl       String?
+  model3dPosterUrl String?
+
   customizations Customization[]
   orderItems     OrderItem[]
+  menuViews      MenuView[]
+  modelRequests  ModelRequest[]
 
   @@index([categoryId, sortOrder])
 }
@@ -202,6 +270,10 @@ model Order {
   table               Table?           @relation(fields: [tableId], references: [id])
   orderType           OrderType        @default(DINE_IN)
   deliveryLocation    String?
+  deliveryLatitude    Float?
+  deliveryLongitude   Float?
+  deliveryDistanceKm  Float?
+  deliveryFee         Decimal?         @db.Decimal(10, 2)
   consumerId          String
   consumer            Consumer         @relation(fields: [consumerId], references: [id])
   status              OrderStatus      @default(PLACED)
@@ -269,6 +341,31 @@ enum StaffRole {
   MANAGER
   KITCHEN
   COUNTER
+}
+
+enum Plan {
+  FREE
+  BASIC
+  PRO
+}
+
+enum ThemeMode {
+  LIGHT
+  DARK
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+  FAILED
+}
+
+enum ModelRequestStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  REJECTED
 }
 
 enum CustomizationType {

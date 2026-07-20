@@ -25,6 +25,8 @@ export interface MenuItem {
   isAvailable: boolean
   tags: string[]
   customizations: Customization[]
+  model3dUrl?: string | null
+  model3dPosterUrl?: string | null
 }
 
 export interface Category {
@@ -40,6 +42,14 @@ export interface RestaurantSummary {
   logoUrl?: string | null
   bannerUrl?: string | null
   isActive?: boolean
+  primaryColor?: string
+  themeMode?: "LIGHT" | "DARK"
+  arEnabled?: boolean
+  deliveryEnabled?: boolean
+  deliveryRadiusKm?: number
+  deliveryFee?: string
+  minOrderValue?: string
+  hasLocation?: boolean
 }
 
 export interface Announcement {

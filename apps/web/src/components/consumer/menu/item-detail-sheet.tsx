@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
-import { X, Check, Plus, Minus, ChevronRight } from "lucide-react"
+import { X, Check, Plus, Minus, ChevronRight, Box } from "lucide-react"
 import { formatPrice, cn } from "@/lib/utils"
 import { VegMarker } from "./veg-marker"
 import { QuantityStepper } from "./quantity-stepper"
@@ -18,9 +18,16 @@ interface ItemDetailSheetProps {
     quantity: number
     selectedOptions: Record<string, string[]>
   }) => void
+  onViewAr?: () => void
 }
 
-export function ItemDetailSheet({ item, number, onClose, onAddToCart }: ItemDetailSheetProps) {
+export function ItemDetailSheet({
+  item,
+  number,
+  onClose,
+  onAddToCart,
+  onViewAr,
+}: ItemDetailSheetProps) {
   const [quantity, setQuantity] = useState(1)
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>({})
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -154,6 +161,18 @@ export function ItemDetailSheet({ item, number, onClose, onAddToCart }: ItemDeta
                 >
                   <X className="w-4 h-4 text-brand-black" strokeWidth={2.4} />
                 </button>
+
+                {onViewAr && (
+                  <motion.button
+                    type="button"
+                    whileTap={{ scale: 0.95 }}
+                    onClick={onViewAr}
+                    className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 h-10 px-4 rounded-full bg-brand-red text-white text-[11px] font-bold uppercase tracking-[0.16em] shadow-lg"
+                  >
+                    <Box className="w-4 h-4" strokeWidth={2.4} />
+                    View in 3D
+                  </motion.button>
+                )}
               </div>
 
               <div className="px-6 pt-7 pb-44">

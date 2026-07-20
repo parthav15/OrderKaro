@@ -17,6 +17,7 @@ import {
   CANCEL_WINDOW_MS,
 } from "@orderkaro/shared"
 import type { OrderStatus } from "@prisma/client"
+import { distanceInKm, roundKm } from "@/lib/geo"
 
 export async function POST(
   request: NextRequest,
@@ -100,10 +101,50 @@ export async function POST(
       }
     })
 
-    const totalAmount = orderItemsData.reduce(
+    const itemsSubtotal = orderItemsData.reduce(
       (sum, i) => sum.add(i.totalPrice),
       new Decimal(0)
     )
+
+    let deliveryFee = new Decimal(0)
+    let deliveryDistanceKm: number | null = null
+
+    const deliveryZoneEnforced =
+      data.orderType === "DELIVERY" &&
+      restaurant.deliveryEnabled &&
+      restaurant.latitude != null &&
+      restaurant.longitude != null
+
+    if (deliveryZoneEnforced) {
+      if (data.deliveryLatitude == null || data.deliveryLongitude == null) {
+        throw new AuthError("Share your location to place a delivery order", 422)
+      }
+      const distance = roundKm(
+        distanceInKm(
+          restaurant.latitude!,
+          restaurant.longitude!,
+          data.deliveryLatitude,
+          data.deliveryLongitude
+        )
+      )
+      if (distance > restaurant.deliveryRadiusKm) {
+        throw new AuthError(
+          `You are ${distance} km away. ${restaurant.name} delivers within ${restaurant.deliveryRadiusKm} km.`,
+          422
+        )
+      }
+      const minOrderValue = new Decimal(restaurant.minOrderValue.toString())
+      if (minOrderValue.gt(itemsSubtotal)) {
+        throw new AuthError(
+          `Minimum order value for delivery is ₹${minOrderValue.toFixed(2)}`,
+          422
+        )
+      }
+      deliveryDistanceKm = distance
+      deliveryFee = new Decimal(restaurant.deliveryFee.toString())
+    }
+
+    const totalAmount = itemsSubtotal.add(deliveryFee)
 
     let walletTransactionId: string | undefined
 
@@ -160,6 +201,10 @@ export async function POST(
         orderType: data.orderType,
         tableId: data.orderType === "DINE_IN" ? data.tableId : null,
         deliveryLocation: data.orderType === "DELIVERY" ? data.deliveryLocation : null,
+        deliveryLatitude: data.orderType === "DELIVERY" ? data.deliveryLatitude ?? null : null,
+        deliveryLongitude: data.orderType === "DELIVERY" ? data.deliveryLongitude ?? null : null,
+        deliveryDistanceKm,
+        deliveryFee: deliveryZoneEnforced ? deliveryFee : null,
         consumerId: user.id,
         status: "PLACED",
         totalAmount,
