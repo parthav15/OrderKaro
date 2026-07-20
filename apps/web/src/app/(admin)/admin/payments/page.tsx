@@ -457,7 +457,7 @@ export default function PaymentsPage() {
                     <Info className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
                     <p className="text-sm text-neutral-500 leading-relaxed">
                       Your Stripe key is encrypted and never shown again. Diners pay your Stripe
-                      account directly — OrderKaro never holds the money. Payment confirmation uses
+                      account directly — Vision Menu never holds the money. Payment confirmation uses
                       the return redirect plus background reconciliation.
                     </p>
                   </div>

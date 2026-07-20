@@ -216,7 +216,7 @@ function drawPoster(
     ctx.fillStyle = "#0A0A0A"
     ctx.font = "800 60px DM Sans, system-ui, sans-serif"
     ctx.textBaseline = "top"
-    ctx.fillText("OrderKaro", 100, 70)
+    ctx.fillText("Vision Menu", 100, 70)
 
     ctx.fillStyle = "#737373"
     ctx.font = "500 28px DM Sans, system-ui, sans-serif"
@@ -262,7 +262,7 @@ function drawPoster(
       ctx.fillStyle = "#737373"
       ctx.font = "500 24px DM Sans, system-ui, sans-serif"
       ctx.textAlign = "left"
-      ctx.fillText("Powered by OrderKaro", 60, 1850)
+      ctx.fillText("Powered by Vision Menu", 60, 1850)
 
       resolve(canvas.toDataURL("image/png"))
     }

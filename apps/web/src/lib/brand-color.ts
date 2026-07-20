@@ -1,8 +1,8 @@
-export const DEFAULT_BRAND_COLOR = "#DC2626"
+export const DEFAULT_BRAND_COLOR = "#A31D33"
 
 export function hexToRgbTriplet(hex: string): string {
   const normalized = hex.trim().replace("#", "")
-  if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return "220 38 38"
+  if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return "163 29 51"
   const r = parseInt(normalized.slice(0, 2), 16)
   const g = parseInt(normalized.slice(2, 4), 16)
   const b = parseInt(normalized.slice(4, 6), 16)
@@ -22,7 +22,7 @@ export function readableTextColor(hex: string): string {
 }
 
 export const BRAND_COLOR_PRESETS = [
-  "#DC2626",
+  "#A31D33",
   "#EA580C",
   "#CA8A04",
   "#16A34A",

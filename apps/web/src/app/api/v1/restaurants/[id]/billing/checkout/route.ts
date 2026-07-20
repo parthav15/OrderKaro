@@ -58,7 +58,7 @@ export async function POST(
         amount: definition.monthlyPrice,
         currency: BILLING_CURRENCY,
         platformFee: 0,
-        description: `OrderKaro ${definition.label} plan — ${restaurant.name}`,
+        description: `Vision Menu ${definition.label} plan — ${restaurant.name}`,
         customer: { name: restaurant.name, phone: restaurant.phone ?? undefined },
         successUrl: returnUrl,
         failureUrl: returnUrl,

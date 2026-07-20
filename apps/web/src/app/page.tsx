@@ -11,7 +11,7 @@ export default function HomePage() {
     <div className="relative h-dvh w-full overflow-hidden bg-black">
       <Image
         src="https://res.cloudinary.com/dpjw3fe8d/image/upload/v1773754306/orderkaro/branding/orderkaro-hero-1.png"
-        alt="OrderKaro"
+        alt="Vision Menu"
         fill
         priority
         className="object-cover opacity-60"

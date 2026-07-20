@@ -1,11 +1,11 @@
 {
-  "name": "OrderKaro",
-  "short_name": "OrderKaro",
-  "description": "Smart restaurant ordering system",
+  "name": "Vision Menu",
+  "short_name": "Vision Menu",
+  "description": "Premium restaurant ordering, reimagined",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FFFFFF",
-  "theme_color": "#DC2626",
+  "background_color": "#F6F1EA",
+  "theme_color": "#141110",
   "icons": [
     { "src": "/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" },
     { "src": "/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml" }

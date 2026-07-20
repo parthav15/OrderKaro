@@ -1,4 +1,6 @@
-# OrderKaro — SaaS Restaurant Management System
+# Vision Menu — SaaS Restaurant Management System
+
+(Formerly "OrderKaro" — the brand is **Vision Menu**. Internal package scope `@orderkaro/*`, localStorage keys `orderkaro-*`, and the `@@map("Canteen")` physical table are intentionally left unrenamed to avoid churn/data disruption; only user-visible brand is Vision Menu.)
 
 ## Project Overview
 
@@ -27,9 +29,15 @@ packages/shared/  → Shared Zod schemas, types, constants
 
 ## Design Rules (STRICTLY ENFORCED)
 
-- Colors: Red `#DC2626`, White `#FFFFFF`, Black `#0A0A0A` — NO other colors
-- **One deliberate exception — tenant branding.** On the CONSUMER storefront only, `brand-red` resolves from the CSS variable `--brand-red`, which `StorefrontTheme` sets from the restaurant's `primaryColor` (a paid-plan feature). Admin, kitchen and counter stay strictly red/white/black. The variable defaults to `220 38 38` in `globals.css`, so anything not wrapped in `StorefrontTheme` is unchanged.
-- Premium, simple, sober aesthetic — generous whitespace, clean typography
+- **Palette = "Bordeaux Noir"** (premium wine-crimson + champagne-gold on warm neutrals). All colors are CSS-variable tokens defined in `apps/web/src/app/globals.css` and exposed as Tailwind tokens in `tailwind.config.ts`. Use the tokens, never raw hex:
+  - `brand-red` / `primary` = wine-crimson (light `#A31D33`, dark `#BE2540`), via `--brand-red`
+  - `brand-gold` / `accent` = champagne gold (`#A9822B` / `#D9B24A`) — sparingly, 5–15% (price, active state, focus)
+  - `canvas` (warm bg), `surface`/`surface-elevated` (cards), `ink` (text), `muted`, `line` (border)
+  - semantic `success` / `warning` / `danger` — the OLD bright red now lives only in `danger`
+  - the `neutral-*` scale is warmed (taupe, not cold gray)
+- **Dark mode** is opt-in via `[data-theme="dark"]` / `.dark` (tokens flip). The existing web screens are still light-built; full dark-mode conversion is a follow-on — do not rely on `prefers-color-scheme` auto-flip.
+- **Tenant branding exception:** on the CONSUMER storefront only, `StorefrontTheme` overrides `--brand-red` with the restaurant's `primaryColor` (paid feature). `DEFAULT_BRAND_COLOR` is now the wine `#A31D33` (`apps/web/src/lib/brand-color.ts`).
+- Premium, expensive, minimal aesthetic — generous whitespace, editorial serif for hero/dish names, clean sans for UI, weighted cinematic motion
 - Framer Motion animations on all interactions
 - ZERO comments in ALL code files — no inline, no docstrings, no block comments
 - Self-explanatory naming conventions only

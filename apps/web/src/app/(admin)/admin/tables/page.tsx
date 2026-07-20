@@ -479,7 +479,7 @@ async function renderQrPdf(qrItems: BulkQrItem[], restaurantName: string) {
   doc.setFont("helvetica", "bold")
   doc.setFontSize(20)
   doc.setTextColor(220, 38, 38)
-  doc.text("OrderKaro", margin, margin + 6)
+  doc.text("Vision Menu", margin, margin + 6)
 
   doc.setFont("helvetica", "normal")
   doc.setFontSize(10)
