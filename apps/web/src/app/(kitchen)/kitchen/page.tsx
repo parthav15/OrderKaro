@@ -18,7 +18,7 @@ import {
   PackageCheck,
 } from "lucide-react"
 import api from "@/lib/api"
-import { connectSocket } from "@/lib/socket"
+import { connectSocket, realtimeEnabled } from "@/lib/socket"
 import { useAuthStore } from "@/stores/auth"
 import { getTimeSince, orderDestinationLabel } from "@/lib/utils"
 import { STALE_ORDER_MINUTES } from "@orderkaro/shared"
@@ -334,15 +334,17 @@ export default function KitchenDisplay() {
 
           <div
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm ${
-              connected ? "bg-neutral-800 text-white" : "bg-brand-red/20 text-brand-red"
+              connected || !realtimeEnabled
+                ? "bg-neutral-800 text-white"
+                : "bg-brand-red/20 text-brand-red"
             }`}
           >
-            {connected ? (
+            {connected || !realtimeEnabled ? (
               <Wifi className="w-5 h-5" />
             ) : (
               <WifiOff className="w-5 h-5" />
             )}
-            {connected ? "Live" : "Reconnecting..."}
+            {!realtimeEnabled ? "Auto-refresh" : connected ? "Live" : "Reconnecting..."}
           </div>
 
           <motion.button

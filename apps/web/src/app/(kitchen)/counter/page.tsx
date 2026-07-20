@@ -13,7 +13,7 @@ import {
   X,
 } from "lucide-react"
 import api from "@/lib/api"
-import { connectSocket } from "@/lib/socket"
+import { connectSocket, realtimeEnabled } from "@/lib/socket"
 import { useAuthStore } from "@/stores/auth"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
@@ -204,11 +204,17 @@ export default function CounterDisplay() {
         <div className="flex items-center gap-4">
           <div
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm ${
-              connected ? "bg-neutral-800 text-white" : "bg-brand-red/20 text-brand-red"
+              connected || !realtimeEnabled
+                ? "bg-neutral-800 text-white"
+                : "bg-brand-red/20 text-brand-red"
             }`}
           >
-            {connected ? <Wifi className="w-5 h-5" /> : <WifiOff className="w-5 h-5" />}
-            {connected ? "Live" : "Reconnecting..."}
+            {connected || !realtimeEnabled ? (
+              <Wifi className="w-5 h-5" />
+            ) : (
+              <WifiOff className="w-5 h-5" />
+            )}
+            {!realtimeEnabled ? "Auto-refresh" : connected ? "Live" : "Reconnecting..."}
           </div>
 
           <motion.button

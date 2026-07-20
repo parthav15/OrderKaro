@@ -2,25 +2,26 @@
 
 ## Project Overview
 
-QR-based ordering system: students scan table QR -> browse menu -> place order -> kitchen receives in real-time -> food prepared -> pickup at counter.
+QR-based ordering system: students scan a QR -> browse menu -> place order -> kitchen prepares -> pickup at counter (or takeaway / delivery).
 
 Three interfaces in one Next.js app:
 1. **Consumer PWA** (mobile-first) — `(consumer)/` route group
 2. **Admin Panel** (desktop) — `(admin)/admin/` route group
-3. **Kitchen Display** (tablet) — `(kitchen)/kitchen/` route group
+3. **Kitchen + Counter Displays** (tablet) — `(kitchen)/kitchen/` and `(kitchen)/counter/`
 
 ## Tech Stack
 
 - **Monorepo**: Turborepo + pnpm
-- **Frontend**: Next.js 14 (App Router), Tailwind CSS, Zustand, TanStack Query, Framer Motion
-- **Backend**: Express.js, Prisma ORM, PostgreSQL, Socket.IO, JWT auth
+- **Single app**: Next.js 14 (App Router) serves BOTH the UI and the API
+- **Frontend**: Tailwind CSS, Zustand, TanStack Query, Framer Motion
+- **Backend**: Next.js Route Handlers (`apps/web/src/app/api/v1/**`), Prisma ORM, PostgreSQL (Neon), JWT auth
+- **Payments**: Razorpay (wallet top-up)
 - **Shared**: Zod schemas + TypeScript types in `packages/shared/`
 
 ## Project Structure
 
 ```
-apps/web/         → Next.js frontend (all 3 interfaces)
-apps/api/         → Express.js backend
+apps/web/         → Next.js app — UI (all 3 interfaces) + API routes (src/app/api/v1/**)
 packages/shared/  → Shared Zod schemas, types, constants
 ```
 
@@ -34,20 +35,20 @@ packages/shared/  → Shared Zod schemas, types, constants
 
 ## Database
 
-- PostgreSQL 17 at `localhost:5432`, database `orderkaro`, user `postgres`, password `123`
-- Prisma schema at `apps/api/prisma/schema.prisma`
-- Run `npx prisma db push` after schema changes
-- Run `npx prisma generate` to update client
+- PostgreSQL on **Neon** (cloud) — connection string in `DATABASE_URL`
+- Prisma schema at `apps/web/prisma/schema.prisma` (single source of truth)
+- Run `pnpm --filter @orderkaro/web exec prisma db push` after schema changes
+- Run `pnpm --filter @orderkaro/web exec prisma generate` to update the client
 
 ## Running the Project
 
 ```bash
-pnpm dev          # Start both API (5000) and frontend (3000)
+pnpm dev          # Next.js on http://localhost:3000 (UI + API together)
 ```
 
 ## API Structure
 
-- Base URL: `http://localhost:5000/api/v1/`
+- Same-origin: `/api/v1/**` — keep `NEXT_PUBLIC_API_URL` empty so the client uses relative URLs
 - Auth: JWT Bearer tokens in Authorization header
 - Validation: Zod schemas from @orderkaro/shared
 - Roles: OWNER, MANAGER, KITCHEN, COUNTER, CONSUMER
@@ -56,16 +57,17 @@ pnpm dev          # Start both API (5000) and frontend (3000)
 
 | Agent | Scope | Files |
 |-------|-------|-------|
-| frontend-developer | Next.js pages, React components, stores, hooks | `apps/web/src/**` |
-| backend-developer | Express routes, controllers, middleware, Socket.IO | `apps/api/src/**` |
-| database-specialist | Prisma schema, migrations, query optimization | `apps/api/prisma/**` |
+| frontend-developer | Next.js pages, React components, stores, hooks | `apps/web/src/**` (excluding `app/api`) |
+| backend-developer | Next.js route handlers, auth, business logic | `apps/web/src/app/api/**`, `apps/web/src/lib/**` |
+| database-specialist | Prisma schema, migrations, query optimization | `apps/web/prisma/**` |
 | qa-specialist | Testing, validation, bug reporting | Read-only + Bash |
 | security-reviewer | Security audits, auth review, vulnerability checks | Read-only + Bash |
 
 ## Key Patterns
 
-- Wallet system (no payment gateway) — cash deposits credited by manager, bank transfers need approval
+- Wallet: cash deposits credited by a manager, bank transfers need approval, and **online top-up via Razorpay** directly from the cart
+- Order fulfillment types: `DINE_IN` (table QR or picked table), `TAKEAWAY`, `DELIVERY` (with `deliveryLocation`); `Order.tableId` is nullable
 - Prices snapshotted in OrderItem at placement time
 - Sequential order numbers per canteen per day
-- Socket.IO rooms: `canteen:{id}:kitchen`, `canteen:{id}:counter`, `order:{orderId}`
 - Idempotency keys on order placement to prevent duplicates
+- **No realtime server** — kitchen/counter refresh via TanStack Query polling. The socket client stays inert unless `NEXT_PUBLIC_SOCKET_URL` is set.
