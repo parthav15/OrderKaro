@@ -27,7 +27,7 @@ interface TrackingData {
   specialInstructions: string | null
   orderType?: string
   deliveryLocation?: string | null
-  canteen: { name: string }
+  restaurant: { name: string }
   table: { label: string } | null
   items: Array<{
     id?: string
@@ -104,7 +104,7 @@ export default function TrackOrderPage({
         className="bg-white border-b border-neutral-100 px-5 py-5"
       >
         <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
-          {order.canteen.name} · {orderDestinationLabel(order)}
+          {order.restaurant.name} · {orderDestinationLabel(order)}
         </p>
         <h1 className="text-2xl font-extrabold text-brand-black mt-1">
           Order #{order.orderNumber}

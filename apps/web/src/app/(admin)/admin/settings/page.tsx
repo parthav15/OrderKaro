@@ -11,7 +11,7 @@ import { toast } from "sonner"
 
 export default function SettingsPage() {
   const queryClient = useQueryClient()
-  const [canteenId, setCanteenId] = useState<string>("")
+  const [restaurantId, setRestaurantId] = useState<string>("")
   const [form, setForm] = useState({
     name: "",
     slug: "",
@@ -20,35 +20,35 @@ export default function SettingsPage() {
     avgPrepTime: 15,
   })
 
-  const { data: canteens } = useQuery({
-    queryKey: ["canteens"],
-    queryFn: () => api.get("/api/v1/canteens").then((r) => r.data.data),
+  const { data: restaurants } = useQuery({
+    queryKey: ["restaurants"],
+    queryFn: () => api.get("/api/v1/restaurants").then((r) => r.data.data),
   })
 
   useEffect(() => {
-    if (canteens?.[0] && !canteenId) {
-      setCanteenId(canteens[0].id)
+    if (restaurants?.[0] && !restaurantId) {
+      setRestaurantId(restaurants[0].id)
     }
-  }, [canteens, canteenId])
+  }, [restaurants, restaurantId])
 
-  const canteen = canteens?.find((c: any) => c.id === canteenId)
+  const restaurant = restaurants?.find((c: any) => c.id === restaurantId)
 
   useEffect(() => {
-    if (canteen) {
+    if (restaurant) {
       setForm({
-        name: canteen.name || "",
-        slug: canteen.slug || "",
-        openingTime: canteen.openingTime || "08:00",
-        closingTime: canteen.closingTime || "22:00",
-        avgPrepTime: canteen.avgPrepTime || 15,
+        name: restaurant.name || "",
+        slug: restaurant.slug || "",
+        openingTime: restaurant.openingTime || "08:00",
+        closingTime: restaurant.closingTime || "22:00",
+        avgPrepTime: restaurant.avgPrepTime || 15,
       })
     }
-  }, [canteen])
+  }, [restaurant])
 
   const update = useMutation({
-    mutationFn: (data: any) => api.put(`/api/v1/canteens/${canteenId}`, data),
+    mutationFn: (data: any) => api.put(`/api/v1/restaurants/${restaurantId}`, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["canteens"] })
+      queryClient.invalidateQueries({ queryKey: ["restaurants"] })
       toast.success("Settings saved successfully")
     },
     onError: (err: any) => toast.error(err.response?.data?.error || "Failed to save"),
@@ -64,15 +64,15 @@ export default function SettingsPage() {
             </div>
             <h1 className="text-3xl font-extrabold text-brand-black">Settings</h1>
           </div>
-          <p className="text-neutral-500">Update your canteen's basic information and hours</p>
+          <p className="text-neutral-500">Update your restaurant's basic information and hours</p>
         </div>
-        {canteens && canteens.length > 1 && (
+        {restaurants && restaurants.length > 1 && (
           <select
-            value={canteenId}
-            onChange={(e) => setCanteenId(e.target.value)}
+            value={restaurantId}
+            onChange={(e) => setRestaurantId(e.target.value)}
             className="px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
           >
-            {canteens.map((c: any) => (
+            {restaurants.map((c: any) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
@@ -104,7 +104,7 @@ export default function SettingsPage() {
                   <Store className="w-5 h-5 text-neutral-600" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-brand-black">Canteen Name</h2>
+                  <h2 className="text-lg font-bold text-brand-black">Restaurant Name</h2>
                   <p className="text-sm text-neutral-400">The name shown to customers on the menu page</p>
                 </div>
               </div>
@@ -192,7 +192,7 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-brand-black">Operating Hours</h2>
-                  <p className="text-sm text-neutral-400">When your canteen accepts orders</p>
+                  <p className="text-sm text-neutral-400">When your restaurant accepts orders</p>
                 </div>
               </div>
             </CardHeader>

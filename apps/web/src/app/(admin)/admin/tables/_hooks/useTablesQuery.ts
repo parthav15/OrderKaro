@@ -5,7 +5,7 @@ import api from "@/lib/api"
 
 export interface TableRow {
   id: string
-  canteenId: string
+  restaurantId: string
   label: string
   section: string | null
   qrToken: string
@@ -18,14 +18,14 @@ export interface TableRow {
   todayOrderCount: number
 }
 
-export function useTablesQuery(canteenId: string) {
+export function useTablesQuery(restaurantId: string) {
   return useQuery<TableRow[]>({
-    queryKey: ["tables", canteenId],
+    queryKey: ["tables", restaurantId],
     queryFn: async () => {
-      const { data } = await api.get(`/api/v1/canteens/${canteenId}/tables`)
+      const { data } = await api.get(`/api/v1/restaurants/${restaurantId}/tables`)
       return data.data
     },
-    enabled: !!canteenId,
+    enabled: !!restaurantId,
     staleTime: 15_000,
   })
 }

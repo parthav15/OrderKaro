@@ -11,7 +11,7 @@ import { relativeAge } from "../_utils/format-time"
 
 interface TableCardProps {
   table: TableRow
-  canteenId: string
+  restaurantId: string
   selected: boolean
   selectionMode: boolean
   onToggleSelect: (id: string, shiftKey: boolean) => void
@@ -26,7 +26,7 @@ interface TableCardProps {
 
 export function TableCard({
   table,
-  canteenId,
+  restaurantId,
   selected,
   selectionMode,
   onToggleSelect,
@@ -111,7 +111,7 @@ export function TableCard({
         <div className={`px-5 pt-5 pb-4 ${!table.isActive ? "opacity-60" : ""}`}>
           <div className="flex items-start gap-4">
             <TableCardQrThumb
-              canteenId={canteenId}
+              restaurantId={restaurantId}
               tableId={table.id}
               hovered={hovered}
             />

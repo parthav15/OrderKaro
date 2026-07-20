@@ -18,7 +18,7 @@ import { FloorTabs } from "./FloorTabs"
 
 interface TableMapViewProps {
   tables: TableRow[]
-  canteenId: string
+  restaurantId: string
   activity: Record<string, { pulseAt: number; activeOrderCount: number }>
   onSelectTable: (id: string | null) => void
   selectedTableId: string | null
@@ -28,7 +28,7 @@ const UNASSIGNED_KEY = "__unassigned__"
 
 export function TableMapView({
   tables,
-  canteenId,
+  restaurantId,
   activity,
   onSelectTable,
   selectedTableId,
@@ -36,7 +36,7 @@ export function TableMapView({
   const { state, update } = useTablesUrlState()
   const containerRef = useRef<HTMLDivElement>(null)
   const transform = useCanvasTransform({ containerRef })
-  const positions = useTablePositions(canteenId)
+  const positions = useTablePositions(restaurantId)
   const [hasFitOnce, setHasFitOnce] = useState(false)
 
   const floorTabs = useMemo(() => {
@@ -142,7 +142,7 @@ export function TableMapView({
             <TableNode
               key={t.id}
               table={t}
-              canteenId={canteenId}
+              restaurantId={restaurantId}
               scale={transform.scale}
               draggable={draggable}
               snap={state.snap}
@@ -192,7 +192,7 @@ export function TableMapView({
 
         <UnplacedTray
           tables={unplaced}
-          canteenId={canteenId}
+          restaurantId={restaurantId}
           canvasRef={containerRef}
           x={transform.x}
           y={transform.y}

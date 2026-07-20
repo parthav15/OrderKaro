@@ -39,7 +39,7 @@ type BulkQrItem = {
 export default function TablesPage() {
   const queryClient = useQueryClient()
   const { state: urlState, update: updateUrlState } = useTablesUrlState()
-  const [canteenId, setCanteenId] = useState<string>("")
+  const [restaurantId, setRestaurantId] = useState<string>("")
   const [showAddModal, setShowAddModal] = useState(false)
   const [editTarget, setEditTarget] = useState<TableRow | null>(null)
   const [posterTarget, setPosterTarget] = useState<TableRow | null>(null)
@@ -49,19 +49,19 @@ export default function TablesPage() {
   const [bulkToggling, setBulkToggling] = useState(false)
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
 
-  const { data: canteens } = useQuery<{ id: string; name: string; slug: string }[]>({
-    queryKey: ["canteens"],
-    queryFn: () => api.get("/api/v1/canteens").then((r) => r.data.data),
+  const { data: restaurants } = useQuery<{ id: string; name: string; slug: string }[]>({
+    queryKey: ["restaurants"],
+    queryFn: () => api.get("/api/v1/restaurants").then((r) => r.data.data),
   })
 
-  const selectedCanteen = canteens?.find((c) => c.id === canteenId)
+  const selectedRestaurant = restaurants?.find((c) => c.id === restaurantId)
 
   useEffect(() => {
-    if (canteens?.[0] && !canteenId) setCanteenId(canteens[0].id)
-  }, [canteens, canteenId])
+    if (restaurants?.[0] && !restaurantId) setRestaurantId(restaurants[0].id)
+  }, [restaurants, restaurantId])
 
-  const { data: tables, isLoading } = useTablesQuery(canteenId)
-  const { activity } = useTablesRealtime(canteenId)
+  const { data: tables, isLoading } = useTablesQuery(restaurantId)
+  const { activity } = useTablesRealtime(restaurantId)
   const selection = useBulkSelection()
 
   useEffect(() => {
@@ -112,9 +112,9 @@ export default function TablesPage() {
 
   const deleteOne = useMutation({
     mutationFn: (tableId: string) =>
-      api.delete(`/api/v1/canteens/${canteenId}/tables/${tableId}`),
+      api.delete(`/api/v1/restaurants/${restaurantId}/tables/${tableId}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tables", canteenId] })
+      queryClient.invalidateQueries({ queryKey: ["tables", restaurantId] })
       toast.success("Table deleted")
     },
     onError: (err: any) => toast.error(err.response?.data?.error || "Delete failed"),
@@ -123,12 +123,12 @@ export default function TablesPage() {
   async function fetchSingleQr(tableId: string) {
     const cached = queryClient.getQueryData<{ url: string; qrDataUrl: string }>([
       "table-qr",
-      canteenId,
+      restaurantId,
       tableId,
     ])
     if (cached) return cached
-    const { data } = await api.get(`/api/v1/canteens/${canteenId}/tables/${tableId}/qr`)
-    queryClient.setQueryData(["table-qr", canteenId, tableId], data.data)
+    const { data } = await api.get(`/api/v1/restaurants/${restaurantId}/tables/${tableId}/qr`)
+    queryClient.setQueryData(["table-qr", restaurantId, tableId], data.data)
     return data.data as { url: string; qrDataUrl: string }
   }
 
@@ -153,13 +153,13 @@ export default function TablesPage() {
   }
 
   async function downloadBulkPdf(targetIds?: string[]) {
-    if (!canteenId) return
+    if (!restaurantId) return
     const isSelection = !!targetIds
     if (isSelection) setBulkSelectionExporting(true)
     else setBulkExporting(true)
 
     try {
-      const { data } = await api.post(`/api/v1/canteens/${canteenId}/tables/bulk-qr`)
+      const { data } = await api.post(`/api/v1/restaurants/${restaurantId}/tables/bulk-qr`)
       let qrItems: BulkQrItem[] = data.data
       if (targetIds) {
         const labelSet = new Set(
@@ -173,7 +173,7 @@ export default function TablesPage() {
         toast.error("No active tables found")
         return
       }
-      await renderQrPdf(qrItems, canteens?.find((c) => c.id === canteenId)?.name ?? "Canteen")
+      await renderQrPdf(qrItems, restaurants?.find((c) => c.id === restaurantId)?.name ?? "Restaurant")
       toast.success("QR sheet downloaded")
       if (isSelection) selection.clear()
     } catch {
@@ -193,10 +193,10 @@ export default function TablesPage() {
       const next = !allActive
       await Promise.all(
         targetTables.map((t) =>
-          api.put(`/api/v1/canteens/${canteenId}/tables/${t.id}`, { isActive: next })
+          api.put(`/api/v1/restaurants/${restaurantId}/tables/${t.id}`, { isActive: next })
         )
       )
-      queryClient.invalidateQueries({ queryKey: ["tables", canteenId] })
+      queryClient.invalidateQueries({ queryKey: ["tables", restaurantId] })
       toast.success(next ? "Tables activated" : "Tables deactivated")
       selection.clear()
     } catch {
@@ -210,10 +210,10 @@ export default function TablesPage() {
     try {
       await Promise.all(
         selection.selectedIds.map((id) =>
-          api.delete(`/api/v1/canteens/${canteenId}/tables/${id}`)
+          api.delete(`/api/v1/restaurants/${restaurantId}/tables/${id}`)
         )
       )
-      queryClient.invalidateQueries({ queryKey: ["tables", canteenId] })
+      queryClient.invalidateQueries({ queryKey: ["tables", restaurantId] })
       toast.success(`Deleted ${selection.count} table${selection.count === 1 ? "" : "s"}`)
       selection.clear()
       setBulkDeleteOpen(false)
@@ -248,9 +248,9 @@ export default function TablesPage() {
   return (
     <LayoutGroup>
       <TablesHeader
-        canteens={canteens ?? []}
-        canteenId={canteenId}
-        onCanteenChange={setCanteenId}
+        restaurants={restaurants ?? []}
+        restaurantId={restaurantId}
+        onRestaurantChange={setRestaurantId}
         total={totalCount}
         active={activeCount}
         liveNow={liveNowCount}
@@ -261,8 +261,8 @@ export default function TablesPage() {
       />
 
       <AnywhereQrCard
-        slug={selectedCanteen?.slug ?? null}
-        canteenName={selectedCanteen?.name ?? "Canteen"}
+        slug={selectedRestaurant?.slug ?? null}
+        restaurantName={selectedRestaurant?.name ?? "Restaurant"}
       />
 
       {!isEmpty && (
@@ -293,7 +293,7 @@ export default function TablesPage() {
       ) : isMapView ? (
         <TableMapView
           tables={filteredTables}
-          canteenId={canteenId}
+          restaurantId={restaurantId}
           activity={activity}
           onSelectTable={setMapSelectedId}
           selectedTableId={mapSelectedId}
@@ -340,7 +340,7 @@ export default function TablesPage() {
                         >
                           <TableCard
                             table={table}
-                            canteenId={canteenId}
+                            restaurantId={restaurantId}
                             selected={selection.isSelected(table.id)}
                             selectionMode={selection.count > 0}
                             onToggleSelect={handleToggleSelect}
@@ -373,7 +373,7 @@ export default function TablesPage() {
                           <TableListRow
                             key={table.id}
                             table={table}
-                            canteenId={canteenId}
+                            restaurantId={restaurantId}
                             selected={selection.isSelected(table.id)}
                             onToggleSelect={handleToggleSelect}
                             onView={(t) => setPosterTarget(t)}
@@ -407,22 +407,22 @@ export default function TablesPage() {
 
       <AddTableModal
         isOpen={showAddModal}
-        canteenId={canteenId}
+        restaurantId={restaurantId}
         sections={sections}
         onClose={() => setShowAddModal(false)}
       />
 
       <EditTableModal
         table={editTarget}
-        canteenId={canteenId}
+        restaurantId={restaurantId}
         sections={sections}
         onClose={() => setEditTarget(null)}
       />
 
       <QrPosterModal
         table={posterTarget}
-        canteenId={canteenId}
-        canteenName={canteens?.find((c) => c.id === canteenId)?.name ?? "Canteen"}
+        restaurantId={restaurantId}
+        restaurantName={restaurants?.find((c) => c.id === restaurantId)?.name ?? "Restaurant"}
         onClose={() => setPosterTarget(null)}
       />
 
@@ -462,7 +462,7 @@ function slugify(text: string) {
   return text.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
 }
 
-async function renderQrPdf(qrItems: BulkQrItem[], canteenName: string) {
+async function renderQrPdf(qrItems: BulkQrItem[], restaurantName: string) {
   const { jsPDF } = await import("jspdf")
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" })
 
@@ -484,7 +484,7 @@ async function renderQrPdf(qrItems: BulkQrItem[], canteenName: string) {
   doc.setFont("helvetica", "normal")
   doc.setFontSize(10)
   doc.setTextColor(10, 10, 10)
-  doc.text(canteenName, margin, margin + 13)
+  doc.text(restaurantName, margin, margin + 13)
 
   doc.setDrawColor(220, 38, 38)
   doc.setLineWidth(0.5)
@@ -531,6 +531,6 @@ async function renderQrPdf(qrItems: BulkQrItem[], canteenName: string) {
     }
   }
 
-  const safeFileName = canteenName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
+  const safeFileName = restaurantName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
   doc.save(`qr-codes-${safeFileName}.pdf`)
 }

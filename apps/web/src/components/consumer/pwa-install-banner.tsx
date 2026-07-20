@@ -88,7 +88,7 @@ export function PwaInstallBanner() {
             <div className="flex-1 min-w-0">
               <p className="text-white font-bold text-sm">Add to Home Screen</p>
               <p className="text-neutral-400 text-xs mt-0.5">
-                Get quick access to your canteen
+                Get quick access to your restaurant
               </p>
             </div>
 

@@ -18,7 +18,7 @@ async function main() {
     },
   });
 
-  const canteen = await prisma.canteen.upsert({
+  const restaurant = await prisma.restaurant.upsert({
     where: { slug: "sachis-kitchen" },
     update: {},
     create: {
@@ -37,7 +37,7 @@ async function main() {
     update: {},
     create: {
       id: "cat-beverages-sachis",
-      canteenId: canteen.id,
+      restaurantId: restaurant.id,
       name: "Beverages",
       sortOrder: 1,
       isActive: true,
@@ -49,7 +49,7 @@ async function main() {
     update: {},
     create: {
       id: "cat-snacks-sachis",
-      canteenId: canteen.id,
+      restaurantId: restaurant.id,
       name: "Snacks",
       sortOrder: 2,
       isActive: true,
@@ -61,7 +61,7 @@ async function main() {
     update: {},
     create: {
       id: "cat-maincourse-sachis",
-      canteenId: canteen.id,
+      restaurantId: restaurant.id,
       name: "Main Course",
       sortOrder: 3,
       isActive: true,
@@ -73,7 +73,7 @@ async function main() {
     update: {},
     create: {
       id: "cat-desserts-sachis",
-      canteenId: canteen.id,
+      restaurantId: restaurant.id,
       name: "Desserts",
       sortOrder: 4,
       isActive: true,
@@ -85,7 +85,7 @@ async function main() {
     update: {},
     create: {
       id: "cat-combos-sachis",
-      canteenId: canteen.id,
+      restaurantId: restaurant.id,
       name: "Combos & Thalis",
       sortOrder: 5,
       isActive: true,
@@ -97,7 +97,7 @@ async function main() {
     update: {},
     create: {
       id: "cat-breads-sachis",
-      canteenId: canteen.id,
+      restaurantId: restaurant.id,
       name: "Breads",
       sortOrder: 6,
       isActive: true,
@@ -178,7 +178,7 @@ async function main() {
       update: {},
       create: {
         id: table.id,
-        canteenId: canteen.id,
+        restaurantId: restaurant.id,
         label: table.label,
         qrToken: table.qrToken,
         isActive: true,
@@ -189,7 +189,7 @@ async function main() {
 
   console.log("Seed complete.");
   console.log(`Owner: ${owner.email} (id: ${owner.id})`);
-  console.log(`Canteen: ${canteen.name} (id: ${canteen.id})`);
+  console.log(`Restaurant: ${restaurant.name} (id: ${restaurant.id})`);
   console.log(`Categories: 6 created`);
   console.log(`Menu items: ${menuItems.length} created`);
   console.log(`Tables: 6 created (Ground Floor)`);

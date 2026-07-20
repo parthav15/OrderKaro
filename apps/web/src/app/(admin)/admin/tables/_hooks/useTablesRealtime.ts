@@ -9,7 +9,7 @@ interface TableActivity {
   activeOrderCount: number
 }
 
-export function useTablesRealtime(canteenId: string | null) {
+export function useTablesRealtime(restaurantId: string | null) {
   const queryClient = useQueryClient()
   const [activity, setActivity] = useState<Record<string, TableActivity>>({})
 
@@ -25,7 +25,7 @@ export function useTablesRealtime(canteenId: string | null) {
   }, [])
 
   useEffect(() => {
-    if (!canteenId) return
+    if (!restaurantId) return
 
     let socket: ReturnType<typeof connectSocket> | null = null
     try {
@@ -37,18 +37,18 @@ export function useTablesRealtime(canteenId: string | null) {
     const onNewOrder = (order: any) => {
       if (!order?.tableId) return
       pulse(order.tableId, +1)
-      queryClient.invalidateQueries({ queryKey: ["tables", canteenId] })
+      queryClient.invalidateQueries({ queryKey: ["tables", restaurantId] })
     }
 
     const onStatus = (payload: any) => {
       if (!payload?.orderId) return
       if (payload.status === "PICKED_UP" || payload.status === "CANCELLED") {
-        queryClient.invalidateQueries({ queryKey: ["tables", canteenId] })
+        queryClient.invalidateQueries({ queryKey: ["tables", restaurantId] })
       }
     }
 
     const onCancelled = () => {
-      queryClient.invalidateQueries({ queryKey: ["tables", canteenId] })
+      queryClient.invalidateQueries({ queryKey: ["tables", restaurantId] })
     }
 
     socket.on("order:new", onNewOrder)
@@ -60,7 +60,7 @@ export function useTablesRealtime(canteenId: string | null) {
       socket?.off("order:status", onStatus)
       socket?.off("order:cancelled", onCancelled)
     }
-  }, [canteenId, queryClient, pulse])
+  }, [restaurantId, queryClient, pulse])
 
   return { activity }
 }

@@ -58,7 +58,7 @@ export default function OrderTrackingPage({
 }) {
   const router = useRouter()
   const [liveStatus, setLiveStatus] = useState<string | null>(null)
-  const [resolvedCanteenId, setResolvedCanteenId] = useState<string | null>(null)
+  const [resolvedRestaurantId, setResolvedRestaurantId] = useState<string | null>(null)
   const [isOffline, setIsOffline] = useState(false)
   const [cachedOrder, setCachedOrder] = useState<any>(null)
   const [cachedAt, setCachedAt] = useState<number | null>(null)
@@ -97,8 +97,8 @@ export default function OrderTrackingPage({
 
   useEffect(() => {
     api
-      .get(`/api/v1/public/canteen/${params.slug}/menu`)
-      .then((r) => setResolvedCanteenId(r.data.data.canteen.id))
+      .get(`/api/v1/public/restaurant/${params.slug}/menu`)
+      .then((r) => setResolvedRestaurantId(r.data.data.restaurant.id))
       .catch(() => {})
   }, [params.slug])
 
@@ -106,9 +106,9 @@ export default function OrderTrackingPage({
     queryKey: ["order", params.orderId],
     queryFn: () =>
       api
-        .get(`/api/v1/canteens/${resolvedCanteenId}/orders/${params.orderId}`)
+        .get(`/api/v1/restaurants/${resolvedRestaurantId}/orders/${params.orderId}`)
         .then((r) => r.data.data),
-    enabled: !!resolvedCanteenId && !isOffline,
+    enabled: !!resolvedRestaurantId && !isOffline,
     refetchInterval: isOffline ? false : 10000,
   })
 
@@ -170,9 +170,9 @@ export default function OrderTrackingPage({
   const isCancelled = currentStatus === "CANCELLED"
 
   async function handleCancel() {
-    if (!resolvedCanteenId) return
+    if (!resolvedRestaurantId) return
     try {
-      await api.post(`/api/v1/canteens/${resolvedCanteenId}/orders/${params.orderId}/cancel`)
+      await api.post(`/api/v1/restaurants/${resolvedRestaurantId}/orders/${params.orderId}/cancel`)
       toast.success("Order cancelled")
       refetch()
     } catch (err: any) {
@@ -180,7 +180,7 @@ export default function OrderTrackingPage({
     }
   }
 
-  if (!resolvedCanteenId && !displayOrder) {
+  if (!resolvedRestaurantId && !displayOrder) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-2 border-brand-red border-t-transparent rounded-full" />

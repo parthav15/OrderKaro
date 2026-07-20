@@ -22,7 +22,7 @@ export default function LoginPage() {
   const [form, setForm] = useState({
     email: "",
     password: "",
-    canteenSlug: "",
+    restaurantSlug: "",
   })
 
   async function handleSubmit(e: React.FormEvent) {
@@ -48,12 +48,12 @@ export default function LoginPage() {
         router.push("/admin")
       } else {
         const slugRes = await api.get(
-          `/api/v1/public/canteen/${form.canteenSlug}/menu`
+          `/api/v1/public/restaurant/${form.restaurantSlug}/menu`
         )
-        const canteenId = slugRes.data.data.canteen.id
+        const restaurantId = slugRes.data.data.restaurant.id
 
         const { data } = await api.post("/api/v1/auth/staff/login", {
-          canteenId,
+          restaurantId,
           email: form.email,
           password: form.password,
         })
@@ -63,7 +63,7 @@ export default function LoginPage() {
             id: data.data.staff.id,
             name: data.data.staff.name,
             role,
-            canteenId,
+            restaurantId,
           },
           data.data.accessToken,
           data.data.refreshToken
@@ -156,11 +156,11 @@ export default function LoginPage() {
                   className="space-y-5"
                 >
                   <Input
-                    label="Canteen Slug"
+                    label="Restaurant Slug"
                     placeholder="e.g. campus-cafe"
-                    value={form.canteenSlug}
+                    value={form.restaurantSlug}
                     onChange={(e) =>
-                      setForm({ ...form, canteenSlug: e.target.value })
+                      setForm({ ...form, restaurantSlug: e.target.value })
                     }
                     required
                   />

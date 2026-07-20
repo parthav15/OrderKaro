@@ -11,7 +11,7 @@ import { Modal } from "@/components/ui/modal"
 import api from "@/lib/api"
 import { toast } from "sonner"
 
-interface Canteen {
+interface Restaurant {
   id: string
   name: string
   slug: string
@@ -31,91 +31,91 @@ const emptyForm = {
   avgPrepTime: 15,
 }
 
-export default function CanteensPage() {
+export default function RestaurantsPage() {
   const queryClient = useQueryClient()
   const [showModal, setShowModal] = useState(false)
-  const [editingCanteen, setEditingCanteen] = useState<Canteen | null>(null)
+  const [editingRestaurant, setEditingRestaurant] = useState<Restaurant | null>(null)
   const [form, setForm] = useState(emptyForm)
-  const [deleteTarget, setDeleteTarget] = useState<Canteen | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Restaurant | null>(null)
 
-  const { data: canteens, isLoading } = useQuery<Canteen[]>({
-    queryKey: ["canteens"],
-    queryFn: () => api.get("/api/v1/canteens").then((r) => r.data.data),
+  const { data: restaurants, isLoading } = useQuery<Restaurant[]>({
+    queryKey: ["restaurants"],
+    queryFn: () => api.get("/api/v1/restaurants").then((r) => r.data.data),
   })
 
-  const createCanteen = useMutation({
+  const createRestaurant = useMutation({
     mutationFn: (payload: typeof form) =>
-      api.post("/api/v1/canteens", {
+      api.post("/api/v1/restaurants", {
         ...payload,
         openingTime: payload.openingTime || undefined,
         closingTime: payload.closingTime || undefined,
         description: payload.description || undefined,
       }),
     onSuccess: () => {
-      toast.success("Canteen created")
-      queryClient.invalidateQueries({ queryKey: ["canteens"] })
+      toast.success("Restaurant created")
+      queryClient.invalidateQueries({ queryKey: ["restaurants"] })
       closeModal()
     },
-    onError: (err: any) => toast.error(err.response?.data?.error || "Failed to create canteen"),
+    onError: (err: any) => toast.error(err.response?.data?.error || "Failed to create restaurant"),
   })
 
-  const updateCanteen = useMutation({
+  const updateRestaurant = useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: typeof form }) =>
-      api.put(`/api/v1/canteens/${id}`, {
+      api.put(`/api/v1/restaurants/${id}`, {
         ...payload,
         openingTime: payload.openingTime || undefined,
         closingTime: payload.closingTime || undefined,
         description: payload.description || undefined,
       }),
     onSuccess: () => {
-      toast.success("Canteen updated")
-      queryClient.invalidateQueries({ queryKey: ["canteens"] })
+      toast.success("Restaurant updated")
+      queryClient.invalidateQueries({ queryKey: ["restaurants"] })
       closeModal()
     },
     onError: (err: any) => toast.error(err.response?.data?.error || "Failed to update"),
   })
 
-  const deleteCanteen = useMutation({
-    mutationFn: (id: string) => api.delete(`/api/v1/canteens/${id}`),
+  const deleteRestaurant = useMutation({
+    mutationFn: (id: string) => api.delete(`/api/v1/restaurants/${id}`),
     onSuccess: () => {
-      toast.success("Canteen deleted")
-      queryClient.invalidateQueries({ queryKey: ["canteens"] })
+      toast.success("Restaurant deleted")
+      queryClient.invalidateQueries({ queryKey: ["restaurants"] })
       setDeleteTarget(null)
     },
     onError: (err: any) => toast.error(err.response?.data?.error || "Failed to delete"),
   })
 
   function openCreateModal() {
-    setEditingCanteen(null)
+    setEditingRestaurant(null)
     setForm(emptyForm)
     setShowModal(true)
   }
 
-  function openEditModal(canteen: Canteen) {
-    setEditingCanteen(canteen)
+  function openEditModal(restaurant: Restaurant) {
+    setEditingRestaurant(restaurant)
     setForm({
-      name: canteen.name,
-      slug: canteen.slug,
-      description: canteen.description ?? "",
-      openingTime: canteen.openingTime ?? "",
-      closingTime: canteen.closingTime ?? "",
-      avgPrepTime: canteen.avgPrepTime,
+      name: restaurant.name,
+      slug: restaurant.slug,
+      description: restaurant.description ?? "",
+      openingTime: restaurant.openingTime ?? "",
+      closingTime: restaurant.closingTime ?? "",
+      avgPrepTime: restaurant.avgPrepTime,
     })
     setShowModal(true)
   }
 
   function closeModal() {
     setShowModal(false)
-    setEditingCanteen(null)
+    setEditingRestaurant(null)
     setForm(emptyForm)
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (editingCanteen) {
-      updateCanteen.mutate({ id: editingCanteen.id, payload: form })
+    if (editingRestaurant) {
+      updateRestaurant.mutate({ id: editingRestaurant.id, payload: form })
     } else {
-      createCanteen.mutate(form)
+      createRestaurant.mutate(form)
     }
   }
 
@@ -123,7 +123,7 @@ export default function CanteensPage() {
     return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
   }
 
-  const isMutating = createCanteen.isPending || updateCanteen.isPending
+  const isMutating = createRestaurant.isPending || updateRestaurant.isPending
 
   return (
     <div>
@@ -133,12 +133,12 @@ export default function CanteensPage() {
             <div className="w-10 h-10 rounded-xl bg-brand-red/10 flex items-center justify-center">
               <Store className="w-5 h-5 text-brand-red" />
             </div>
-            <h1 className="text-3xl font-extrabold text-brand-black">Canteens</h1>
+            <h1 className="text-3xl font-extrabold text-brand-black">Restaurants</h1>
           </div>
-          <p className="text-neutral-500">Manage all your canteen locations and their settings</p>
+          <p className="text-neutral-500">Manage all your restaurant locations and their settings</p>
         </div>
         <Button size="lg" onClick={openCreateModal}>
-          <Plus className="w-5 h-5" /> Add Canteen
+          <Plus className="w-5 h-5" /> Add Restaurant
         </Button>
       </div>
 
@@ -150,27 +150,27 @@ export default function CanteensPage() {
         </div>
       )}
 
-      {!isLoading && (!canteens || canteens.length === 0) && (
+      {!isLoading && (!restaurants || restaurants.length === 0) && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="text-center py-24 border-2 border-dashed border-neutral-200 rounded-2xl"
         >
           <Store className="w-16 h-16 text-neutral-200 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-brand-black mb-2">No canteens yet</h3>
-          <p className="text-neutral-400 mb-6">Create your first canteen location to start taking orders</p>
+          <h3 className="text-xl font-bold text-brand-black mb-2">No restaurants yet</h3>
+          <p className="text-neutral-400 mb-6">Create your first restaurant location to start taking orders</p>
           <Button size="lg" onClick={openCreateModal}>
-            <Plus className="w-5 h-5" /> Create First Canteen
+            <Plus className="w-5 h-5" /> Create First Restaurant
           </Button>
         </motion.div>
       )}
 
-      {!isLoading && canteens && canteens.length > 0 && (
+      {!isLoading && restaurants && restaurants.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <AnimatePresence>
-            {canteens.map((canteen, idx) => (
+            {restaurants.map((restaurant, idx) => (
               <motion.div
-                key={canteen.id}
+                key={restaurant.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
@@ -182,16 +182,16 @@ export default function CanteensPage() {
                       <div className="w-14 h-14 rounded-2xl bg-brand-red/10 flex items-center justify-center flex-shrink-0">
                         <Store className="w-7 h-7 text-brand-red" />
                       </div>
-                      <Badge variant={canteen.isActive ? "success" : "default"}>
-                        {canteen.isActive ? "Active" : "Inactive"}
+                      <Badge variant={restaurant.isActive ? "success" : "default"}>
+                        {restaurant.isActive ? "Active" : "Inactive"}
                       </Badge>
                     </div>
 
-                    <h3 className="text-xl font-extrabold text-brand-black">{canteen.name}</h3>
+                    <h3 className="text-xl font-extrabold text-brand-black">{restaurant.name}</h3>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-sm text-neutral-400">/{canteen.slug}</span>
+                      <span className="text-sm text-neutral-400">/{restaurant.slug}</span>
                       <a
-                        href={`/${canteen.slug}/menu`}
+                        href={`/${restaurant.slug}/menu`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-1 text-brand-red text-sm font-semibold hover:underline"
@@ -200,19 +200,19 @@ export default function CanteensPage() {
                       </a>
                     </div>
 
-                    {canteen.description && (
-                      <p className="text-sm text-neutral-500 mt-2 line-clamp-2">{canteen.description}</p>
+                    {restaurant.description && (
+                      <p className="text-sm text-neutral-500 mt-2 line-clamp-2">{restaurant.description}</p>
                     )}
 
                     <div className="flex items-center gap-5 mt-4 pt-4 border-t border-neutral-100">
-                      {canteen.openingTime && canteen.closingTime && (
+                      {restaurant.openingTime && restaurant.closingTime && (
                         <div className="flex items-center gap-2 text-sm text-neutral-600">
                           <Clock className="w-4 h-4 text-neutral-400" />
-                          <span className="font-semibold">{canteen.openingTime} – {canteen.closingTime}</span>
+                          <span className="font-semibold">{restaurant.openingTime} – {restaurant.closingTime}</span>
                         </div>
                       )}
                       <span className="text-sm text-neutral-500">
-                        ~{canteen.avgPrepTime} min avg prep
+                        ~{restaurant.avgPrepTime} min avg prep
                       </span>
                     </div>
 
@@ -221,12 +221,12 @@ export default function CanteensPage() {
                         variant="outline"
                         size="sm"
                         className="flex-1"
-                        onClick={() => openEditModal(canteen)}
+                        onClick={() => openEditModal(restaurant)}
                       >
-                        <Pencil className="w-4 h-4" /> Edit Canteen
+                        <Pencil className="w-4 h-4" /> Edit Restaurant
                       </Button>
                       <button
-                        onClick={() => setDeleteTarget(canteen)}
+                        onClick={() => setDeleteTarget(restaurant)}
                         className="flex items-center gap-2 px-3 py-2 rounded-xl border border-brand-red/30 text-sm font-semibold text-brand-red hover:bg-red-50 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" /> Delete
@@ -243,7 +243,7 @@ export default function CanteensPage() {
       <Modal
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        title="Delete Canteen"
+        title="Delete Restaurant"
       >
         {deleteTarget && (
           <div className="space-y-5">
@@ -252,7 +252,7 @@ export default function CanteensPage() {
               <div>
                 <p className="font-bold text-brand-black">Delete "{deleteTarget.name}"?</p>
                 <p className="text-sm text-neutral-600 mt-1">
-                  This will permanently delete this canteen, all its menus, tables, staff, and data. This cannot be undone.
+                  This will permanently delete this restaurant, all its menus, tables, staff, and data. This cannot be undone.
                 </p>
               </div>
             </div>
@@ -264,8 +264,8 @@ export default function CanteensPage() {
                 size="lg"
                 variant="danger"
                 className="flex-1"
-                loading={deleteCanteen.isPending}
-                onClick={() => deleteCanteen.mutate(deleteTarget.id)}
+                loading={deleteRestaurant.isPending}
+                onClick={() => deleteRestaurant.mutate(deleteTarget.id)}
               >
                 <Trash2 className="w-4 h-4" /> Yes, Delete Permanently
               </Button>
@@ -277,17 +277,17 @@ export default function CanteensPage() {
       <Modal
         isOpen={showModal}
         onClose={closeModal}
-        title={editingCanteen ? "Edit Canteen" : "Add New Canteen"}
+        title={editingRestaurant ? "Edit Restaurant" : "Add New Restaurant"}
       >
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-brand-black">Canteen Name</label>
+            <label className="block text-sm font-bold text-brand-black">Restaurant Name</label>
             <input
               placeholder="e.g. Main Campus Cafeteria"
               value={form.name}
               onChange={(e) => {
                 const name = e.target.value
-                setForm((f) => ({ ...f, name, slug: editingCanteen ? f.slug : generateSlug(name) }))
+                setForm((f) => ({ ...f, name, slug: editingRestaurant ? f.slug : generateSlug(name) }))
               }}
               required
               className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
@@ -317,7 +317,7 @@ export default function CanteensPage() {
             <textarea
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              placeholder="Brief description of this canteen"
+              placeholder="Brief description of this restaurant"
               rows={2}
               className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20 resize-none"
             />
@@ -363,7 +363,7 @@ export default function CanteensPage() {
               Cancel
             </Button>
             <Button type="submit" size="lg" className="flex-1" loading={isMutating}>
-              {editingCanteen ? "Save Changes" : "Create Canteen"}
+              {editingRestaurant ? "Save Changes" : "Create Restaurant"}
             </Button>
           </div>
         </form>

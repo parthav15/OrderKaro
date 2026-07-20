@@ -5,15 +5,15 @@ import { Plus, FileDown, Loader2, LayoutGrid } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { KpiChips } from "./KpiChips"
 
-interface Canteen {
+interface Restaurant {
   id: string
   name: string
 }
 
 interface TablesHeaderProps {
-  canteens: Canteen[]
-  canteenId: string
-  onCanteenChange: (id: string) => void
+  restaurants: Restaurant[]
+  restaurantId: string
+  onRestaurantChange: (id: string) => void
   total: number
   active: number
   liveNow: number
@@ -24,9 +24,9 @@ interface TablesHeaderProps {
 }
 
 export function TablesHeader({
-  canteens,
-  canteenId,
-  onCanteenChange,
+  restaurants,
+  restaurantId,
+  onRestaurantChange,
   total,
   active,
   liveNow,
@@ -56,19 +56,19 @@ export function TablesHeader({
             Tables &amp; QR codes
           </h1>
           <p className="text-neutral-500 max-w-xl">
-            Print, manage and monitor every scannable surface in your canteen.
+            Print, manage and monitor every scannable surface in your restaurant.
             Tap a card to inspect its QR, or hold delete to retire one.
           </p>
         </motion.div>
 
         <div className="flex items-center gap-3">
-          {canteens.length > 1 && (
+          {restaurants.length > 1 && (
             <select
-              value={canteenId}
-              onChange={(e) => onCanteenChange(e.target.value)}
+              value={restaurantId}
+              onChange={(e) => onRestaurantChange(e.target.value)}
               className="px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red bg-white"
             >
-              {canteens.map((c) => (
+              {restaurants.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
                 </option>
@@ -80,7 +80,7 @@ export function TablesHeader({
             whileTap={{ scale: 0.97 }}
             whileHover={{ y: -1 }}
             onClick={onBulkDownload}
-            disabled={bulkExporting || !canteenId || !hasTables}
+            disabled={bulkExporting || !restaurantId || !hasTables}
             className="inline-flex items-center gap-2 px-5 py-3 text-sm font-bold rounded-xl bg-white text-brand-black border border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50 transition-colors disabled:opacity-40 disabled:pointer-events-none"
           >
             <AnimatePresence mode="wait" initial={false}>

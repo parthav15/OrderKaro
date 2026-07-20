@@ -24,7 +24,7 @@ import api from "@/lib/api"
 import { toast } from "sonner"
 import { formatPrice } from "@/lib/utils"
 
-interface OwnerCanteen {
+interface OwnerRestaurant {
   id: string
   name: string
   slug: string
@@ -38,13 +38,13 @@ interface Owner {
   phone: string
   isVerified: boolean
   createdAt: string
-  canteens: OwnerCanteen[]
+  restaurants: OwnerRestaurant[]
 }
 
 interface SystemStats {
   totalOwners: number
-  totalCanteens: number
-  activeCanteens: number
+  totalRestaurants: number
+  activeRestaurants: number
   totalOrders: number
   totalRevenue: number
 }
@@ -117,15 +117,15 @@ export default function SuperAdminPage() {
       color: "text-brand-red",
     },
     {
-      label: "Total Canteens",
-      value: stats?.totalCanteens ?? 0,
+      label: "Total Restaurants",
+      value: stats?.totalRestaurants ?? 0,
       icon: Store,
       bg: "bg-neutral-100",
       color: "text-brand-black",
     },
     {
-      label: "Active Canteens",
-      value: stats?.activeCanteens ?? 0,
+      label: "Active Restaurants",
+      value: stats?.activeRestaurants ?? 0,
       icon: CheckCircle2,
       bg: "bg-neutral-100",
       color: "text-brand-black",
@@ -160,7 +160,7 @@ export default function SuperAdminPage() {
           </h1>
         </div>
         <p className="text-neutral-500 text-sm">
-          System-wide owner and canteen management
+          System-wide owner and restaurant management
         </p>
       </motion.div>
 
@@ -292,7 +292,7 @@ export default function SuperAdminPage() {
                         <div className="flex items-center gap-3 flex-shrink-0">
                           <div className="flex items-center gap-1.5 text-xs text-neutral-500">
                             <Store className="w-3.5 h-3.5" />
-                            <span>{owner.canteens.length} canteen{owner.canteens.length !== 1 ? "s" : ""}</span>
+                            <span>{owner.restaurants.length} restaurant{owner.restaurants.length !== 1 ? "s" : ""}</span>
                           </div>
 
                           <Button
@@ -314,7 +314,7 @@ export default function SuperAdminPage() {
                             )}
                           </Button>
 
-                          {owner.canteens.length > 0 && (
+                          {owner.restaurants.length > 0 && (
                             <button
                               onClick={() =>
                                 setExpandedOwnerId(
@@ -337,7 +337,7 @@ export default function SuperAdminPage() {
 
                       <AnimatePresence>
                         {expandedOwnerId === owner.id &&
-                          owner.canteens.length > 0 && (
+                          owner.restaurants.length > 0 && (
                             <motion.div
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: "auto" }}
@@ -346,25 +346,25 @@ export default function SuperAdminPage() {
                               className="overflow-hidden"
                             >
                               <div className="mt-4 pt-4 border-t border-neutral-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                                {owner.canteens.map((canteen) => (
+                                {owner.restaurants.map((restaurant) => (
                                   <div
-                                    key={canteen.id}
+                                    key={restaurant.id}
                                     className="flex items-center justify-between px-3 py-2 rounded-lg bg-neutral-50 border border-neutral-100"
                                   >
                                     <div className="min-w-0">
                                       <p className="text-xs font-semibold text-brand-black truncate">
-                                        {canteen.name}
+                                        {restaurant.name}
                                       </p>
                                       <p className="text-xs text-neutral-400">
-                                        /{canteen.slug}
+                                        /{restaurant.slug}
                                       </p>
                                     </div>
                                     <Badge
                                       variant={
-                                        canteen.isActive ? "success" : "default"
+                                        restaurant.isActive ? "success" : "default"
                                       }
                                     >
-                                      {canteen.isActive ? "Active" : "Inactive"}
+                                      {restaurant.isActive ? "Active" : "Inactive"}
                                     </Badge>
                                   </div>
                                 ))}

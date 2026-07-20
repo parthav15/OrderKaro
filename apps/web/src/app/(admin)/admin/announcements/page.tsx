@@ -23,31 +23,31 @@ const emptyForm = { message: "", isActive: true, expiresAt: "" }
 
 export default function AnnouncementsPage() {
   const queryClient = useQueryClient()
-  const [canteenId, setCanteenId] = useState<string | null>(null)
+  const [restaurantId, setRestaurantId] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<Announcement | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [deleteTarget, setDeleteTarget] = useState<Announcement | null>(null)
 
-  const { data: canteens } = useQuery({
-    queryKey: ["canteens"],
-    queryFn: () => api.get("/api/v1/canteens").then((r) => r.data.data),
+  const { data: restaurants } = useQuery({
+    queryKey: ["restaurants"],
+    queryFn: () => api.get("/api/v1/restaurants").then((r) => r.data.data),
   })
 
   useEffect(() => {
-    if (canteens?.[0] && !canteenId) setCanteenId(canteens[0].id)
-  }, [canteens, canteenId])
+    if (restaurants?.[0] && !restaurantId) setRestaurantId(restaurants[0].id)
+  }, [restaurants, restaurantId])
 
   const { data: announcements, isLoading } = useQuery<Announcement[]>({
-    queryKey: ["announcements", canteenId],
+    queryKey: ["announcements", restaurantId],
     queryFn: () =>
-      api.get(`/api/v1/canteens/${canteenId}/announcements`).then((r) => r.data.data),
-    enabled: !!canteenId,
+      api.get(`/api/v1/restaurants/${restaurantId}/announcements`).then((r) => r.data.data),
+    enabled: !!restaurantId,
   })
 
   const createMutation = useMutation({
     mutationFn: (payload: typeof form) =>
-      api.post(`/api/v1/canteens/${canteenId}/announcements`, {
+      api.post(`/api/v1/restaurants/${restaurantId}/announcements`, {
         message: payload.message,
         isActive: payload.isActive,
         expiresAt: payload.expiresAt || undefined,
@@ -62,7 +62,7 @@ export default function AnnouncementsPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: typeof form }) =>
-      api.put(`/api/v1/canteens/${canteenId}/announcements/${id}`, {
+      api.put(`/api/v1/restaurants/${restaurantId}/announcements/${id}`, {
         message: payload.message,
         isActive: payload.isActive,
         expiresAt: payload.expiresAt || undefined,
@@ -77,7 +77,7 @@ export default function AnnouncementsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) =>
-      api.delete(`/api/v1/canteens/${canteenId}/announcements/${id}`),
+      api.delete(`/api/v1/restaurants/${restaurantId}/announcements/${id}`),
     onSuccess: () => {
       toast.success("Announcement deleted")
       queryClient.invalidateQueries({ queryKey: ["announcements"] })
@@ -87,7 +87,7 @@ export default function AnnouncementsPage() {
 
   const toggleMutation = useMutation({
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
-      api.put(`/api/v1/canteens/${canteenId}/announcements/${id}`, { isActive }),
+      api.put(`/api/v1/restaurants/${restaurantId}/announcements/${id}`, { isActive }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["announcements"] }),
   })
 
@@ -137,13 +137,13 @@ export default function AnnouncementsPage() {
           <p className="text-neutral-500">Banners shown to customers when they browse your menu</p>
         </div>
         <div className="flex items-center gap-3">
-          {canteens && canteens.length > 1 && (
+          {restaurants && restaurants.length > 1 && (
             <select
-              value={canteenId || ""}
-              onChange={(e) => setCanteenId(e.target.value)}
+              value={restaurantId || ""}
+              onChange={(e) => setRestaurantId(e.target.value)}
               className="px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
             >
-              {canteens.map((c: any) => (
+              {restaurants.map((c: any) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>

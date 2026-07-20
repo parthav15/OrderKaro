@@ -9,7 +9,7 @@ import { NODE_HEIGHT, NODE_WIDTH, snapToGrid } from "../../_utils/map/bounds"
 
 interface TableNodeProps {
   table: TableRow
-  canteenId: string
+  restaurantId: string
   scale: MotionValue<number>
   draggable: boolean
   selected: boolean
@@ -22,7 +22,7 @@ interface TableNodeProps {
 
 export function TableNode({
   table,
-  canteenId,
+  restaurantId,
   scale,
   draggable,
   selected,
@@ -139,7 +139,7 @@ export function TableNode({
         )}
 
         <div className="flex items-start gap-2.5">
-          <TableCardQrThumb canteenId={canteenId} tableId={table.id} size={56} hovered={hovered} />
+          <TableCardQrThumb restaurantId={restaurantId} tableId={table.id} size={56} hovered={hovered} />
           <div className="flex-1 min-w-0">
             <h4 className="text-sm font-extrabold text-brand-black leading-tight truncate">
               {table.label}

@@ -100,43 +100,43 @@ function StatCard({ stat, index }: { stat: AnalyticsStat; index: number }) {
 
 export default function WalletManagement() {
   const queryClient = useQueryClient()
-  const [canteenId, setCanteenId] = useState<string>("")
+  const [restaurantId, setRestaurantId] = useState<string>("")
   const [showCreditModal, setShowCreditModal] = useState(false)
   const [creditForm, setCreditForm] = useState({ consumerId: "", amount: "", description: "" })
   const [search, setSearch] = useState("")
   const [activeTab, setActiveTab] = useState<"overview" | "requests" | "consumers">("overview")
 
-  const { data: canteens } = useQuery({
-    queryKey: ["canteens"],
-    queryFn: () => api.get("/api/v1/canteens").then((r) => r.data.data),
+  const { data: restaurants } = useQuery({
+    queryKey: ["restaurants"],
+    queryFn: () => api.get("/api/v1/restaurants").then((r) => r.data.data),
   })
 
   useEffect(() => {
-    if (canteens?.[0] && !canteenId) {
-      setCanteenId(canteens[0].id)
+    if (restaurants?.[0] && !restaurantId) {
+      setRestaurantId(restaurants[0].id)
     }
-  }, [canteens, canteenId])
+  }, [restaurants, restaurantId])
 
   const { data: requests, isLoading: requestsLoading, refetch: refetchRequests } = useQuery<RechargeRequest[]>({
-    queryKey: ["wallet-requests", canteenId],
+    queryKey: ["wallet-requests", restaurantId],
     queryFn: () =>
-      api.get(`/api/v1/canteens/${canteenId}/wallet/requests`).then((r) => r.data.data),
-    enabled: !!canteenId,
+      api.get(`/api/v1/restaurants/${restaurantId}/wallet/requests`).then((r) => r.data.data),
+    enabled: !!restaurantId,
     refetchInterval: 15000,
   })
 
   const { data: consumersData, isLoading: consumersLoading } = useQuery<{ consumers: Consumer[] }>({
-    queryKey: ["consumers", canteenId],
+    queryKey: ["consumers", restaurantId],
     queryFn: () =>
-      api.get(`/api/v1/canteens/${canteenId}/consumers`).then((r) => r.data.data),
-    enabled: !!canteenId,
+      api.get(`/api/v1/restaurants/${restaurantId}/consumers`).then((r) => r.data.data),
+    enabled: !!restaurantId,
   })
 
   const { data: activityData, isLoading: activityLoading } = useQuery<WalletTransaction[]>({
-    queryKey: ["wallet-activity", canteenId],
+    queryKey: ["wallet-activity", restaurantId],
     queryFn: () =>
-      api.get(`/api/v1/canteens/${canteenId}/wallet/transactions?limit=10`).then((r) => r.data.data),
-    enabled: !!canteenId,
+      api.get(`/api/v1/restaurants/${restaurantId}/wallet/transactions?limit=10`).then((r) => r.data.data),
+    enabled: !!restaurantId,
     refetchInterval: 30000,
   })
 
@@ -157,7 +157,7 @@ export default function WalletManagement() {
 
   const handleRequest = useMutation({
     mutationFn: ({ reqId, status, note }: { reqId: string; status: string; note?: string }) =>
-      api.patch(`/api/v1/canteens/${canteenId}/wallet/requests/${reqId}`, { status, note }),
+      api.patch(`/api/v1/restaurants/${restaurantId}/wallet/requests/${reqId}`, { status, note }),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["wallet-requests"] })
       queryClient.invalidateQueries({ queryKey: ["consumers"] })
@@ -168,7 +168,7 @@ export default function WalletManagement() {
   })
 
   const creditWallet = useMutation({
-    mutationFn: (data: any) => api.post(`/api/v1/canteens/${canteenId}/wallet/credit`, data),
+    mutationFn: (data: any) => api.post(`/api/v1/restaurants/${restaurantId}/wallet/credit`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["consumers"] })
       queryClient.invalidateQueries({ queryKey: ["wallet-activity"] })
@@ -241,13 +241,13 @@ export default function WalletManagement() {
           <p className="text-neutral-500">Approve recharge requests and manage customer balances</p>
         </div>
         <div className="flex items-center gap-3">
-          {canteens && canteens.length > 1 && (
+          {restaurants && restaurants.length > 1 && (
             <select
-              value={canteenId}
-              onChange={(e) => setCanteenId(e.target.value)}
+              value={restaurantId}
+              onChange={(e) => setRestaurantId(e.target.value)}
               className="px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
             >
-              {canteens.map((c: any) => (
+              {restaurants.map((c: any) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>

@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 
 interface IdentifyModalProps {
   isOpen: boolean
-  canteenName?: string | null
+  restaurantName?: string | null
   loading: boolean
   error: string
   onSubmit: (params: { name: string; phone: string }) => void | Promise<void>
@@ -71,7 +71,7 @@ function FloatingField({
   )
 }
 
-export function IdentifyModal({ isOpen, canteenName, loading, error, onSubmit }: IdentifyModalProps) {
+export function IdentifyModal({ isOpen, restaurantName, loading, error, onSubmit }: IdentifyModalProps) {
   const [name, setName] = useState("")
   const [phone, setPhone] = useState("")
   const [localError, setLocalError] = useState("")
@@ -128,7 +128,7 @@ export function IdentifyModal({ isOpen, canteenName, loading, error, onSubmit }:
                   Welcome
                 </p>
                 <h2 className="font-heading text-2xl font-extrabold text-brand-black tracking-tight mt-1.5">
-                  {canteenName ?? "to your table"}
+                  {restaurantName ?? "to your table"}
                 </h2>
                 <p className="font-serif italic text-base text-brand-black/55 mt-2">
                   Tell us who you are to get started.

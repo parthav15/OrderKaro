@@ -49,34 +49,34 @@ const defaultForm = {
 
 export default function StaffManagement() {
   const queryClient = useQueryClient()
-  const [canteenId, setCanteenId] = useState<string | null>(null)
+  const [restaurantId, setRestaurantId] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState(defaultForm)
   const [deleteTarget, setDeleteTarget] = useState<StaffMember | null>(null)
 
-  const { data: canteens } = useQuery({
-    queryKey: ["canteens"],
-    queryFn: () => api.get("/api/v1/canteens").then((r) => r.data.data),
+  const { data: restaurants } = useQuery({
+    queryKey: ["restaurants"],
+    queryFn: () => api.get("/api/v1/restaurants").then((r) => r.data.data),
   })
 
   useEffect(() => {
-    if (canteens?.[0] && !canteenId) {
-      setCanteenId(canteens[0].id)
+    if (restaurants?.[0] && !restaurantId) {
+      setRestaurantId(restaurants[0].id)
     }
-  }, [canteens, canteenId])
+  }, [restaurants, restaurantId])
 
   const { data: staff, isLoading } = useQuery<StaffMember[]>({
-    queryKey: ["staff", canteenId],
-    queryFn: () => api.get(`/api/v1/canteens/${canteenId}/staff`).then((r) => r.data.data),
-    enabled: !!canteenId,
+    queryKey: ["staff", restaurantId],
+    queryFn: () => api.get(`/api/v1/restaurants/${restaurantId}/staff`).then((r) => r.data.data),
+    enabled: !!restaurantId,
   })
 
   const addStaff = useMutation({
     mutationFn: (payload: typeof form) =>
-      api.post(`/api/v1/canteens/${canteenId}/staff`, { ...payload, pin: payload.pin || undefined }),
+      api.post(`/api/v1/restaurants/${restaurantId}/staff`, { ...payload, pin: payload.pin || undefined }),
     onSuccess: () => {
       toast.success("Staff member added")
-      queryClient.invalidateQueries({ queryKey: ["staff", canteenId] })
+      queryClient.invalidateQueries({ queryKey: ["staff", restaurantId] })
       setShowModal(false)
       setForm(defaultForm)
     },
@@ -85,17 +85,17 @@ export default function StaffManagement() {
 
   const toggleStaff = useMutation({
     mutationFn: (staffId: string) =>
-      api.patch(`/api/v1/canteens/${canteenId}/staff/${staffId}/toggle`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["staff", canteenId] }),
+      api.patch(`/api/v1/restaurants/${restaurantId}/staff/${staffId}/toggle`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["staff", restaurantId] }),
     onError: (err: any) => toast.error(err.response?.data?.error || "Failed to update"),
   })
 
   const deleteStaff = useMutation({
     mutationFn: (staffId: string) =>
-      api.delete(`/api/v1/canteens/${canteenId}/staff/${staffId}`),
+      api.delete(`/api/v1/restaurants/${restaurantId}/staff/${staffId}`),
     onSuccess: () => {
       toast.success("Staff member removed")
-      queryClient.invalidateQueries({ queryKey: ["staff", canteenId] })
+      queryClient.invalidateQueries({ queryKey: ["staff", restaurantId] })
       setDeleteTarget(null)
     },
     onError: (err: any) => toast.error(err.response?.data?.error || "Failed to remove"),
@@ -123,14 +123,14 @@ export default function StaffManagement() {
         </Button>
       </div>
 
-      {canteens && canteens.length > 1 && (
+      {restaurants && restaurants.length > 1 && (
         <div className="mb-6">
           <select
-            value={canteenId || ""}
-            onChange={(e) => setCanteenId(e.target.value)}
+            value={restaurantId || ""}
+            onChange={(e) => setRestaurantId(e.target.value)}
             className="px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
           >
-            {canteens.map((c: any) => (
+            {restaurants.map((c: any) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
@@ -283,7 +283,7 @@ export default function StaffManagement() {
             <label className="block text-sm font-bold text-brand-black">Email Address</label>
             <input
               type="email"
-              placeholder="raju@yourcanteen.com"
+              placeholder="raju@yourrestaurant.com"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               required

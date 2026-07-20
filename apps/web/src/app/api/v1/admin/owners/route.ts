@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
         phone: true,
         isVerified: true,
         createdAt: true,
-        canteens: {
+        restaurants: {
           select: {
             id: true,
             name: true,

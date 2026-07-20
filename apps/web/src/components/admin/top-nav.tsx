@@ -35,7 +35,7 @@ const navItems = [
 ]
 
 const superAdminItems = [
-  { href: "/admin/canteens", label: "Canteens", icon: Store },
+  { href: "/admin/restaurants", label: "Restaurants", icon: Store },
   { href: "/admin/super", label: "Super Admin", icon: Shield },
 ]
 

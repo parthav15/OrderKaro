@@ -5,19 +5,19 @@ import { QrCode } from "lucide-react"
 import { useQrThumb } from "../_hooks/useQrThumb"
 
 interface TableCardQrThumbProps {
-  canteenId: string
+  restaurantId: string
   tableId: string
   size?: number
   hovered?: boolean
 }
 
 export function TableCardQrThumb({
-  canteenId,
+  restaurantId,
   tableId,
   size = 88,
   hovered = false,
 }: TableCardQrThumbProps) {
-  const { data, isLoading } = useQrThumb(canteenId, tableId)
+  const { data, isLoading } = useQrThumb(restaurantId, tableId)
 
   return (
     <motion.div

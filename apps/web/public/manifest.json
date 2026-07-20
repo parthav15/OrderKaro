@@ -1,7 +1,7 @@
 {
   "name": "OrderKaro",
   "short_name": "OrderKaro",
-  "description": "Smart canteen ordering system",
+  "description": "Smart restaurant ordering system",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FFFFFF",

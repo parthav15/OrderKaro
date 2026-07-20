@@ -54,53 +54,53 @@ function formatDayLabel(dateStr: string) {
 }
 
 export default function AnalyticsPage() {
-  const [canteenId, setCanteenId] = useState<string | null>(null)
+  const [restaurantId, setRestaurantId] = useState<string | null>(null)
 
-  const { data: canteens } = useQuery({
-    queryKey: ["canteens"],
-    queryFn: () => api.get("/api/v1/canteens").then((r) => r.data.data),
+  const { data: restaurants } = useQuery({
+    queryKey: ["restaurants"],
+    queryFn: () => api.get("/api/v1/restaurants").then((r) => r.data.data),
   })
 
   useEffect(() => {
-    if (canteens?.[0] && !canteenId) {
-      setCanteenId(canteens[0].id)
+    if (restaurants?.[0] && !restaurantId) {
+      setRestaurantId(restaurants[0].id)
     }
-  }, [canteens, canteenId])
+  }, [restaurants, restaurantId])
 
   const { data: summary } = useQuery<AnalyticsSummary>({
-    queryKey: ["analytics-summary", canteenId],
+    queryKey: ["analytics-summary", restaurantId],
     queryFn: () =>
-      api.get(`/api/v1/canteens/${canteenId}/analytics/summary`).then((r) => r.data.data),
-    enabled: !!canteenId,
+      api.get(`/api/v1/restaurants/${restaurantId}/analytics/summary`).then((r) => r.data.data),
+    enabled: !!restaurantId,
     refetchInterval: 60000,
   })
 
   const { data: revenueData } = useQuery<RevenueDay[]>({
-    queryKey: ["analytics-revenue", canteenId],
+    queryKey: ["analytics-revenue", restaurantId],
     queryFn: () =>
-      api.get(`/api/v1/canteens/${canteenId}/analytics/revenue?days=7`).then((r) => r.data.data),
-    enabled: !!canteenId,
+      api.get(`/api/v1/restaurants/${restaurantId}/analytics/revenue?days=7`).then((r) => r.data.data),
+    enabled: !!restaurantId,
   })
 
   const { data: popularItems } = useQuery<PopularItem[]>({
-    queryKey: ["analytics-popular", canteenId],
+    queryKey: ["analytics-popular", restaurantId],
     queryFn: () =>
-      api.get(`/api/v1/canteens/${canteenId}/analytics/popular-items`).then((r) => r.data.data),
-    enabled: !!canteenId,
+      api.get(`/api/v1/restaurants/${restaurantId}/analytics/popular-items`).then((r) => r.data.data),
+    enabled: !!restaurantId,
   })
 
   const { data: peakHours } = useQuery<PeakHour[]>({
-    queryKey: ["analytics-peak-hours", canteenId],
+    queryKey: ["analytics-peak-hours", restaurantId],
     queryFn: () =>
-      api.get(`/api/v1/canteens/${canteenId}/analytics/peak-hours`).then((r) => r.data.data),
-    enabled: !!canteenId,
+      api.get(`/api/v1/restaurants/${restaurantId}/analytics/peak-hours`).then((r) => r.data.data),
+    enabled: !!restaurantId,
   })
 
   const { data: categoryRevenue } = useQuery<CategoryRevenue[]>({
-    queryKey: ["analytics-category-revenue", canteenId],
+    queryKey: ["analytics-category-revenue", restaurantId],
     queryFn: () =>
-      api.get(`/api/v1/canteens/${canteenId}/analytics/category-revenue`).then((r) => r.data.data),
-    enabled: !!canteenId,
+      api.get(`/api/v1/restaurants/${restaurantId}/analytics/category-revenue`).then((r) => r.data.data),
+    enabled: !!restaurantId,
   })
 
   const summaryCards = [
@@ -153,16 +153,16 @@ export default function AnalyticsPage() {
             </div>
             <h1 className="text-3xl font-extrabold text-brand-black">Analytics</h1>
           </div>
-          <p className="text-neutral-500">Performance overview for your canteen</p>
+          <p className="text-neutral-500">Performance overview for your restaurant</p>
         </div>
 
-        {canteens && canteens.length > 1 && (
+        {restaurants && restaurants.length > 1 && (
           <select
-            value={canteenId || ""}
-            onChange={(e) => setCanteenId(e.target.value)}
+            value={restaurantId || ""}
+            onChange={(e) => setRestaurantId(e.target.value)}
             className="px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
           >
-            {canteens.map((c: any) => (
+            {restaurants.map((c: any) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>

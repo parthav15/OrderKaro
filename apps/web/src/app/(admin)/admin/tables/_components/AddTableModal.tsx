@@ -12,12 +12,12 @@ import { Switch } from "./Switch"
 
 interface AddTableModalProps {
   isOpen: boolean
-  canteenId: string
+  restaurantId: string
   sections: string[]
   onClose: () => void
 }
 
-export function AddTableModal({ isOpen, canteenId, sections, onClose }: AddTableModalProps) {
+export function AddTableModal({ isOpen, restaurantId, sections, onClose }: AddTableModalProps) {
   const queryClient = useQueryClient()
   const [bulkMode, setBulkMode] = useState(false)
   const [label, setLabel] = useState("")
@@ -42,9 +42,9 @@ export function AddTableModal({ isOpen, canteenId, sections, onClose }: AddTable
 
   const createOne = useMutation({
     mutationFn: (data: { label: string; section?: string }) =>
-      api.post(`/api/v1/canteens/${canteenId}/tables`, data),
+      api.post(`/api/v1/restaurants/${restaurantId}/tables`, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tables", canteenId] })
+      queryClient.invalidateQueries({ queryKey: ["tables", restaurantId] })
       toast.success("Table created")
       onClose()
     },
@@ -70,7 +70,7 @@ export function AddTableModal({ isOpen, canteenId, sections, onClose }: AddTable
     let failed = 0
     for (let i = bulkFrom; i <= bulkTo; i++) {
       try {
-        await api.post(`/api/v1/canteens/${canteenId}/tables`, {
+        await api.post(`/api/v1/restaurants/${restaurantId}/tables`, {
           label: `${bulkPrefix} ${i}`,
           section: section.trim() || undefined,
         })
@@ -80,7 +80,7 @@ export function AddTableModal({ isOpen, canteenId, sections, onClose }: AddTable
       }
       setBulkProgress({ done: success + failed, total: previewCount })
     }
-    queryClient.invalidateQueries({ queryKey: ["tables", canteenId] })
+    queryClient.invalidateQueries({ queryKey: ["tables", restaurantId] })
     if (failed === 0) {
       toast.success(`Created ${success} tables`)
     } else {

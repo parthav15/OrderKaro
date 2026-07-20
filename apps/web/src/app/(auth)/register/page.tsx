@@ -70,7 +70,7 @@ export default function RegisterPage() {
             <Link href="/">
               <Logo size="lg" />
             </Link>
-            <p className="text-neutral-500 mt-2 text-base font-medium">Create your canteen account</p>
+            <p className="text-neutral-500 mt-2 text-base font-medium">Create your restaurant account</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">

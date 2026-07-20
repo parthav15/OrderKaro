@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     const tokenPayload = {
       id: payload.id,
       role: payload.role,
-      ...(payload.canteenId && { canteenId: payload.canteenId }),
+      ...(payload.restaurantId && { restaurantId: payload.restaurantId }),
     }
 
     const accessToken = generateAccessToken(tokenPayload)

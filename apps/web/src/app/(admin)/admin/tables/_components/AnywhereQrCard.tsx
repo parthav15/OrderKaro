@@ -10,12 +10,12 @@ import { useAnywhereQr } from "../_hooks/useAnywhereQr"
 
 interface AnywhereQrCardProps {
   slug: string | null
-  canteenName: string
+  restaurantName: string
 }
 
 type Tab = "code" | "poster" | "link"
 
-export function AnywhereQrCard({ slug, canteenName }: AnywhereQrCardProps) {
+export function AnywhereQrCard({ slug, restaurantName }: AnywhereQrCardProps) {
   const [open, setOpen] = useState(false)
   const [tab, setTab] = useState<Tab>("code")
   const [copied, setCopied] = useState(false)
@@ -33,8 +33,8 @@ export function AnywhereQrCard({ slug, canteenName }: AnywhereQrCardProps) {
   useEffect(() => {
     if (!data || !open) return
     if (tab !== "poster") return
-    drawPoster(data.qrDataUrl, canteenName).then(setPosterUrl)
-  }, [data, open, canteenName, tab])
+    drawPoster(data.qrDataUrl, restaurantName).then(setPosterUrl)
+  }, [data, open, restaurantName, tab])
 
   function copyUrl() {
     if (!data?.url) return
@@ -47,7 +47,7 @@ export function AnywhereQrCard({ slug, canteenName }: AnywhereQrCardProps) {
     if (!data?.qrDataUrl) return
     const link = document.createElement("a")
     link.href = data.qrDataUrl
-    link.download = `qr-order-from-anywhere-${slugify(canteenName)}.png`
+    link.download = `qr-order-from-anywhere-${slugify(restaurantName)}.png`
     link.click()
   }
 
@@ -55,7 +55,7 @@ export function AnywhereQrCard({ slug, canteenName }: AnywhereQrCardProps) {
     if (!posterUrl) return
     const link = document.createElement("a")
     link.href = posterUrl
-    link.download = `poster-order-from-anywhere-${slugify(canteenName)}.png`
+    link.download = `poster-order-from-anywhere-${slugify(restaurantName)}.png`
     link.click()
   }
 
@@ -230,7 +230,7 @@ function slugify(text: string) {
   return text.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
 }
 
-function drawPoster(qrDataUrl: string, canteenName: string): Promise<string> {
+function drawPoster(qrDataUrl: string, restaurantName: string): Promise<string> {
   return new Promise((resolve) => {
     const canvas = document.createElement("canvas")
     canvas.width = 1080
@@ -251,7 +251,7 @@ function drawPoster(qrDataUrl: string, canteenName: string): Promise<string> {
 
     ctx.fillStyle = "#737373"
     ctx.font = "500 28px DM Sans, system-ui, sans-serif"
-    ctx.fillText(canteenName, 100, 144)
+    ctx.fillText(restaurantName, 100, 144)
 
     ctx.fillStyle = "#0A0A0A"
     ctx.font = "800 110px Instrument Sans, DM Sans, system-ui, sans-serif"

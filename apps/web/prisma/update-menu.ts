@@ -165,15 +165,15 @@ async function main() {
   const owner = await prisma.owner.findUnique({ where: { email: OWNER_EMAIL } })
   if (!owner) throw new Error("Owner not found")
 
-  const canteen = await prisma.canteen.findFirst({ where: { ownerId: owner.id } })
-  if (!canteen) throw new Error("Canteen not found")
+  const restaurant = await prisma.restaurant.findFirst({ where: { ownerId: owner.id } })
+  if (!restaurant) throw new Error("Restaurant not found")
 
-  console.log(`Updating menu for canteen: ${canteen.name} (${canteen.id})`)
+  console.log(`Updating menu for restaurant: ${restaurant.name} (${restaurant.id})`)
 
   console.log("Deleting existing menu items and categories...")
 
   const existingItems = await prisma.menuItem.findMany({
-    where: { category: { canteenId: canteen.id } },
+    where: { category: { restaurantId: restaurant.id } },
     select: { id: true },
   })
   const itemIds = existingItems.map((i) => i.id)
@@ -183,16 +183,16 @@ async function main() {
   }
 
   await prisma.customizationOption.deleteMany({
-    where: { customization: { menuItem: { category: { canteenId: canteen.id } } } },
+    where: { customization: { menuItem: { category: { restaurantId: restaurant.id } } } },
   })
   await prisma.customization.deleteMany({
-    where: { menuItem: { category: { canteenId: canteen.id } } },
+    where: { menuItem: { category: { restaurantId: restaurant.id } } },
   })
   await prisma.menuItem.deleteMany({
-    where: { category: { canteenId: canteen.id } },
+    where: { category: { restaurantId: restaurant.id } },
   })
   await prisma.category.deleteMany({
-    where: { canteenId: canteen.id },
+    where: { restaurantId: restaurant.id },
   })
   console.log("Existing menu cleared.")
 
@@ -200,7 +200,7 @@ async function main() {
     console.log(`Creating category: ${cat.category}`)
     const category = await prisma.category.create({
       data: {
-        canteenId: canteen.id,
+        restaurantId: restaurant.id,
         name: cat.category,
         sortOrder: cat.sortOrder,
         isActive: true,

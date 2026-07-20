@@ -33,7 +33,7 @@ export interface Category {
   items: MenuItem[]
 }
 
-export interface CanteenSummary {
+export interface RestaurantSummary {
   id?: string
   name: string
   slug: string

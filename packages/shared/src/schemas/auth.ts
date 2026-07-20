@@ -13,13 +13,13 @@ export const ownerLoginSchema = z.object({
 })
 
 export const staffLoginSchema = z.object({
-  canteenId: z.string().min(1),
+  restaurantId: z.string().min(1),
   email: z.string().email(),
   password: z.string().min(1),
 })
 
 export const staffPinLoginSchema = z.object({
-  canteenId: z.string().min(1),
+  restaurantId: z.string().min(1),
   pin: z.string().length(4),
 })
 

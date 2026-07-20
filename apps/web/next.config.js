@@ -7,6 +7,12 @@ const nextConfig = {
     ],
   },
   serverExternalPackages: ["@prisma/client", "bcryptjs"],
+  async rewrites() {
+    return [
+      { source: "/api/v1/canteens/:path*", destination: "/api/v1/restaurants/:path*" },
+      { source: "/api/v1/public/canteen/:path*", destination: "/api/v1/public/restaurant/:path*" },
+    ]
+  },
 }
 
 module.exports = nextConfig

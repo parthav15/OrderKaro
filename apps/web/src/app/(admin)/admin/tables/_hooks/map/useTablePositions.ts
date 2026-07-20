@@ -13,39 +13,39 @@ interface PendingPosition {
 
 const DEBOUNCE_MS = 250
 
-export function useTablePositions(canteenId: string) {
+export function useTablePositions(restaurantId: string) {
   const queryClient = useQueryClient()
   const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
   const pendingRef = useRef<Map<string, PendingPosition>>(new Map())
 
   const singleMutation = useMutation({
     mutationFn: async ({ id, posX, posY }: { id: string; posX: number | null; posY: number | null }) => {
-      await api.put(`/api/v1/canteens/${canteenId}/tables/${id}`, { posX, posY })
+      await api.put(`/api/v1/restaurants/${restaurantId}/tables/${id}`, { posX, posY })
     },
     onError: (err: any) => {
       toast.error(err.response?.data?.error || "Failed to save position")
-      queryClient.invalidateQueries({ queryKey: ["tables", canteenId] })
+      queryClient.invalidateQueries({ queryKey: ["tables", restaurantId] })
     },
   })
 
   const bulkMutation = useMutation({
     mutationFn: async (positions: { id: string; posX: number | null; posY: number | null }[]) => {
-      await api.patch(`/api/v1/canteens/${canteenId}/tables/positions`, { positions })
+      await api.patch(`/api/v1/restaurants/${restaurantId}/tables/positions`, { positions })
     },
     onError: (err: any) => {
       toast.error(err.response?.data?.error || "Failed to save positions")
-      queryClient.invalidateQueries({ queryKey: ["tables", canteenId] })
+      queryClient.invalidateQueries({ queryKey: ["tables", restaurantId] })
     },
   })
 
   const optimisticUpdate = useCallback(
     (id: string, posX: number | null, posY: number | null) => {
-      queryClient.setQueryData<TableRow[]>(["tables", canteenId], (prev) => {
+      queryClient.setQueryData<TableRow[]>(["tables", restaurantId], (prev) => {
         if (!prev) return prev
         return prev.map((t) => (t.id === id ? { ...t, posX, posY } : t))
       })
     },
-    [canteenId, queryClient]
+    [restaurantId, queryClient]
   )
 
   const queueSave = useCallback(

@@ -116,7 +116,7 @@ export default function CounterDisplay() {
   const queryClient = useQueryClient()
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
-  const canteenId = user?.canteenId
+  const restaurantId = user?.restaurantId
   const router = useRouter()
   const [connected, setConnected] = useState(false)
   const [hydrated, setHydrated] = useState(false)
@@ -135,7 +135,7 @@ export default function CounterDisplay() {
     if (
       hydrated &&
       (!user ||
-        !user.canteenId ||
+        !user.restaurantId ||
         (user.role !== "COUNTER" && user.role !== "MANAGER" && user.role !== "OWNER"))
     ) {
       router.replace("/login")
@@ -143,10 +143,10 @@ export default function CounterDisplay() {
   }, [user, hydrated, router])
 
   const { data: allOrders, refetch } = useQuery<ReadyOrder[]>({
-    queryKey: ["counter-orders", canteenId],
+    queryKey: ["counter-orders", restaurantId],
     queryFn: () =>
-      api.get(`/api/v1/canteens/${canteenId}/orders/active`).then((r) => r.data.data),
-    enabled: !!canteenId,
+      api.get(`/api/v1/restaurants/${restaurantId}/orders/active`).then((r) => r.data.data),
+    enabled: !!restaurantId,
     refetchInterval: 15000,
   })
 
@@ -154,7 +154,7 @@ export default function CounterDisplay() {
 
   const markPickedUp = useMutation({
     mutationFn: (orderId: string) =>
-      api.patch(`/api/v1/canteens/${canteenId}/orders/${orderId}/status`, {
+      api.patch(`/api/v1/restaurants/${restaurantId}/orders/${orderId}/status`, {
         status: "PICKED_UP",
       }),
     onSuccess: () => {
@@ -170,7 +170,7 @@ export default function CounterDisplay() {
   }, [])
 
   useEffect(() => {
-    if (!canteenId) return
+    if (!restaurantId) return
     const socket = connectSocket()
     socket.on("connect", () => setConnected(true))
     socket.on("disconnect", () => setConnected(false))
@@ -187,7 +187,7 @@ export default function CounterDisplay() {
       socket.off("order:status")
       socket.off("order:ready")
     }
-  }, [canteenId, refetch])
+  }, [restaurantId, refetch])
 
   return (
     <div className="min-h-screen bg-brand-black text-white flex flex-col">

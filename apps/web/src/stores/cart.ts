@@ -20,9 +20,9 @@ interface CartItem {
 
 interface CartState {
   items: CartItem[]
-  canteenId: string | null
+  restaurantId: string | null
   tableId: string | null
-  setContext: (canteenId: string, tableId: string | null) => void
+  setContext: (restaurantId: string, tableId: string | null) => void
   addItem: (item: CartItem) => void
   removeItem: (index: number) => void
   updateQuantity: (index: number, quantity: number) => void
@@ -35,9 +35,9 @@ export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
-      canteenId: null,
+      restaurantId: null,
       tableId: null,
-      setContext: (canteenId, tableId) => set({ canteenId, tableId }),
+      setContext: (restaurantId, tableId) => set({ restaurantId, tableId }),
       addItem: (item) =>
         set((state) => ({ items: [...state.items, item] })),
       removeItem: (index) =>
@@ -50,7 +50,7 @@ export const useCartStore = create<CartState>()(
             i === index ? { ...item, quantity } : item
           ),
         })),
-      clearCart: () => set({ items: [], canteenId: null, tableId: null }),
+      clearCart: () => set({ items: [], restaurantId: null, tableId: null }),
       getTotal: () => {
         const { items } = get()
         return items.reduce((sum, item) => {
@@ -65,6 +65,15 @@ export const useCartStore = create<CartState>()(
         return get().items.reduce((sum, item) => sum + item.quantity, 0)
       },
     }),
-    { name: "orderkaro-cart" }
+    {
+      name: "orderkaro-cart",
+      version: 1,
+      migrate: (persisted: any) => {
+        if (persisted && !persisted.restaurantId && persisted.canteenId) {
+          return { ...persisted, restaurantId: persisted.canteenId }
+        }
+        return persisted
+      },
+    }
   )
 )

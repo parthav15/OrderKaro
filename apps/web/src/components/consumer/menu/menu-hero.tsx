@@ -7,7 +7,7 @@ import { formatPrice } from "@/lib/utils"
 
 interface MenuHeroProps {
   consumerFirstName: string | null
-  canteenName: string
+  restaurantName: string
   tableLabel: string | null
   walletBalance: number | null
   closingTime: string | null
@@ -25,7 +25,7 @@ function getGreeting(): string {
 
 export function MenuHero({
   consumerFirstName,
-  canteenName,
+  restaurantName,
   tableLabel,
   walletBalance,
   closingTime,
@@ -65,7 +65,7 @@ export function MenuHero({
         transition={{ delay: 0.14, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
         className="font-heading text-[44px] sm:text-5xl font-extrabold tracking-tight text-brand-black mt-1.5 leading-[0.96]"
       >
-        {canteenName}
+        {restaurantName}
       </motion.h1>
 
       <motion.div

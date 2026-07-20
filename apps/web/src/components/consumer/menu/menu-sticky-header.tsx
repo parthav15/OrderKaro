@@ -7,7 +7,7 @@ import { formatPrice } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 
 interface MenuStickyHeaderProps {
-  canteenName: string
+  restaurantName: string
   walletBalance: number | null
   search: string
   onSearchChange: (value: string) => void
@@ -15,7 +15,7 @@ interface MenuStickyHeaderProps {
 }
 
 export function MenuStickyHeader({
-  canteenName,
+  restaurantName,
   walletBalance,
   search,
   onSearchChange,
@@ -68,7 +68,7 @@ export function MenuStickyHeader({
           transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
           className="font-heading text-base font-extrabold text-brand-black tracking-tight whitespace-nowrap overflow-hidden"
         >
-          {canteenName}
+          {restaurantName}
         </motion.span>
 
         <div className="relative flex-1">

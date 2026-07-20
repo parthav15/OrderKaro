@@ -9,7 +9,7 @@ import { snapToGrid } from "../../_utils/map/bounds"
 
 interface UnplacedTrayProps {
   tables: TableRow[]
-  canteenId: string
+  restaurantId: string
   canvasRef: React.RefObject<HTMLDivElement>
   x: MotionValue<number>
   y: MotionValue<number>
@@ -21,7 +21,7 @@ interface UnplacedTrayProps {
 
 export function UnplacedTray({
   tables,
-  canteenId,
+  restaurantId,
   canvasRef,
   x,
   y,
@@ -78,7 +78,7 @@ export function UnplacedTray({
                   <UnplacedItem
                     key={t.id}
                     table={t}
-                    canteenId={canteenId}
+                    restaurantId={restaurantId}
                     canvasRef={canvasRef}
                     x={x}
                     y={y}
@@ -99,7 +99,7 @@ export function UnplacedTray({
 
 function UnplacedItem({
   table,
-  canteenId,
+  restaurantId,
   canvasRef,
   x,
   y,
@@ -109,7 +109,7 @@ function UnplacedItem({
   onPlace,
 }: {
   table: TableRow
-  canteenId: string
+  restaurantId: string
   canvasRef: React.RefObject<HTMLDivElement>
   x: MotionValue<number>
   y: MotionValue<number>
@@ -154,7 +154,7 @@ function UnplacedItem({
       className="shrink-0 w-[140px] cursor-grab active:cursor-grabbing"
     >
       <div className="flex items-center gap-2 p-2 rounded-xl bg-white border border-neutral-200 hover:border-brand-red/40 transition-colors shadow-sm">
-        <TableCardQrThumb canteenId={canteenId} tableId={table.id} size={40} />
+        <TableCardQrThumb restaurantId={restaurantId} tableId={table.id} size={40} />
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold text-brand-black truncate">{table.label}</p>
           {table.section && (

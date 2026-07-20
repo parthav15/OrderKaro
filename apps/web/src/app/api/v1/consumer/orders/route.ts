@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
             },
           },
           table: { select: { label: true } },
-          canteen: { select: { name: true, slug: true } },
+          restaurant: { select: { name: true, slug: true } },
         },
         orderBy: { placedAt: "desc" },
         skip: (page - 1) * limit,

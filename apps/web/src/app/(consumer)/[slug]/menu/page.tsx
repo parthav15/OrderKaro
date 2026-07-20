@@ -156,7 +156,7 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
 
   const { data: menuData, isLoading } = useQuery({
     queryKey: ["menu", slug],
-    queryFn: () => api.get(`/api/v1/public/canteen/${slug}/menu`).then((r) => r.data.data),
+    queryFn: () => api.get(`/api/v1/public/restaurant/${slug}/menu`).then((r) => r.data.data),
   })
 
   const categories: Category[] = useMemo(() => menuData?.categories ?? [], [menuData])
@@ -197,14 +197,14 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
   }, [filteredCategories, activeCategoryId])
 
   useEffect(() => {
-    if (qrData?.canteen?.id && qrData?.table?.id) {
-      setContext(qrData.canteen.id, qrData.table.id)
+    if (qrData?.restaurant?.id && qrData?.table?.id) {
+      setContext(qrData.restaurant.id, qrData.table.id)
     }
   }, [qrData, setContext])
 
   useEffect(() => {
-    if (!tableToken && menuData?.canteen?.id) {
-      setContext(menuData.canteen.id, null)
+    if (!tableToken && menuData?.restaurant?.id) {
+      setContext(menuData.restaurant.id, null)
     }
   }, [tableToken, menuData, setContext])
 
@@ -323,8 +323,8 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
 
   const announcements: Announcement[] | undefined = qrData?.announcements
   const tableInfo: ResolvedTable | undefined = qrData?.table
-  const canteenName = menuData?.canteen?.name ?? "Menu"
-  const closingTime = menuData?.canteen?.closingTime ?? qrData?.canteen?.closingTime ?? null
+  const restaurantName = menuData?.restaurant?.name ?? "Menu"
+  const closingTime = menuData?.restaurant?.closingTime ?? qrData?.restaurant?.closingTime ?? null
   const isOpen = qrData?.isOpen ?? true
   const consumerFirstName = user?.name?.split(" ")[0] ?? null
 
@@ -348,7 +348,7 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
     <>
       <IdentifyModal
         isOpen={showIdentifyModal}
-        canteenName={menuData?.canteen?.name}
+        restaurantName={menuData?.restaurant?.name}
         loading={identifyLoading}
         error={identifyError}
         onSubmit={handleIdentifySubmit}
@@ -365,7 +365,7 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
 
             <MenuHero
               consumerFirstName={consumerFirstName}
-              canteenName={canteenName}
+              restaurantName={restaurantName}
               tableLabel={tableInfo?.label ?? null}
               walletBalance={walletBalance}
               closingTime={closingTime}
@@ -373,7 +373,7 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
             />
 
             <MenuStickyHeader
-              canteenName={canteenName}
+              restaurantName={restaurantName}
               walletBalance={walletBalance}
               search={search}
               onSearchChange={setSearch}

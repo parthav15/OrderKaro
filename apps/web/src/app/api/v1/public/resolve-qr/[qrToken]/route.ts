@@ -2,7 +2,7 @@ import { NextRequest } from "next/server"
 import prisma from "@/lib/prisma"
 import { success, error, handleError } from "@/lib/api-utils"
 
-function isCanteenOpen(openingTime: string, closingTime: string): boolean {
+function isRestaurantOpen(openingTime: string, closingTime: string): boolean {
   const now = new Date()
   const currentMinutes = now.getHours() * 60 + now.getMinutes()
 
@@ -23,7 +23,7 @@ export async function GET(
     const table = await prisma.table.findUnique({
       where: { qrToken: params.qrToken },
       include: {
-        canteen: {
+        restaurant: {
           select: {
             id: true,
             name: true,
@@ -48,15 +48,15 @@ export async function GET(
       return error("This table is not active", 400)
     }
 
-    if (!table.canteen.isActive) {
-      return error("This canteen is not active", 400)
+    if (!table.restaurant.isActive) {
+      return error("This restaurant is not active", 400)
     }
 
-    const isOpen = isCanteenOpen(table.canteen.openingTime, table.canteen.closingTime)
+    const isOpen = isRestaurantOpen(table.restaurant.openingTime, table.restaurant.closingTime)
 
     const announcements = await prisma.announcement.findMany({
       where: {
-        canteenId: table.canteenId,
+        restaurantId: table.restaurantId,
         isActive: true,
         OR: [
           { expiresAt: null },
@@ -68,7 +68,7 @@ export async function GET(
     })
 
     return success({
-      canteen: table.canteen,
+      restaurant: table.restaurant,
       table: { id: table.id, label: table.label, section: table.section },
       isOpen,
       announcements,

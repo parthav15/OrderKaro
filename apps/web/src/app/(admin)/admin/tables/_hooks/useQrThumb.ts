@@ -8,14 +8,14 @@ interface QrPayload {
   qrDataUrl: string
 }
 
-export function useQrThumb(canteenId: string | null, tableId: string | null) {
+export function useQrThumb(restaurantId: string | null, tableId: string | null) {
   return useQuery<QrPayload>({
-    queryKey: ["table-qr", canteenId, tableId],
+    queryKey: ["table-qr", restaurantId, tableId],
     queryFn: async () => {
-      const { data } = await api.get(`/api/v1/canteens/${canteenId}/tables/${tableId}/qr`)
+      const { data } = await api.get(`/api/v1/restaurants/${restaurantId}/tables/${tableId}/qr`)
       return data.data
     },
-    enabled: !!canteenId && !!tableId,
+    enabled: !!restaurantId && !!tableId,
     staleTime: 24 * 60 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
   })

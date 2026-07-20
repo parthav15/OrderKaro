@@ -1,4 +1,4 @@
-# OrderKaro — SaaS Canteen Management System
+# OrderKaro — SaaS Restaurant Management System
 
 ## Project Overview
 
@@ -39,6 +39,7 @@ packages/shared/  → Shared Zod schemas, types, constants
 - Prisma schema at `apps/web/prisma/schema.prisma` (single source of truth)
 - Run `pnpm --filter @orderkaro/web exec prisma db push` after schema changes
 - Run `pnpm --filter @orderkaro/web exec prisma generate` to update the client
+- The domain is a **Restaurant** everywhere in code, but the physical Postgres table is still `Canteen` and the FK columns are still `canteenId` — pinned via `@@map("Canteen")` / `@map("canteenId")`. This was deliberate: it renamed the code with zero data migration. Do not "fix" the maps unless you also rename the columns in the database.
 
 ## Running the Project
 
@@ -68,6 +69,6 @@ pnpm dev          # Next.js on http://localhost:3000 (UI + API together)
 - Wallet: cash deposits credited by a manager, bank transfers need approval, and **online top-up via Razorpay** directly from the cart
 - Order fulfillment types: `DINE_IN` (table QR or picked table), `TAKEAWAY`, `DELIVERY` (with `deliveryLocation`); `Order.tableId` is nullable
 - Prices snapshotted in OrderItem at placement time
-- Sequential order numbers per canteen per day
+- Sequential order numbers per restaurant per day
 - Idempotency keys on order placement to prevent duplicates
 - **No realtime server** — kitchen/counter refresh via TanStack Query polling. The socket client stays inert unless `NEXT_PUBLIC_SOCKET_URL` is set.

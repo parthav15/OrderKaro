@@ -88,7 +88,7 @@ const nextStatusConfig: Record<
 
 export default function AdminDashboard() {
   const user = useAuthStore((s) => s.user)
-  const [canteenId, setCanteenId] = useState<string | null>(null)
+  const [restaurantId, setRestaurantId] = useState<string | null>(null)
   const queryClient = useQueryClient()
   const [cashOrder, setCashOrder] = useState<any>(null)
   const [amountReceived, setAmountReceived] = useState("")
@@ -96,7 +96,7 @@ export default function AdminDashboard() {
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ orderId, status }: { orderId: string; status: string }) =>
-      api.patch(`/api/v1/canteens/${canteenId}/orders/${orderId}/status`, { status }),
+      api.patch(`/api/v1/restaurants/${restaurantId}/orders/${orderId}/status`, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["active-orders"] })
       toast.success("Order status updated")
@@ -108,7 +108,7 @@ export default function AdminDashboard() {
 
   const collectCashMutation = useMutation({
     mutationFn: ({ orderId, amountReceived }: { orderId: string; amountReceived: number }) =>
-      api.post(`/api/v1/canteens/${canteenId}/orders/${orderId}/collect-cash`, { amountReceived }),
+      api.post(`/api/v1/restaurants/${restaurantId}/orders/${orderId}/collect-cash`, { amountReceived }),
     onSuccess: (res) => {
       setCashResult(res.data.data)
       queryClient.invalidateQueries({ queryKey: ["active-orders"] })
@@ -120,30 +120,30 @@ export default function AdminDashboard() {
     },
   })
 
-  const { data: canteens } = useQuery({
-    queryKey: ["canteens"],
-    queryFn: () => api.get("/api/v1/canteens").then((r) => r.data.data),
+  const { data: restaurants } = useQuery({
+    queryKey: ["restaurants"],
+    queryFn: () => api.get("/api/v1/restaurants").then((r) => r.data.data),
   })
 
   useEffect(() => {
-    if (canteens?.[0] && !canteenId) {
-      setCanteenId(canteens[0].id)
+    if (restaurants?.[0] && !restaurantId) {
+      setRestaurantId(restaurants[0].id)
     }
-  }, [canteens, canteenId])
+  }, [restaurants, restaurantId])
 
   const { data: activeOrders } = useQuery({
-    queryKey: ["active-orders", canteenId],
+    queryKey: ["active-orders", restaurantId],
     queryFn: () =>
-      api.get(`/api/v1/canteens/${canteenId}/orders/active`).then((r) => r.data.data),
-    enabled: !!canteenId,
+      api.get(`/api/v1/restaurants/${restaurantId}/orders/active`).then((r) => r.data.data),
+    enabled: !!restaurantId,
     refetchInterval: 5000,
   })
 
   const { data: summary } = useQuery({
-    queryKey: ["analytics-summary", canteenId],
+    queryKey: ["analytics-summary", restaurantId],
     queryFn: () =>
-      api.get(`/api/v1/canteens/${canteenId}/analytics/summary`).then((r) => r.data.data),
-    enabled: !!canteenId,
+      api.get(`/api/v1/restaurants/${restaurantId}/analytics/summary`).then((r) => r.data.data),
+    enabled: !!restaurantId,
     refetchInterval: 30000,
   })
 
@@ -196,7 +196,7 @@ export default function AdminDashboard() {
       label: "Avg Prep Time",
       value:
         summary?.avgPrepTimeMinutes ??
-        canteens?.find((c: any) => c.id === canteenId)?.avgPrepTime ??
+        restaurants?.find((c: any) => c.id === restaurantId)?.avgPrepTime ??
         15,
       icon: Clock,
       iconColor: "text-[#0A0A0A]",
@@ -223,22 +223,22 @@ export default function AdminDashboard() {
             Welcome back, {user?.name?.split(" ")[0]}
           </h1>
           <p className="text-neutral-500 mt-1.5 text-base">
-            Here&apos;s your canteen at a glance
+            Here&apos;s your restaurant at a glance
           </p>
         </div>
 
-        {canteens && canteens.length > 1 && (
+        {restaurants && restaurants.length > 1 && (
           <div className="relative">
             <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1.5">
-              Canteen
+              Restaurant
             </label>
             <div className="relative">
               <select
-                value={canteenId || ""}
-                onChange={(e) => setCanteenId(e.target.value)}
+                value={restaurantId || ""}
+                onChange={(e) => setRestaurantId(e.target.value)}
                 className="appearance-none pl-4 pr-10 py-3 rounded-xl border border-neutral-200 text-base font-semibold text-[#0A0A0A] focus:outline-none focus:border-[#DC2626] bg-white min-w-[180px] cursor-pointer"
               >
-                {canteens.map((c: any) => (
+                {restaurants.map((c: any) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
                   </option>

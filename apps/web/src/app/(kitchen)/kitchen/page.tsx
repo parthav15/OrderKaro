@@ -204,7 +204,7 @@ export default function KitchenDisplay() {
   const queryClient = useQueryClient()
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
-  const canteenId = user?.canteenId
+  const restaurantId = user?.restaurantId
   const router = useRouter()
   const [connected, setConnected] = useState(false)
   const [soundEnabled, setSoundEnabled] = useState(true)
@@ -225,7 +225,7 @@ export default function KitchenDisplay() {
     if (
       hydrated &&
       (!user ||
-        !user.canteenId ||
+        !user.restaurantId ||
         (user.role !== "KITCHEN" && user.role !== "MANAGER" && user.role !== "OWNER"))
     ) {
       router.replace("/login")
@@ -233,16 +233,16 @@ export default function KitchenDisplay() {
   }, [user, hydrated, router])
 
   const { data: orders, refetch } = useQuery({
-    queryKey: ["kitchen-orders", canteenId],
+    queryKey: ["kitchen-orders", restaurantId],
     queryFn: () =>
-      api.get(`/api/v1/canteens/${canteenId}/orders/active`).then((r) => r.data.data),
-    enabled: !!canteenId,
+      api.get(`/api/v1/restaurants/${restaurantId}/orders/active`).then((r) => r.data.data),
+    enabled: !!restaurantId,
     refetchInterval: 15000,
   })
 
   const updateStatus = useMutation({
     mutationFn: ({ orderId, status }: { orderId: string; status: string }) =>
-      api.patch(`/api/v1/canteens/${canteenId}/orders/${orderId}/status`, { status }),
+      api.patch(`/api/v1/restaurants/${restaurantId}/orders/${orderId}/status`, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["kitchen-orders"] })
     },
@@ -256,7 +256,7 @@ export default function KitchenDisplay() {
   }, [soundEnabled])
 
   useEffect(() => {
-    if (!canteenId) return
+    if (!restaurantId) return
     const socket = connectSocket()
     socket.on("connect", () => setConnected(true))
     socket.on("disconnect", () => setConnected(false))
@@ -274,7 +274,7 @@ export default function KitchenDisplay() {
       socket.off("order:new")
       socket.off("order:cancelled")
     }
-  }, [canteenId, playSound, refetch])
+  }, [restaurantId, playSound, refetch])
 
   useEffect(() => {
     const interval = setInterval(() => setTick((t) => t + 1), 30000)

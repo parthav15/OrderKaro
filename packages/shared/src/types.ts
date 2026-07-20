@@ -21,7 +21,7 @@ export type CustomizationType = (typeof CUSTOMIZATION_TYPES)[number]
 export interface JwtPayload {
   id: string
   role: "OWNER" | "MANAGER" | "KITCHEN" | "COUNTER" | "CONSUMER"
-  canteenId?: string
+  restaurantId?: string
 }
 
 export interface ApiResponse<T = unknown> {

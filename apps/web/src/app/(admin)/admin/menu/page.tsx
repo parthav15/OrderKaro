@@ -22,7 +22,7 @@ interface CustomizationPanelTarget {
 
 export default function MenuManagement() {
   const queryClient = useQueryClient()
-  const [canteenId, setCanteenId] = useState<string>("")
+  const [restaurantId, setRestaurantId] = useState<string>("")
   const [showCategoryModal, setShowCategoryModal] = useState(false)
   const [showItemModal, setShowItemModal] = useState(false)
   const [editingCategory, setEditingCategory] = useState<any>(null)
@@ -42,31 +42,31 @@ export default function MenuManagement() {
   const [deleteCategoryTarget, setDeleteCategoryTarget] = useState<any>(null)
   const [deleteItemTarget, setDeleteItemTarget] = useState<any>(null)
 
-  const { data: canteens } = useQuery({
-    queryKey: ["canteens"],
-    queryFn: () => api.get("/api/v1/canteens").then((r) => r.data.data),
+  const { data: restaurants } = useQuery({
+    queryKey: ["restaurants"],
+    queryFn: () => api.get("/api/v1/restaurants").then((r) => r.data.data),
   })
 
   useEffect(() => {
-    if (canteens?.[0] && !canteenId) {
-      setCanteenId(canteens[0].id)
+    if (restaurants?.[0] && !restaurantId) {
+      setRestaurantId(restaurants[0].id)
     }
-  }, [canteens, canteenId])
+  }, [restaurants, restaurantId])
 
   const { data: categories } = useQuery({
-    queryKey: ["categories", canteenId],
-    queryFn: () => api.get(`/api/v1/canteens/${canteenId}/categories`).then((r) => r.data.data),
-    enabled: !!canteenId,
+    queryKey: ["categories", restaurantId],
+    queryFn: () => api.get(`/api/v1/restaurants/${restaurantId}/categories`).then((r) => r.data.data),
+    enabled: !!restaurantId,
   })
 
   const { data: menuData, isLoading } = useQuery({
-    queryKey: ["full-menu", canteenId],
-    queryFn: () => api.get(`/api/v1/canteens/${canteenId}/menu`).then((r) => r.data.data),
-    enabled: !!canteenId,
+    queryKey: ["full-menu", restaurantId],
+    queryFn: () => api.get(`/api/v1/restaurants/${restaurantId}/menu`).then((r) => r.data.data),
+    enabled: !!restaurantId,
   })
 
   const createCategory = useMutation({
-    mutationFn: (data: any) => api.post(`/api/v1/canteens/${canteenId}/categories`, data),
+    mutationFn: (data: any) => api.post(`/api/v1/restaurants/${restaurantId}/categories`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] })
       queryClient.invalidateQueries({ queryKey: ["full-menu"] })
@@ -80,7 +80,7 @@ export default function MenuManagement() {
 
   const updateCategory = useMutation({
     mutationFn: ({ catId, data }: { catId: string; data: any }) =>
-      api.put(`/api/v1/canteens/${canteenId}/categories/${catId}`, data),
+      api.put(`/api/v1/restaurants/${restaurantId}/categories/${catId}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] })
       queryClient.invalidateQueries({ queryKey: ["full-menu"] })
@@ -94,7 +94,7 @@ export default function MenuManagement() {
 
   const deleteCategory = useMutation({
     mutationFn: (catId: string) =>
-      api.delete(`/api/v1/canteens/${canteenId}/categories/${catId}`),
+      api.delete(`/api/v1/restaurants/${restaurantId}/categories/${catId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] })
       queryClient.invalidateQueries({ queryKey: ["full-menu"] })
@@ -105,7 +105,7 @@ export default function MenuManagement() {
   })
 
   const createItem = useMutation({
-    mutationFn: (data: any) => api.post(`/api/v1/canteens/${canteenId}/menu/items`, data),
+    mutationFn: (data: any) => api.post(`/api/v1/restaurants/${restaurantId}/menu/items`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["full-menu"] })
       setShowItemModal(false)
@@ -118,7 +118,7 @@ export default function MenuManagement() {
 
   const updateItem = useMutation({
     mutationFn: ({ itemId, data }: { itemId: string; data: any }) =>
-      api.put(`/api/v1/canteens/${canteenId}/menu/items/${itemId}`, data),
+      api.put(`/api/v1/restaurants/${restaurantId}/menu/items/${itemId}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["full-menu"] })
       setShowItemModal(false)
@@ -131,14 +131,14 @@ export default function MenuManagement() {
 
   const toggleAvailability = useMutation({
     mutationFn: (itemId: string) =>
-      api.patch(`/api/v1/canteens/${canteenId}/menu/items/${itemId}/availability`),
+      api.patch(`/api/v1/restaurants/${restaurantId}/menu/items/${itemId}/availability`),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["full-menu"] }),
     onError: (err: any) => toast.error(err.response?.data?.error || "Failed"),
   })
 
   const deleteItem = useMutation({
     mutationFn: (itemId: string) =>
-      api.delete(`/api/v1/canteens/${canteenId}/menu/items/${itemId}`),
+      api.delete(`/api/v1/restaurants/${restaurantId}/menu/items/${itemId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["full-menu"] })
       setDeleteItemTarget(null)
@@ -216,13 +216,13 @@ export default function MenuManagement() {
           <p className="text-neutral-500 ml-13 pl-0.5">Add categories and menu items your customers will see</p>
         </div>
         <div className="flex items-center gap-3">
-          {canteens && canteens.length > 1 && (
+          {restaurants && restaurants.length > 1 && (
             <select
-              value={canteenId}
-              onChange={(e) => setCanteenId(e.target.value)}
+              value={restaurantId}
+              onChange={(e) => setRestaurantId(e.target.value)}
               className="px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
             >
-              {canteens.map((c: any) => (
+              {restaurants.map((c: any) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
@@ -445,7 +445,7 @@ export default function MenuManagement() {
               <CustomizationManager
                 itemId={customizationTarget.itemId}
                 itemName={customizationTarget.itemName}
-                canteenId={canteenId}
+                restaurantId={restaurantId}
                 onClose={() => setCustomizationTarget(null)}
               />
             </motion.div>

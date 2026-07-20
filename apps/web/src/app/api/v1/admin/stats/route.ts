@@ -15,11 +15,11 @@ export async function GET(request: NextRequest) {
     const user = requireRole(request, "OWNER")
     await verifySuperAdmin(user)
 
-    const [totalOwners, totalCanteens, activeCanteens, totalOrders, revenueResult] =
+    const [totalOwners, totalRestaurants, activeRestaurants, totalOrders, revenueResult] =
       await Promise.all([
         prisma.owner.count(),
-        prisma.canteen.count(),
-        prisma.canteen.count({ where: { isActive: true } }),
+        prisma.restaurant.count(),
+        prisma.restaurant.count({ where: { isActive: true } }),
         prisma.order.count(),
         prisma.order.aggregate({
           where: { paymentStatus: "PAID" },
@@ -29,8 +29,8 @@ export async function GET(request: NextRequest) {
 
     return success({
       totalOwners,
-      totalCanteens,
-      activeCanteens,
+      totalRestaurants,
+      activeRestaurants,
       totalOrders,
       totalRevenue: revenueResult._sum.totalAmount ?? 0,
     })

@@ -20,7 +20,7 @@ export async function GET(
         table: {
           select: { id: true, label: true, section: true },
         },
-        canteen: {
+        restaurant: {
           select: { id: true, name: true, slug: true, logoUrl: true, avgPrepTime: true },
         },
       },
@@ -49,7 +49,7 @@ export async function GET(
       cancelledAt: order.cancelledAt,
       items: order.items,
       table: order.table,
-      canteen: order.canteen,
+      restaurant: order.restaurant,
     })
   } catch (err) {
     return handleError(err)

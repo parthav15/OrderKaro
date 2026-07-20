@@ -35,7 +35,7 @@ export default function HomePage() {
           transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
           className="font-heading text-5xl md:text-7xl lg:text-8xl font-extrabold text-white tracking-tight leading-[0.9] max-w-4xl"
         >
-          Your Canteen, Reimagined
+          Your Restaurant, Reimagined
         </motion.h1>
 
         <motion.p

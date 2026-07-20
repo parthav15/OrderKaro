@@ -19,11 +19,19 @@ export function error(message: string, status = 400) {
   return NextResponse.json({ success: false, error: message }, { status })
 }
 
+function adoptLegacyRestaurantId(payload: JwtPayload): JwtPayload {
+  const legacy = payload as JwtPayload & { canteenId?: string }
+  if (!legacy.restaurantId && legacy.canteenId) {
+    return { ...payload, restaurantId: legacy.canteenId }
+  }
+  return payload
+}
+
 export function getUser(request: NextRequest): JwtPayload | null {
   const header = request.headers.get("authorization")
   if (!header?.startsWith("Bearer ")) return null
   try {
-    return jwt.verify(header.split(" ")[1], JWT_SECRET) as JwtPayload
+    return adoptLegacyRestaurantId(jwt.verify(header.split(" ")[1], JWT_SECRET) as JwtPayload)
   } catch {
     return null
   }
@@ -50,7 +58,7 @@ export function generateRefreshToken(payload: JwtPayload): string {
 }
 
 export function verifyRefreshToken(token: string): JwtPayload {
-  return jwt.verify(token, JWT_REFRESH_SECRET) as JwtPayload
+  return adoptLegacyRestaurantId(jwt.verify(token, JWT_REFRESH_SECRET) as JwtPayload)
 }
 
 export class AuthError extends Error {

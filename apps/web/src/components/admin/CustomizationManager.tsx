@@ -38,7 +38,7 @@ interface CustomizationGroup {
 interface CustomizationManagerProps {
   itemId: string
   itemName: string
-  canteenId: string
+  restaurantId: string
   onClose: () => void
 }
 
@@ -48,7 +48,7 @@ const emptyOptionForm = { name: "", priceAdjustment: "0" }
 export function CustomizationManager({
   itemId,
   itemName,
-  canteenId,
+  restaurantId,
   onClose,
 }: CustomizationManagerProps) {
   const queryClient = useQueryClient()
@@ -63,8 +63,8 @@ export function CustomizationManager({
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null)
   const [optionForm, setOptionForm] = useState(emptyOptionForm)
 
-  const queryKey = ["customizations", canteenId, itemId]
-  const baseUrl = `/api/v1/canteens/${canteenId}/menu/items/${itemId}/customizations`
+  const queryKey = ["customizations", restaurantId, itemId]
+  const baseUrl = `/api/v1/restaurants/${restaurantId}/menu/items/${itemId}/customizations`
 
   const { data: customizations, isLoading } = useQuery<CustomizationGroup[]>({
     queryKey,

@@ -34,7 +34,7 @@ const FULFILLMENT_OPTIONS: Array<{ value: OrderType; label: string; icon: typeof
 
 export default function CartPage({ params }: { params: { slug: string } }) {
   const router = useRouter()
-  const { items, removeItem, updateQuantity, clearCart, getTotal, canteenId, tableId } = useCartStore()
+  const { items, removeItem, updateQuantity, clearCart, getTotal, restaurantId, tableId } = useCartStore()
   const user = useAuthStore((s) => s.user)
   const [paymentMethod, setPaymentMethod] = useState<"CASH" | "WALLET">("CASH")
   const [specialInstructions, setSpecialInstructions] = useState("")
@@ -103,7 +103,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
   useEffect(() => {
     loadBalance()
     api
-      .get(`/api/v1/public/canteen/${params.slug}/menu`)
+      .get(`/api/v1/public/restaurant/${params.slug}/menu`)
       .then((r) => setTables(r.data.data.tables ?? []))
       .catch(() => {})
   }, [params.slug])
@@ -115,7 +115,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
   }
 
   async function handlePlaceOrder() {
-    if (!canteenId) {
+    if (!restaurantId) {
       toast.error("Please scan a QR code first")
       return
     }
@@ -137,7 +137,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
 
     setLoading(true)
     try {
-      const { data } = await api.post(`/api/v1/canteens/${canteenId}/orders`, {
+      const { data } = await api.post(`/api/v1/restaurants/${restaurantId}/orders`, {
         orderType: finalOrderType,
         tableId: finalTableId,
         deliveryLocation: finalDeliveryLocation,

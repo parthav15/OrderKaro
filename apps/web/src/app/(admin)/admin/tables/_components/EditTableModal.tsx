@@ -13,12 +13,12 @@ import { Switch } from "./Switch"
 
 interface EditTableModalProps {
   table: TableRow | null
-  canteenId: string
+  restaurantId: string
   sections: string[]
   onClose: () => void
 }
 
-export function EditTableModal({ table, canteenId, sections, onClose }: EditTableModalProps) {
+export function EditTableModal({ table, restaurantId, sections, onClose }: EditTableModalProps) {
   const queryClient = useQueryClient()
   const [label, setLabel] = useState("")
   const [section, setSection] = useState("")
@@ -35,9 +35,9 @@ export function EditTableModal({ table, canteenId, sections, onClose }: EditTabl
 
   const update = useMutation({
     mutationFn: (payload: { label: string; section?: string; isActive: boolean }) =>
-      api.put(`/api/v1/canteens/${canteenId}/tables/${table!.id}`, payload),
+      api.put(`/api/v1/restaurants/${restaurantId}/tables/${table!.id}`, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tables", canteenId] })
+      queryClient.invalidateQueries({ queryKey: ["tables", restaurantId] })
       toast.success("Table updated")
       onClose()
     },

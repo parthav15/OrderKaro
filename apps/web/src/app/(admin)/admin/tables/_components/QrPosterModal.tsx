@@ -10,19 +10,19 @@ import type { TableRow } from "../_hooks/useTablesQuery"
 
 interface QrPosterModalProps {
   table: TableRow | null
-  canteenId: string
-  canteenName: string
+  restaurantId: string
+  restaurantName: string
   onClose: () => void
 }
 
 type Tab = "code" | "poster" | "link"
 
-export function QrPosterModal({ table, canteenId, canteenName, onClose }: QrPosterModalProps) {
+export function QrPosterModal({ table, restaurantId, restaurantName, onClose }: QrPosterModalProps) {
   const [tab, setTab] = useState<Tab>("code")
   const [copied, setCopied] = useState(false)
   const [posterUrl, setPosterUrl] = useState<string | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const { data } = useQrThumb(canteenId, table?.id ?? null)
+  const { data } = useQrThumb(restaurantId, table?.id ?? null)
 
   useEffect(() => {
     if (!table) {
@@ -35,8 +35,8 @@ export function QrPosterModal({ table, canteenId, canteenName, onClose }: QrPost
   useEffect(() => {
     if (!data || !table) return
     if (tab !== "poster") return
-    drawPoster(data.qrDataUrl, canteenName, table.label, table.section ?? null).then(setPosterUrl)
-  }, [data, table, canteenName, tab])
+    drawPoster(data.qrDataUrl, restaurantName, table.label, table.section ?? null).then(setPosterUrl)
+  }, [data, table, restaurantName, tab])
 
   function copyUrl() {
     if (!data?.url) return
@@ -196,7 +196,7 @@ function slugify(text: string) {
 
 function drawPoster(
   qrDataUrl: string,
-  canteenName: string,
+  restaurantName: string,
   tableLabel: string,
   section: string | null
 ): Promise<string> {
@@ -220,7 +220,7 @@ function drawPoster(
 
     ctx.fillStyle = "#737373"
     ctx.font = "500 28px DM Sans, system-ui, sans-serif"
-    ctx.fillText(canteenName, 100, 144)
+    ctx.fillText(restaurantName, 100, 144)
 
     ctx.fillStyle = "#0A0A0A"
     ctx.font = "800 110px Instrument Sans, DM Sans, system-ui, sans-serif"

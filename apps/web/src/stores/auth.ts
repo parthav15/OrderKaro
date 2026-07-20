@@ -7,7 +7,7 @@ interface User {
   email?: string
   phone?: string
   role: string
-  canteenId?: string
+  restaurantId?: string
 }
 
 interface AuthState {
@@ -32,6 +32,16 @@ export const useAuthStore = create<AuthState>()(
       logout: () =>
         set({ user: null, accessToken: null, refreshToken: null }),
     }),
-    { name: "orderkaro-auth" }
+    {
+      name: "orderkaro-auth",
+      version: 1,
+      migrate: (persisted: any) => {
+        const user = persisted?.user
+        if (user && !user.restaurantId && user.canteenId) {
+          return { ...persisted, user: { ...user, restaurantId: user.canteenId } }
+        }
+        return persisted
+      },
+    }
   )
 )

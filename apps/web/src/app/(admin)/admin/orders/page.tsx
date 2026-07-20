@@ -86,7 +86,7 @@ const nextStatusLabel: Record<string, string> = {
 }
 
 export default function OrderHistory() {
-  const [canteenId, setCanteenId] = useState<string | null>(null)
+  const [restaurantId, setRestaurantId] = useState<string | null>(null)
   const [page, setPage] = useState(1)
   const [statusFilter, setStatusFilter] = useState("")
   const [paymentFilter, setPaymentFilter] = useState("")
@@ -101,7 +101,7 @@ export default function OrderHistory() {
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ orderId, status }: { orderId: string; status: string }) =>
-      api.patch(`/api/v1/canteens/${canteenId}/orders/${orderId}/status`, { status }),
+      api.patch(`/api/v1/restaurants/${restaurantId}/orders/${orderId}/status`, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders-history"] })
       setSelectedOrder(null)
@@ -114,7 +114,7 @@ export default function OrderHistory() {
 
   const collectCashMutation = useMutation({
     mutationFn: ({ orderId, amountReceived }: { orderId: string; amountReceived: number }) =>
-      api.post(`/api/v1/canteens/${canteenId}/orders/${orderId}/collect-cash`, { amountReceived }),
+      api.post(`/api/v1/restaurants/${restaurantId}/orders/${orderId}/collect-cash`, { amountReceived }),
     onSuccess: (res) => {
       setCashResult(res.data.data)
       queryClient.invalidateQueries({ queryKey: ["orders-history"] })
@@ -125,16 +125,16 @@ export default function OrderHistory() {
     },
   })
 
-  const { data: canteens } = useQuery({
-    queryKey: ["canteens"],
-    queryFn: () => api.get("/api/v1/canteens").then((r) => r.data.data),
+  const { data: restaurants } = useQuery({
+    queryKey: ["restaurants"],
+    queryFn: () => api.get("/api/v1/restaurants").then((r) => r.data.data),
   })
 
   useEffect(() => {
-    if (canteens?.[0] && !canteenId) {
-      setCanteenId(canteens[0].id)
+    if (restaurants?.[0] && !restaurantId) {
+      setRestaurantId(restaurants[0].id)
     }
-  }, [canteens, canteenId])
+  }, [restaurants, restaurantId])
 
   const queryParams = new URLSearchParams()
   queryParams.set("page", String(page))
@@ -145,12 +145,12 @@ export default function OrderHistory() {
   if (dateTo) queryParams.set("dateTo", dateTo)
 
   const { data: ordersData, isLoading } = useQuery<OrdersResponse>({
-    queryKey: ["orders-history", canteenId, page, statusFilter, paymentFilter, dateFrom, dateTo],
+    queryKey: ["orders-history", restaurantId, page, statusFilter, paymentFilter, dateFrom, dateTo],
     queryFn: () =>
       api
-        .get(`/api/v1/canteens/${canteenId}/orders/history?${queryParams.toString()}`)
+        .get(`/api/v1/restaurants/${restaurantId}/orders/history?${queryParams.toString()}`)
         .then((r) => r.data.data),
-    enabled: !!canteenId,
+    enabled: !!restaurantId,
   })
 
   function clearFilters() {
@@ -177,17 +177,17 @@ export default function OrderHistory() {
           <p className="text-neutral-500">
             {ordersData?.pagination?.total
               ? `${ordersData.pagination.total} total orders found`
-              : "Browse and manage all canteen orders"}
+              : "Browse and manage all restaurant orders"}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {canteens && canteens.length > 1 && (
+          {restaurants && restaurants.length > 1 && (
             <select
-              value={canteenId || ""}
-              onChange={(e) => { setCanteenId(e.target.value); setPage(1) }}
+              value={restaurantId || ""}
+              onChange={(e) => { setRestaurantId(e.target.value); setPage(1) }}
               className="px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
             >
-              {canteens.map((c: any) => (
+              {restaurants.map((c: any) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>

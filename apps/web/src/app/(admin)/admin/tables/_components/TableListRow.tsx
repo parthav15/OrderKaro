@@ -14,7 +14,7 @@ import { relativeAge } from "../_utils/format-time"
 
 interface TableListRowProps {
   table: TableRow
-  canteenId: string
+  restaurantId: string
   selected: boolean
   onToggleSelect: (id: string, shiftKey: boolean) => void
   onView: (table: TableRow) => void
@@ -28,7 +28,7 @@ interface TableListRowProps {
 
 export function TableListRow({
   table,
-  canteenId,
+  restaurantId,
   selected,
   onToggleSelect,
   onView,
@@ -45,9 +45,9 @@ export function TableListRow({
 
   const renameMutation = useMutation({
     mutationFn: (label: string) =>
-      api.put(`/api/v1/canteens/${canteenId}/tables/${table.id}`, { label }),
+      api.put(`/api/v1/restaurants/${restaurantId}/tables/${table.id}`, { label }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tables", canteenId] })
+      queryClient.invalidateQueries({ queryKey: ["tables", restaurantId] })
       toast.success("Renamed")
       setEditing(false)
     },
@@ -86,7 +86,7 @@ export function TableListRow({
         {selected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
       </button>
 
-      <TableCardQrThumb canteenId={canteenId} tableId={table.id} size={48} />
+      <TableCardQrThumb restaurantId={restaurantId} tableId={table.id} size={48} />
 
       <div className="min-w-0">
         <AnimatePresence mode="wait" initial={false}>

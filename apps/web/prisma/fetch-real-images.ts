@@ -177,11 +177,11 @@ async function main() {
   const owner = await prisma.owner.findUnique({ where: { email: OWNER_EMAIL } })
   if (!owner) throw new Error("Owner not found")
 
-  const canteen = await prisma.canteen.findFirst({ where: { ownerId: owner.id } })
-  if (!canteen) throw new Error("Canteen not found")
+  const restaurant = await prisma.restaurant.findFirst({ where: { ownerId: owner.id } })
+  if (!restaurant) throw new Error("Restaurant not found")
 
   const items = await prisma.menuItem.findMany({
-    where: { category: { canteenId: canteen.id } },
+    where: { category: { restaurantId: restaurant.id } },
     include: { category: true },
     orderBy: [{ category: { sortOrder: "asc" } }, { sortOrder: "asc" }],
   })

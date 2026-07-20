@@ -50,7 +50,7 @@ cd apps/web
 npx prisma@6.4.0 db push
 ```
 
-The database was seeded with initial data (owner account, canteen, categories, menu items, tables) using:
+The database was seeded with initial data (owner account, restaurant, categories, menu items, tables) using:
 
 ```bash
 cd apps/web
@@ -63,7 +63,7 @@ The project was created and configured via Vercel CLI + API:
 
 ```bash
 # Link the monorepo root to a Vercel project
-cd CANTEEN_MANAGEMENT
+cd RESTAURANT_MANAGEMENT
 npx vercel link --project web --yes
 
 # Deploy to production
@@ -113,7 +113,7 @@ A redeploy is required after changing protection settings.
 ## Redeploying
 
 ```bash
-cd CANTEEN_MANAGEMENT
+cd RESTAURANT_MANAGEMENT
 npx vercel deploy --prod --token $VERCEL_TOKEN --yes
 ```
 

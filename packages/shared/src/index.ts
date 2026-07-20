@@ -1,5 +1,5 @@
 export * from "./schemas/auth"
-export * from "./schemas/canteen"
+export * from "./schemas/restaurant"
 export * from "./schemas/menu"
 export * from "./schemas/table"
 export * from "./schemas/order"

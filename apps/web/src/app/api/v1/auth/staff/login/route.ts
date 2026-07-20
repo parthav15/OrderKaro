@@ -18,8 +18,8 @@ export async function POST(request: NextRequest) {
 
     const staff = await prisma.staff.findUnique({
       where: {
-        canteenId_email: {
-          canteenId: data.canteenId,
+        restaurantId_email: {
+          restaurantId: data.restaurantId,
           email: data.email,
         },
       },
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
         id: true,
         name: true,
         role: true,
-        canteenId: true,
+        restaurantId: true,
         isActive: true,
         passwordHash: true,
       },
@@ -49,16 +49,16 @@ export async function POST(request: NextRequest) {
     const accessToken = generateAccessToken({
       id: staff.id,
       role: staff.role,
-      canteenId: staff.canteenId,
+      restaurantId: staff.restaurantId,
     })
     const refreshToken = generateRefreshToken({
       id: staff.id,
       role: staff.role,
-      canteenId: staff.canteenId,
+      restaurantId: staff.restaurantId,
     })
 
     return success({
-      staff: { id: staff.id, name: staff.name, role: staff.role, canteenId: staff.canteenId },
+      staff: { id: staff.id, name: staff.name, role: staff.role, restaurantId: staff.restaurantId },
       accessToken,
       refreshToken,
     })
