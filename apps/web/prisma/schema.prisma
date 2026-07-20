@@ -99,8 +99,13 @@ model Subscription {
   plan              Plan
   status            SubscriptionStatus @default(PENDING)
   amount            Decimal            @db.Decimal(10, 2)
+  currency          String             @default("INR")
   periodStart       DateTime?
   periodEnd         DateTime?
+  provider          PaymentProvider?
+  providerOrderId   String?            @unique
+  providerTxnId     String?
+  redirectUrl       String?
   razorpayOrderId   String?            @unique
   razorpayPaymentId String?
   createdAt         DateTime           @default(now())

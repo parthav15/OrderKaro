@@ -20,8 +20,6 @@ import api from "@/lib/api"
 import { formatPrice } from "@/lib/utils"
 import { toast } from "sonner"
 
-const RAZORPAY_SCRIPT = "https://checkout.razorpay.com/v1/checkout.js"
-
 type PlanName = "FREE" | "BASIC" | "PRO"
 
 interface PlanFeatures {
@@ -64,18 +62,6 @@ interface BillingData {
   }
   catalogue: PlanDefinition[]
   subscriptions: Subscription[]
-}
-
-function loadRazorpayScript(): Promise<boolean> {
-  return new Promise((resolve) => {
-    if (typeof window === "undefined") return resolve(false)
-    if ((window as { Razorpay?: unknown }).Razorpay) return resolve(true)
-    const script = document.createElement("script")
-    script.src = RAZORPAY_SCRIPT
-    script.onload = () => resolve(true)
-    script.onerror = () => resolve(false)
-    document.body.appendChild(script)
-  })
 }
 
 function statusBadgeVariant(status: string): "success" | "warning" | "danger" | "default" {
@@ -169,81 +155,43 @@ export default function BillingPage() {
     enabled: !!restaurantId,
   })
 
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const outcome = new URLSearchParams(window.location.search).get("billing")
+    if (!outcome) return
+    if (outcome === "paid") toast.success("Plan upgraded — your subscription is active")
+    else if (outcome === "failed") toast.error("Payment failed or was cancelled")
+    else if (outcome === "invalid") toast.error("Payment could not be verified")
+    else if (outcome === "pending") toast("Payment is still processing")
+    queryClient.invalidateQueries({ queryKey: ["billing"] })
+    queryClient.invalidateQueries({ queryKey: ["restaurants"] })
+    window.history.replaceState({}, "", window.location.pathname)
+  }, [queryClient])
+
   const handleUpgrade = async (plan: PlanName) => {
     if (!restaurantId || plan === "FREE") return
     setUpgradingPlan(plan)
 
-    const scriptLoaded = await loadRazorpayScript()
-    if (!scriptLoaded) {
-      toast.error("Could not load the payment gateway")
-      setUpgradingPlan(null)
-      return
-    }
-
-    let order: { orderId: string; amount: number; currency: string; keyId: string; plan: PlanName }
     try {
       const { data: response } = await api.post(
         `/api/v1/restaurants/${restaurantId}/billing/checkout`,
         { plan }
       )
-      order = response.data
+      const redirectUrl = response.data?.redirectUrl
+      if (!redirectUrl) {
+        toast.error("Could not start the upgrade")
+        setUpgradingPlan(null)
+        return
+      }
+      window.location.href = redirectUrl
     } catch (err) {
       const status = (err as { response?: { status?: number } })?.response?.status
       const message =
         (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        (status === 503 ? "Payment gateway is not configured" : "Could not start upgrade")
+        (status === 503 ? "Platform billing is not configured" : "Could not start upgrade")
       toast.error(message)
       setUpgradingPlan(null)
-      return
     }
-
-    const RazorpayConstructor = (
-      window as unknown as {
-        Razorpay: new (opts: unknown) => {
-          open: () => void
-          on: (event: string, cb: () => void) => void
-        }
-      }
-    ).Razorpay
-
-    const checkout = new RazorpayConstructor({
-      key: order.keyId,
-      amount: order.amount,
-      currency: order.currency,
-      order_id: order.orderId,
-      name: "OrderKaro",
-      description: `Upgrade to ${plan} plan`,
-      theme: { color: "#DC2626" },
-      handler: async (response: {
-        razorpay_order_id: string
-        razorpay_payment_id: string
-        razorpay_signature: string
-      }) => {
-        try {
-          await api.post(`/api/v1/restaurants/${restaurantId}/billing/verify`, {
-            razorpayOrderId: response.razorpay_order_id,
-            razorpayPaymentId: response.razorpay_payment_id,
-            razorpaySignature: response.razorpay_signature,
-          })
-          toast.success(`Upgraded to ${plan} plan`)
-          queryClient.invalidateQueries({ queryKey: ["billing", restaurantId] })
-          queryClient.invalidateQueries({ queryKey: ["restaurants"] })
-        } catch {
-          toast.error("Payment verification failed. Any deduction will be reconciled.")
-        } finally {
-          setUpgradingPlan(null)
-        }
-      },
-      modal: {
-        ondismiss: () => setUpgradingPlan(null),
-      },
-    })
-
-    checkout.on("payment.failed", () => {
-      toast.error("Payment failed")
-      setUpgradingPlan(null)
-    })
-    checkout.open()
   }
 
   const storedPlanDefinition = data?.catalogue?.find((d) => d.name === data.storedPlan)
