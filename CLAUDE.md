@@ -91,6 +91,8 @@ pnpm dev          # Next.js on http://localhost:3000 (UI + API together)
 - Restaurant credentials are encrypted with `CREDENTIAL_ENCRYPTION_KEY` (AES-256-GCM) and are write-only from the UI. **The key must be identical in every environment** — local and production share one database, and rotating it orphans stored credentials
 - Online orders are created `AWAITING_PAYMENT` and only become `PLACED` once payment is confirmed. Any new order-count or revenue query must exclude `AWAITING_PAYMENT`
 - `reconcilePendingPayments()` polls the gateway status endpoint to catch payments where the diner closed the tab (neither provider uses a webhook now)
+- **Two separate money flows.** Order payments (diner → restaurant) use each restaurant's OWN credentials from `RestaurantPaymentAccount`. SaaS subscription billing (restaurant → platform) uses the PLATFORM's own credentials from env — `PAYPUR_PLATFORM_KEY`/`PAYPUR_PLATFORM_SALT` (India) and `STRIPE_SECRET_KEY` (abroad) — via `lib/payments/platform.ts`. Razorpay now powers ONLY consumer wallet top-up
+- Plan prices are INR and charged in INR through either gateway; subscription activation happens only after `confirmSubscriptionPayment` sees a paid status (billing-return route + polling)
 
 ## Delivery Zones
 
