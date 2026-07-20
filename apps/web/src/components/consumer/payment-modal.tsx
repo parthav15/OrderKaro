@@ -42,7 +42,12 @@ export function PaymentModal({ open, session, title, onSuccess, onClose }: Payme
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
   const [qrFailed, setQrFailed] = useState(false)
   const [resolvedData, setResolvedData] = useState<any>(null)
+  const [isMobile, setIsMobile] = useState(false)
   const reducedMotion = useReducedMotion()
+
+  useEffect(() => {
+    setIsMobile(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent))
+  }, [])
 
   useEffect(() => {
     if (open) setStage("paying")
@@ -196,19 +201,23 @@ export function PaymentModal({ open, session, title, onSuccess, onClose }: Payme
                         Scan with any UPI app
                       </p>
 
-                      <div className="flex items-center gap-3 mb-6">
-                        <div className="h-px flex-1 bg-neutral-100" />
-                        <span className="text-[11px] font-semibold uppercase tracking-widest text-neutral-300">or</span>
-                        <div className="h-px flex-1 bg-neutral-100" />
-                      </div>
+                      {isMobile && (
+                        <>
+                          <div className="flex items-center gap-3 mb-6">
+                            <div className="h-px flex-1 bg-neutral-100" />
+                            <span className="text-[11px] font-semibold uppercase tracking-widest text-neutral-300">or</span>
+                            <div className="h-px flex-1 bg-neutral-100" />
+                          </div>
 
-                      <button
-                        onClick={handlePayWithUpi}
-                        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-brand-red text-white font-semibold text-sm hover:bg-red-700 active:scale-[0.98] transition-all"
-                      >
-                        <Smartphone className="w-4 h-4" />
-                        Pay with UPI app
-                      </button>
+                          <button
+                            onClick={handlePayWithUpi}
+                            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-brand-red text-white font-semibold text-sm hover:bg-red-700 active:scale-[0.98] transition-all"
+                          >
+                            <Smartphone className="w-4 h-4" />
+                            Pay with UPI app
+                          </button>
+                        </>
+                      )}
                     </>
                   )}
 

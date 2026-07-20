@@ -155,7 +155,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div>
+    <div className="max-w-2xl mx-auto">
       <div className="flex items-start justify-between mb-8">
         <div>
           <div className="flex items-center gap-3 mb-1">
@@ -190,7 +190,7 @@ export default function SettingsPage() {
             avgPrepTime: Number(form.avgPrepTime),
           })
         }}
-        className="max-w-2xl space-y-6"
+        className="space-y-6"
       >
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -390,7 +390,7 @@ export default function SettingsPage() {
             themeMode: brandForm.themeMode,
           })
         }}
-        className="max-w-2xl mt-6"
+        className="mt-6"
       >
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -514,7 +514,7 @@ export default function SettingsPage() {
             minOrderValue: Number(deliveryForm.minOrderValue),
           })
         }}
-        className="max-w-2xl mt-6"
+        className="mt-6"
       >
         <motion.div
           initial={{ opacity: 0, y: 10 }}

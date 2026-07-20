@@ -316,8 +316,9 @@ export default function BillingPage() {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.05 * idx, type: "spring", damping: 20, stiffness: 200 }}
+                    className="h-full"
                   >
-                    <Card className={isActive ? "border-brand-red/40 ring-1 ring-brand-red/20" : ""}>
+                    <Card className={`h-full ${isActive ? "border-brand-red/40 ring-1 ring-brand-red/20" : ""}`}>
                       <CardContent className="py-6 flex flex-col h-full">
                         <div className="flex items-center justify-between mb-1">
                           <h3 className="text-lg font-extrabold text-brand-black">{planDef.label}</h3>

@@ -29,7 +29,7 @@ export const PLANS: Record<PlanName, PlanDefinition> = {
   BASIC: {
     name: "BASIC",
     label: "Basic",
-    monthlyPrice: 499,
+    monthlyPrice: 1,
     maxMenuItems: 150,
     maxTables: 30,
     features: { branding: true, delivery: true, viewAnalytics: true, ar: false },
@@ -37,7 +37,7 @@ export const PLANS: Record<PlanName, PlanDefinition> = {
   PRO: {
     name: "PRO",
     label: "Pro",
-    monthlyPrice: 1499,
+    monthlyPrice: 1,
     maxMenuItems: 1000,
     maxTables: 200,
     features: { branding: true, delivery: true, viewAnalytics: true, ar: true },

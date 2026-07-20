@@ -128,7 +128,7 @@ export default function PaymentsPage() {
   const stripeKeyValid = /^(sk|rk)_(live|test)_/.test(secretKey)
 
   return (
-    <div>
+    <div className="max-w-2xl mx-auto">
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -157,7 +157,7 @@ export default function PaymentsPage() {
       </motion.div>
 
       {isLoading && (
-        <div className="space-y-4 max-w-2xl">
+        <div className="space-y-4">
           {[1, 2].map((i) => (
             <div key={i} className="h-32 rounded-xl bg-neutral-100 animate-pulse" />
           ))}
@@ -165,7 +165,7 @@ export default function PaymentsPage() {
       )}
 
       {!isLoading && data && (
-        <div className="space-y-8 max-w-2xl">
+        <div className="space-y-8">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
             <Card>
               <CardHeader>
