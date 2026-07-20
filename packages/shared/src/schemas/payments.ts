@@ -13,6 +13,12 @@ export const commissionSchema = z.object({
   commissionPercent: z.number().min(0).max(30),
 })
 
+export const walletTopupSchema = z.object({
+  amount: z.number().min(1).max(100000),
+})
+
+export type WalletTopupInput = z.infer<typeof walletTopupSchema>
+
 export type ConnectPaypurInput = z.infer<typeof connectPaypurSchema>
 export type ConnectStripeInput = z.infer<typeof connectStripeSchema>
 export type CommissionInput = z.infer<typeof commissionSchema>

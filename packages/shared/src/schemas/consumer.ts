@@ -14,6 +14,7 @@ export const consumerLoginSchema = z.object({
 export const identifyConsumerSchema = z.object({
   phone: z.string().min(10).max(10),
   name: z.string().min(1).max(100),
+  slug: z.string().min(1).optional(),
 })
 
 export type ConsumerRegisterInput = z.infer<typeof consumerRegisterSchema>

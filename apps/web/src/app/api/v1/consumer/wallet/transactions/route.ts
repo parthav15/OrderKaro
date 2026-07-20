@@ -11,24 +11,20 @@ export async function GET(request: NextRequest) {
     const page = Math.max(1, parseInt(searchParams.get("page") ?? "1"))
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "20")))
 
-    const wallet = await prisma.wallet.findUnique({ where: { consumerId: user.id } })
-
-    if (!wallet) {
-      return NextResponse.json({
-        success: true,
-        data: [],
-        pagination: { page, limit, total: 0, totalPages: 0 },
-      })
+    const restaurantId = searchParams.get("restaurantId")
+    const walletFilter = {
+      wallet: { consumerId: user.id, ...(restaurantId && { restaurantId }) },
+      NOT: { source: "ONLINE" as const, status: "PENDING" as const },
     }
 
     const [transactions, total] = await Promise.all([
       prisma.walletTransaction.findMany({
-        where: { walletId: wallet.id },
+        where: walletFilter,
         orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
         take: limit,
       }),
-      prisma.walletTransaction.count({ where: { walletId: wallet.id } }),
+      prisma.walletTransaction.count({ where: walletFilter }),
     ])
 
     return NextResponse.json({

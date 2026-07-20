@@ -9,7 +9,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string; reqId: string }> }
 ) {
   try {
-    const { reqId } = await params
+    const { id: restaurantId, reqId } = await params
     const user = requireRole(request, "OWNER", "MANAGER")
     const body = await request.json()
     const data = parseBody(approveRechargeSchema, body)
@@ -20,6 +20,8 @@ export async function PATCH(
     })
 
     if (!transaction) throw new AuthError("Recharge request not found", 404)
+    if (transaction.wallet.restaurantId !== restaurantId)
+      throw new AuthError("Recharge request not found", 404)
     if (transaction.status !== "PENDING") throw new AuthError("Request already processed", 400)
     if (transaction.source !== "BANK_TRANSFER") throw new AuthError("Not a recharge request", 400)
 

@@ -7,13 +7,14 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await params
+    const { id: restaurantId } = await params
     requireRole(request, "OWNER", "MANAGER")
 
     const requests = await prisma.walletTransaction.findMany({
       where: {
         source: "BANK_TRANSFER",
         status: "PENDING",
+        wallet: { restaurantId },
       },
       include: {
         wallet: {

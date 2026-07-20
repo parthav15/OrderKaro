@@ -42,12 +42,21 @@ export async function POST(
 
       if (changeAmount.gt(new Decimal(0))) {
         let wallet = await tx.wallet.findUnique({
-          where: { consumerId: order.consumer.id },
+          where: {
+            consumerId_restaurantId: {
+              consumerId: order.consumer.id,
+              restaurantId: order.restaurantId,
+            },
+          },
         })
 
         if (!wallet) {
           wallet = await tx.wallet.create({
-            data: { consumerId: order.consumer.id, balance: new Decimal(0) },
+            data: {
+              consumerId: order.consumer.id,
+              restaurantId: order.restaurantId,
+              balance: new Decimal(0),
+            },
           })
         }
 
@@ -78,7 +87,14 @@ export async function POST(
     })
 
     if (walletCredited && newWalletBalance === null) {
-      const w = await prisma.wallet.findUnique({ where: { consumerId: order.consumer.id } })
+      const w = await prisma.wallet.findUnique({
+        where: {
+          consumerId_restaurantId: {
+            consumerId: order.consumer.id,
+            restaurantId: order.restaurantId,
+          },
+        },
+      })
       newWalletBalance = w ? new Decimal(w.balance.toString()) : new Decimal(0)
     }
 

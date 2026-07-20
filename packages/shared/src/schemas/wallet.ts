@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 export const rechargeRequestSchema = z.object({
+  restaurantId: z.string().min(1),
   amount: z.number().positive(),
   reference: z.string().min(1).max(200),
   description: z.string().max(500).optional(),

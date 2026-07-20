@@ -3,6 +3,7 @@ import { Decimal } from "@prisma/client/runtime/library"
 import prisma from "@/lib/prisma"
 import { created, handleError, requireRole, parseBody, AuthError } from "@/lib/api-utils"
 import { creditWalletSchema } from "@orderkaro/shared"
+import { getOrCreateWallet } from "@/lib/wallet"
 
 export async function POST(
   request: NextRequest,
@@ -17,12 +18,7 @@ export async function POST(
     const consumer = await prisma.consumer.findUnique({ where: { id: data.consumerId } })
     if (!consumer) throw new AuthError("Consumer not found", 404)
 
-    let wallet = await prisma.wallet.findUnique({ where: { consumerId: data.consumerId } })
-    if (!wallet) {
-      wallet = await prisma.wallet.create({
-        data: { consumerId: data.consumerId },
-      })
-    }
+    const wallet = await getOrCreateWallet(data.consumerId, restaurantId)
 
     const balanceBefore = new Decimal(wallet.balance.toString())
     const amount = new Decimal(data.amount.toString())

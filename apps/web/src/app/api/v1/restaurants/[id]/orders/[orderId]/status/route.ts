@@ -67,7 +67,14 @@ export async function PATCH(
         order.paymentMethod === "WALLET" &&
         order.paymentStatus === "PAID"
       ) {
-        const wallet = await tx.wallet.findUnique({ where: { consumerId: order.consumerId } })
+        const wallet = await tx.wallet.findUnique({
+          where: {
+            consumerId_restaurantId: {
+              consumerId: order.consumerId,
+              restaurantId: order.restaurantId,
+            },
+          },
+        })
         if (wallet) {
           const balanceBefore = new Decimal(wallet.balance.toString())
           const refundAmount = new Decimal(order.totalAmount.toString())

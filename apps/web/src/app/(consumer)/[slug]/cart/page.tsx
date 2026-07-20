@@ -86,6 +86,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
       const { data } = await api.post("/api/v1/public/identify", {
         name: stored.name,
         phone: stored.phone,
+        slug: params.slug,
       })
       const result = data.data
       useAuthStore.getState().setAuth(
@@ -110,13 +111,13 @@ export default function CartPage({ params }: { params: { slug: string } }) {
 
   async function loadBalance() {
     try {
-      const { data } = await api.get("/api/v1/consumer/wallet")
+      const { data } = await api.get(`/api/v1/consumer/wallet?slug=${params.slug}`)
       setWalletBalance(Number(data.data.balance))
     } catch (err) {
       const status = (err as { response?: { status?: number } }).response?.status
       if (status === 401 && (await reidentifyFromStorage())) {
         try {
-          const { data } = await api.get("/api/v1/consumer/wallet")
+          const { data } = await api.get(`/api/v1/consumer/wallet?slug=${params.slug}`)
           setWalletBalance(Number(data.data.balance))
         } catch {}
       }
@@ -132,6 +133,19 @@ export default function CartPage({ params }: { params: { slug: string } }) {
         setStorefront(r.data.data.restaurant ?? null)
       })
       .catch(() => {})
+
+    if (typeof window !== "undefined") {
+      const topup = new URLSearchParams(window.location.search).get("topup")
+      if (topup === "paid") {
+        toast.success("Wallet topped up")
+        setPaymentMethod("WALLET")
+      } else if (topup === "failed" || topup === "invalid") {
+        toast.error("Top-up did not complete")
+      } else if (topup === "pending") {
+        toast("Top-up is still processing")
+      }
+      if (topup) window.history.replaceState({}, "", window.location.pathname)
+    }
   }, [params.slug])
 
   function handleUseMyLocation() {
@@ -158,9 +172,8 @@ export default function CartPage({ params }: { params: { slug: string } }) {
   }
 
   async function handleTopUp() {
-    if (shortfall <= 0) return
-    const newBalance = await recharge(shortfall, { name: user?.name, contact: user?.phone })
-    if (newBalance !== null) setWalletBalance(newBalance)
+    if (shortfall <= 0 || !restaurantId) return
+    await recharge(restaurantId, shortfall)
   }
 
   async function handlePlaceOrder() {

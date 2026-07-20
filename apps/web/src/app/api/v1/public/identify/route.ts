@@ -15,18 +15,30 @@ export async function POST(request: NextRequest) {
       select: { id: true, name: true, phone: true },
     })
 
-    const wallet = await prisma.wallet.upsert({
-      where: { consumerId: consumer.id },
-      update: {},
-      create: { consumerId: consumer.id },
-      select: { balance: true },
-    })
+    let balance = "0"
+    if (data.slug) {
+      const restaurant = await prisma.restaurant.findUnique({
+        where: { slug: data.slug },
+        select: { id: true },
+      })
+      if (restaurant) {
+        const wallet = await prisma.wallet.upsert({
+          where: {
+            consumerId_restaurantId: { consumerId: consumer.id, restaurantId: restaurant.id },
+          },
+          update: {},
+          create: { consumerId: consumer.id, restaurantId: restaurant.id },
+          select: { balance: true },
+        })
+        balance = wallet.balance.toString()
+      }
+    }
 
     const accessToken = generateAccessToken({ id: consumer.id, role: "CONSUMER" }, "24h")
 
     return success({
       consumer,
-      wallet: { balance: wallet.balance },
+      wallet: { balance },
       accessToken,
     })
   } catch (err) {

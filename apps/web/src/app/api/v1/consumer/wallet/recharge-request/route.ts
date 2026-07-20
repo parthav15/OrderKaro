@@ -1,8 +1,9 @@
 import { NextRequest } from "next/server"
 import { Decimal } from "@prisma/client/runtime/library"
 import prisma from "@/lib/prisma"
-import { created, handleError, requireRole, parseBody, AuthError } from "@/lib/api-utils"
+import { created, handleError, requireRole, parseBody } from "@/lib/api-utils"
 import { rechargeRequestSchema } from "@orderkaro/shared"
+import { getOrCreateWallet } from "@/lib/wallet"
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,13 +11,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const data = parseBody(rechargeRequestSchema, body)
 
-    let wallet = await prisma.wallet.findUnique({ where: { consumerId: user.id } })
-
-    if (!wallet) {
-      wallet = await prisma.wallet.create({
-        data: { consumerId: user.id },
-      })
-    }
+    const wallet = await getOrCreateWallet(user.id, data.restaurantId)
 
     const balanceBefore = new Decimal(wallet.balance.toString())
     const amount = new Decimal(data.amount.toString())

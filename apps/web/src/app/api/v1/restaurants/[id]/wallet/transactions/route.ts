@@ -15,15 +15,8 @@ export async function GET(
       Math.max(1, parseInt(request.nextUrl.searchParams.get("limit") ?? "10"))
     )
 
-    const consumerIds = await prisma.order.findMany({
-      where: { restaurantId },
-      select: { consumerId: true },
-      distinct: ["consumerId"],
-    })
-    const ids = consumerIds.map((o) => o.consumerId)
-
     const transactions = await prisma.walletTransaction.findMany({
-      where: { wallet: { consumerId: { in: ids } } },
+      where: { wallet: { restaurantId }, NOT: { source: "ONLINE", status: "PENDING" } },
       orderBy: { createdAt: "desc" },
       take: limit,
       include: {

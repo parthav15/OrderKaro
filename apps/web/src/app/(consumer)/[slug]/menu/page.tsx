@@ -41,7 +41,7 @@ interface StoredConsumer {
 
 interface IdentifyResult {
   consumer: { id: string; name: string; phone: string }
-  wallet: { balance: number }
+  wallet: { balance: string }
   accessToken: string
 }
 
@@ -70,7 +70,7 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
 
   const identifyConsumer = useCallback(
     async (name: string, phone: string): Promise<IdentifyResult> => {
-      const { data } = await api.post("/api/v1/public/identify", { name, phone })
+      const { data } = await api.post("/api/v1/public/identify", { name, phone, slug })
       return data.data as IdentifyResult
     },
     []
@@ -106,7 +106,7 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
           result.accessToken,
           ""
         )
-        setWalletBalance(result.wallet.balance)
+        setWalletBalance(Number(result.wallet.balance))
       } catch {
         if (!cancelled) {
           localStorage.removeItem(CONSUMER_STORAGE_KEY)
@@ -143,7 +143,7 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
         result.accessToken,
         ""
       )
-      setWalletBalance(result.wallet.balance)
+      setWalletBalance(Number(result.wallet.balance))
       setShowIdentifyModal(false)
     } catch (err: any) {
       setIdentifyError(err.response?.data?.error || "Something went wrong. Please try again.")

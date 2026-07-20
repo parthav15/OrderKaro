@@ -151,13 +151,17 @@ export async function POST(
     let walletTransactionId: string | undefined
 
     if (data.paymentMethod === "WALLET") {
-      const wallet = await prisma.wallet.findUnique({ where: { consumerId: user.id } })
-      if (!wallet) throw new AuthError("Wallet not found", 404)
+      const wallet = await prisma.wallet.findUnique({
+        where: { consumerId_restaurantId: { consumerId: user.id, restaurantId } },
+      })
+      if (!wallet) throw new AuthError("No wallet balance at this restaurant", 400)
       if (new Decimal(wallet.balance.toString()).lt(totalAmount))
         throw new AuthError("Insufficient wallet balance", 400)
 
       const walletTx = await prisma.$transaction(async (tx) => {
-        const w = await tx.wallet.findUnique({ where: { consumerId: user.id } })
+        const w = await tx.wallet.findUnique({
+          where: { consumerId_restaurantId: { consumerId: user.id, restaurantId } },
+        })
         if (!w) throw new AuthError("Wallet not found", 404)
         const balanceBefore = new Decimal(w.balance.toString())
         if (balanceBefore.lt(totalAmount)) throw new AuthError("Insufficient wallet balance", 400)

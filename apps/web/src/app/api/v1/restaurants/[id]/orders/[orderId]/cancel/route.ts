@@ -49,7 +49,11 @@ export async function POST(
       })
 
       if (order.paymentMethod === "WALLET" && order.paymentStatus === "PAID") {
-        const wallet = await tx.wallet.findUnique({ where: { consumerId: user.id } })
+        const wallet = await tx.wallet.findUnique({
+          where: {
+            consumerId_restaurantId: { consumerId: user.id, restaurantId: order.restaurantId },
+          },
+        })
         if (wallet) {
           const balanceBefore = new Decimal(wallet.balance.toString())
           const refundAmount = new Decimal(order.totalAmount.toString())
