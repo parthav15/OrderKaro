@@ -78,6 +78,8 @@ model RestaurantPaymentAccount {
   paypurKeyCipher  String?
   paypurSaltCipher String?
 
+  stripeKeyCipher String?
+
   stripeAccountId        String? @unique
   stripeChargesEnabled   Boolean @default(false)
   stripePayoutsEnabled   Boolean @default(false)

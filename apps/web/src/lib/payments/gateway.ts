@@ -5,6 +5,7 @@ export interface PaymentAccountRecord {
   status: string
   paypurKeyCipher: string | null
   paypurSaltCipher: string | null
+  stripeKeyCipher: string | null
   stripeAccountId: string | null
   stripeChargesEnabled: boolean
   stripePayoutsEnabled: boolean
@@ -34,11 +35,6 @@ export interface PaymentStatusResult {
   providerTxnId: string | null
 }
 
-export interface OnboardingSession {
-  redirectUrl: string
-  accountRef: string
-}
-
 export interface PaymentGateway {
   readonly provider: PaymentProviderName
   readonly supportsHostedOnboarding: boolean
@@ -56,16 +52,6 @@ export interface PaymentGateway {
     providerOrderId: string,
     providerTxnId?: string | null
   ): Promise<PaymentStatusResult>
-  startOnboarding?(
-    restaurant: { id: string; name: string; country: string },
-    returnUrl: string,
-    refreshUrl: string
-  ): Promise<OnboardingSession>
-  refreshAccount?(accountRef: string): Promise<{
-    chargesEnabled: boolean
-    payoutsEnabled: boolean
-    detailsSubmitted: boolean
-  }>
 }
 
 export class PaymentConfigurationError extends Error {

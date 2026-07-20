@@ -84,12 +84,13 @@ pnpm dev          # Next.js on http://localhost:3000 (UI + API together)
 
 ## Payments
 
-- Gateway is picked from `Restaurant.country` in `apps/web/src/lib/payments/` — `IN` → **PayPur**, everything else → **Stripe Connect**. Always go through the interface; never call a gateway directly
-- **PayPur has no split, webhook or refund API.** Each restaurant connects their own PayPur account, so diners pay them directly and the platform never holds the money — which also means **no per-order commission in India**. Its status endpoint keys on `txn_id` (not `order_id`), and the paid `amount` is a few paise above `base_amount` for reconciliation, so compare against `base_amount`
-- **Stripe Connect (Express)** supports commission via `application_fee_amount`. The platform account is Canadian; an India-based platform may not take application fees on payouts outside India
+- Gateway is picked from `Restaurant.country` in `apps/web/src/lib/payments/` — `IN` → **PayPur**, everything else → **Stripe**. Always go through the interface; never call a gateway directly
+- **Bring-your-own-credentials for BOTH providers.** Each restaurant connects their own account (PayPur key+salt, or a Stripe secret key), so diners pay the restaurant directly and the platform never holds the money. Consequence: **no per-order commission anywhere** — platform revenue is subscriptions only. `commissionPercent` and the platform-fee plumbing exist but are inert (`supportsPlatformFee` is false on every adapter)
+- PayPur quirks: no webhook or refund API; its status endpoint keys on `txn_id` (not `order_id`); the paid `amount` is a few paise above `base_amount` for reconciliation, so compare against `base_amount`
+- Stripe here is plain Checkout Sessions on the restaurant's own secret key — **not Connect**. No onboarding, no application fee, no platform webhook. Confirmation uses the return redirect + reconciliation, same as PayPur
 - Restaurant credentials are encrypted with `CREDENTIAL_ENCRYPTION_KEY` (AES-256-GCM) and are write-only from the UI. **The key must be identical in every environment** — local and production share one database, and rotating it orphans stored credentials
 - Online orders are created `AWAITING_PAYMENT` and only become `PLACED` once payment is confirmed. Any new order-count or revenue query must exclude `AWAITING_PAYMENT`
-- Because PayPur has no webhook, `reconcilePendingPayments()` polls their status endpoint to catch payments where the diner closed the tab
+- `reconcilePendingPayments()` polls the gateway status endpoint to catch payments where the diner closed the tab (neither provider uses a webhook now)
 
 ## Delivery Zones
 

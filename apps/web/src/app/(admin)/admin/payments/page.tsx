@@ -1,36 +1,24 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { useSearchParams } from "next/navigation"
+import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   CreditCard,
   KeyRound,
   Info,
-  Check,
-  X,
   RefreshCw,
   ExternalLink,
-  AlertTriangle,
   Banknote,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import api from "@/lib/api"
-import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 
 type Provider = "PAYPUR" | "STRIPE"
 type PaymentAccountStatus = "PENDING" | "ACTIVE" | "DISABLED"
-
-interface StripeAccountInfo {
-  accountId: string
-  chargesEnabled: boolean
-  payoutsEnabled: boolean
-  detailsSubmitted: boolean
-}
 
 interface PaymentAccountData {
   country: string
@@ -45,34 +33,14 @@ interface PaymentAccountData {
   }
   connected: boolean
   status: PaymentAccountStatus
-  stripe: StripeAccountInfo | null
   paypurKeyPreview: string | null
+  stripeKeyPreview: string | null
 }
 
 function statusBadgeVariant(status: PaymentAccountStatus): "success" | "warning" | "danger" {
   if (status === "ACTIVE") return "success"
   if (status === "DISABLED") return "danger"
   return "warning"
-}
-
-function StatusChip({ label, active }: { label: string; active: boolean }) {
-  return (
-    <div
-      className={cn(
-        "flex items-center gap-2 px-3 py-2 rounded-xl border",
-        active ? "border-brand-black/10 bg-neutral-50" : "border-neutral-200 bg-white"
-      )}
-    >
-      {active ? (
-        <Check className="w-4 h-4 text-brand-red shrink-0" />
-      ) : (
-        <X className="w-4 h-4 text-neutral-300 shrink-0" />
-      )}
-      <span className={cn("text-sm font-semibold", active ? "text-brand-black" : "text-neutral-400")}>
-        {label}
-      </span>
-    </div>
-  )
 }
 
 function GuideStep({ index, children }: { index: number; children: React.ReactNode }) {
@@ -95,13 +63,12 @@ function extractErrorMessage(err: unknown, fallback: string) {
 
 export default function PaymentsPage() {
   const queryClient = useQueryClient()
-  const searchParams = useSearchParams()
   const [restaurantId, setRestaurantId] = useState<string>("")
   const [apiKey, setApiKey] = useState("")
   const [signingSecret, setSigningSecret] = useState("")
+  const [secretKey, setSecretKey] = useState("")
   const [replacingCredentials, setReplacingCredentials] = useState(false)
   const [confirmDisconnect, setConfirmDisconnect] = useState(false)
-  const stripeReturnHandled = useRef(false)
 
   const { data: restaurants } = useQuery({
     queryKey: ["restaurants"],
@@ -123,12 +90,16 @@ export default function PaymentsPage() {
 
   const saveCredentials = useMutation({
     mutationFn: () =>
-      api.put(`/api/v1/restaurants/${restaurantId}/payment-account`, { apiKey, signingSecret }),
+      api.put(
+        `/api/v1/restaurants/${restaurantId}/payment-account`,
+        data?.provider === "PAYPUR" ? { apiKey, signingSecret } : { secretKey }
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["payment-account", restaurantId] })
       toast.success("Payment credentials saved")
       setApiKey("")
       setSigningSecret("")
+      setSecretKey("")
       setReplacingCredentials(false)
     },
     onError: (err) => toast.error(extractErrorMessage(err, "Could not save credentials")),
@@ -144,23 +115,6 @@ export default function PaymentsPage() {
     onError: (err) => toast.error(extractErrorMessage(err, "Could not disconnect account")),
   })
 
-  const startStripeOnboarding = useMutation({
-    mutationFn: () => api.post(`/api/v1/restaurants/${restaurantId}/payment-account/stripe-onboarding`),
-    onSuccess: (res) => {
-      const url = res.data?.data?.onboardingUrl
-      if (url) window.location.href = url
-    },
-    onError: (err) => toast.error(extractErrorMessage(err, "Could not start onboarding")),
-  })
-
-  const refreshStripeStatus = useMutation({
-    mutationFn: () => api.get(`/api/v1/restaurants/${restaurantId}/payment-account/stripe-onboarding`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["payment-account", restaurantId] })
-    },
-    onError: (err) => toast.error(extractErrorMessage(err, "Could not refresh onboarding status")),
-  })
-
   const reconcilePayments = useMutation({
     mutationFn: () => api.post(`/api/v1/restaurants/${restaurantId}/payments/reconcile`),
     onSuccess: (res) => {
@@ -170,18 +124,8 @@ export default function PaymentsPage() {
     onError: (err) => toast.error(extractErrorMessage(err, "Could not reconcile payments")),
   })
 
-  useEffect(() => {
-    if (
-      searchParams.get("stripe") === "return" &&
-      restaurantId &&
-      !stripeReturnHandled.current
-    ) {
-      stripeReturnHandled.current = true
-      refreshStripeStatus.mutate()
-    }
-  }, [searchParams, restaurantId])
-
   const showCredentialForm = !data?.connected || replacingCredentials
+  const stripeKeyValid = /^(sk|rk)_(live|test)_/.test(secretKey)
 
   return (
     <div>
@@ -384,58 +328,139 @@ export default function PaymentsPage() {
                 </CardContent>
               ) : (
                 <CardContent className="space-y-6 py-6">
-                  {!data.stripe ? (
-                    <div className="space-y-4">
-                      <p className="text-sm text-neutral-500">
-                        Connect your Stripe account to start receiving payouts from diner orders.
-                      </p>
-                      <Button
-                        loading={startStripeOnboarding.isPending}
-                        onClick={() => startStripeOnboarding.mutate()}
+                  <ol className="space-y-3">
+                    <GuideStep index={1}>
+                      Create or sign in to your account at{" "}
+                      <a
+                        href="https://dashboard.stripe.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-brand-red font-semibold hover:underline inline-flex items-center gap-1"
                       >
-                        Connect with Stripe
-                      </Button>
-                    </div>
-                  ) : (
+                        dashboard.stripe.com <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </GuideStep>
+                    <GuideStep index={2}>Go to Developers → API keys</GuideStep>
+                    <GuideStep index={3}>
+                      Copy your Secret key (starts with sk_live_ or sk_test_)
+                    </GuideStep>
+                    <GuideStep index={4}>Paste it below</GuideStep>
+                  </ol>
+
+                  {!showCredentialForm ? (
                     <div className="space-y-4">
-                      <div className="grid grid-cols-3 gap-3">
-                        <StatusChip label="Details submitted" active={data.stripe.detailsSubmitted} />
-                        <StatusChip label="Charges enabled" active={data.stripe.chargesEnabled} />
-                        <StatusChip label="Payouts enabled" active={data.stripe.payoutsEnabled} />
+                      <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-100">
+                        <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">
+                          Connected key
+                        </p>
+                        <p className="text-sm font-semibold text-brand-black font-mono">
+                          {data.stripeKeyPreview}
+                        </p>
                       </div>
-
-                      {!data.stripe.detailsSubmitted && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="flex items-center gap-3 p-4 rounded-xl bg-brand-red/5 border border-brand-red/20"
-                        >
-                          <AlertTriangle className="w-5 h-5 text-brand-red shrink-0" />
-                          <p className="text-sm font-semibold text-brand-red">
-                            Onboarding incomplete — finish it to receive payouts
-                          </p>
-                        </motion.div>
-                      )}
-
                       <div className="flex items-center gap-3">
                         <Button
+                          type="button"
                           variant="outline"
-                          loading={refreshStripeStatus.isPending}
-                          onClick={() => refreshStripeStatus.mutate()}
+                          onClick={() => setReplacingCredentials(true)}
                         >
-                          <RefreshCw className="w-4 h-4" /> Refresh status
+                          Replace key
                         </Button>
-                        {!data.stripe.detailsSubmitted && (
+                        {!confirmDisconnect ? (
                           <Button
-                            loading={startStripeOnboarding.isPending}
-                            onClick={() => startStripeOnboarding.mutate()}
+                            type="button"
+                            variant="danger"
+                            onClick={() => setConfirmDisconnect(true)}
                           >
-                            Continue onboarding
+                            Disconnect
                           </Button>
+                        ) : (
+                          <AnimatePresence mode="wait">
+                            <motion.div
+                              initial={{ opacity: 0, x: -6 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              className="flex items-center gap-2"
+                            >
+                              <span className="text-sm text-neutral-500">Are you sure?</span>
+                              <Button
+                                type="button"
+                                variant="danger"
+                                size="sm"
+                                loading={disconnectAccount.isPending}
+                                onClick={() => disconnectAccount.mutate()}
+                              >
+                                Yes, disconnect
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setConfirmDisconnect(false)}
+                              >
+                                Cancel
+                              </Button>
+                            </motion.div>
+                          </AnimatePresence>
                         )}
                       </div>
                     </div>
+                  ) : (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault()
+                        saveCredentials.mutate()
+                      }}
+                      className="space-y-4"
+                    >
+                      <div className="space-y-2">
+                        <label className="block text-sm font-bold text-brand-black">
+                          Secret key
+                        </label>
+                        <input
+                          type="password"
+                          value={secretKey}
+                          onChange={(e) => setSecretKey(e.target.value)}
+                          placeholder="sk_live_..."
+                          className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                        />
+                        {secretKey && !stripeKeyValid && (
+                          <p className="text-sm text-brand-red">
+                            This doesn't look like a Stripe secret key — it should start with
+                            sk_live_ or sk_test_
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Button
+                          type="submit"
+                          loading={saveCredentials.isPending}
+                          disabled={!stripeKeyValid}
+                        >
+                          Save key
+                        </Button>
+                        {data.connected && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => {
+                              setReplacingCredentials(false)
+                              setSecretKey("")
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                        )}
+                      </div>
+                    </form>
                   )}
+
+                  <div className="flex items-start gap-3 p-4 rounded-xl bg-neutral-50 border border-neutral-100">
+                    <Info className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
+                    <p className="text-sm text-neutral-500 leading-relaxed">
+                      Your Stripe key is encrypted and never shown again. Diners pay your Stripe
+                      account directly — OrderKaro never holds the money. Payment confirmation uses
+                      the return redirect plus background reconciliation.
+                    </p>
+                  </div>
                 </CardContent>
               )}
             </Card>

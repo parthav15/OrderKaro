@@ -1,8 +1,8 @@
+import { decryptSecret } from "@/lib/secure-store"
 import {
   PaymentConfigurationError,
   type CheckoutRequest,
   type CheckoutSession,
-  type OnboardingSession,
   type PaymentAccountRecord,
   type PaymentGateway,
   type PaymentStatusResult,
@@ -10,14 +10,13 @@ import {
 
 const STRIPE_API = "https://api.stripe.com/v1"
 
-export function isStripeConfigured(): boolean {
-  return Boolean(process.env.STRIPE_SECRET_KEY)
-}
-
-function secretKey(): string {
-  const key = process.env.STRIPE_SECRET_KEY
-  if (!key) throw new PaymentConfigurationError("Stripe is not configured", 503)
-  return key
+function restaurantKey(account: PaymentAccountRecord): string {
+  if (!account.stripeKeyCipher) {
+    throw new PaymentConfigurationError(
+      "This restaurant has not connected a Stripe account yet"
+    )
+  }
+  return decryptSecret(account.stripeKeyCipher)
 }
 
 function encodeForm(payload: Record<string, string | number | undefined>): string {
@@ -30,13 +29,14 @@ function encodeForm(payload: Record<string, string | number | undefined>): strin
 }
 
 async function stripeRequest<T>(
+  secretKey: string,
   path: string,
   init?: { method?: string; body?: string }
 ): Promise<T> {
   const response = await fetch(`${STRIPE_API}${path}`, {
     method: init?.method ?? "GET",
     headers: {
-      Authorization: `Bearer ${secretKey()}`,
+      Authorization: `Bearer ${secretKey}`,
       "Content-Type": "application/x-www-form-urlencoded",
     },
     body: init?.body,
@@ -60,107 +60,68 @@ export function toMinorUnits(amount: number, currency: string): number {
   return zeroDecimalCurrency(currency) ? Math.round(amount) : Math.round(amount * 100)
 }
 
+export async function verifyStripeKey(secretKey: string): Promise<boolean> {
+  try {
+    await stripeRequest<{ id: string }>(secretKey, "/account")
+    return true
+  } catch {
+    return false
+  }
+}
+
 export const stripeGateway: PaymentGateway = {
   provider: "STRIPE",
-  supportsHostedOnboarding: true,
-  supportsPlatformFee: true,
-  supportsWebhooks: true,
+  supportsHostedOnboarding: false,
+  supportsPlatformFee: false,
+  supportsWebhooks: false,
   supportsRefunds: true,
 
   isReady(account) {
-    return Boolean(account?.stripeAccountId && account.stripeChargesEnabled)
-  },
-
-  async startOnboarding(
-    restaurant: { id: string; name: string; country: string },
-    returnUrl: string,
-    refreshUrl: string
-  ): Promise<OnboardingSession> {
-    const account = await stripeRequest<{ id: string }>("/accounts", {
-      method: "POST",
-      body: encodeForm({
-        type: "express",
-        country: restaurant.country,
-        "business_profile[name]": restaurant.name,
-        "capabilities[card_payments][requested]": "true",
-        "capabilities[transfers][requested]": "true",
-        "metadata[restaurantId]": restaurant.id,
-      }),
-    })
-
-    const link = await stripeRequest<{ url: string }>("/account_links", {
-      method: "POST",
-      body: encodeForm({
-        account: account.id,
-        refresh_url: refreshUrl,
-        return_url: returnUrl,
-        type: "account_onboarding",
-      }),
-    })
-
-    return { redirectUrl: link.url, accountRef: account.id }
-  },
-
-  async refreshAccount(accountRef: string) {
-    const account = await stripeRequest<{
-      charges_enabled: boolean
-      payouts_enabled: boolean
-      details_submitted: boolean
-    }>(`/accounts/${accountRef}`)
-
-    return {
-      chargesEnabled: account.charges_enabled,
-      payoutsEnabled: account.payouts_enabled,
-      detailsSubmitted: account.details_submitted,
-    }
+    return Boolean(account?.stripeKeyCipher)
   },
 
   async createCheckout(
     account: PaymentAccountRecord,
     request: CheckoutRequest
   ): Promise<CheckoutSession> {
-    if (!account.stripeAccountId) {
-      throw new PaymentConfigurationError(
-        "This restaurant has not connected a Stripe account yet"
-      )
-    }
-
+    const secretKey = restaurantKey(account)
     const currency = request.currency.toLowerCase()
-    const session = await stripeRequest<{ id: string; url: string }>("/checkout/sessions", {
-      method: "POST",
-      body: encodeForm({
-        mode: "payment",
-        success_url: request.successUrl,
-        cancel_url: request.failureUrl,
-        client_reference_id: request.orderId,
-        "line_items[0][quantity]": 1,
-        "line_items[0][price_data][currency]": currency,
-        "line_items[0][price_data][unit_amount]": toMinorUnits(request.amount, currency),
-        "line_items[0][price_data][product_data][name]": request.description,
-        "payment_intent_data[application_fee_amount]": toMinorUnits(
-          request.platformFee,
-          currency
-        ),
-        "payment_intent_data[transfer_data][destination]": account.stripeAccountId,
-        "metadata[orderId]": request.orderId,
-        customer_email: request.customer.email,
-      }),
-    })
+
+    const session = await stripeRequest<{ id: string; url: string }>(
+      secretKey,
+      "/checkout/sessions",
+      {
+        method: "POST",
+        body: encodeForm({
+          mode: "payment",
+          success_url: request.successUrl,
+          cancel_url: request.failureUrl,
+          client_reference_id: request.orderId,
+          "line_items[0][quantity]": 1,
+          "line_items[0][price_data][currency]": currency,
+          "line_items[0][price_data][unit_amount]": toMinorUnits(request.amount, currency),
+          "line_items[0][price_data][product_data][name]": request.description,
+          "metadata[orderId]": request.orderId,
+          customer_email: request.customer.email,
+        }),
+      }
+    )
 
     return { redirectUrl: session.url, providerOrderId: session.id }
   },
 
   async fetchStatus(
-    _account: PaymentAccountRecord,
+    account: PaymentAccountRecord,
     providerOrderId: string
   ): Promise<PaymentStatusResult> {
+    const secretKey = restaurantKey(account)
     const session = await stripeRequest<{
       payment_status: string
       status: string
       amount_total: number | null
       currency: string
       payment_intent: string | null
-    }>(`/checkout/sessions/${providerOrderId}`)
+    }>(secretKey, `/checkout/sessions/${providerOrderId}`)
 
     const currency = session.currency ?? "usd"
     const divisor = zeroDecimalCurrency(currency) ? 1 : 100
