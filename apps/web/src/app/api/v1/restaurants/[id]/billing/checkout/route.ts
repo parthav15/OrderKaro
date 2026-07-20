@@ -69,7 +69,18 @@ export async function POST(
         data: { providerOrderId: session.providerOrderId, redirectUrl: session.redirectUrl },
       })
 
-      return success({ redirectUrl: session.redirectUrl, plan: definition })
+      return success({
+        provider,
+        redirectUrl: session.redirectUrl,
+        qrUrl: session.qrUrl ?? null,
+        upiIntent: session.upiIntent ?? null,
+        amount: definition.monthlyPrice,
+        currency: BILLING_CURRENCY,
+        pollUrl: `/api/v1/restaurants/${id}/billing/verify`,
+        reference: subscription.id,
+        pollBody: { subscriptionId: subscription.id },
+        plan: definition,
+      })
     } catch (paymentError) {
       await prisma.subscription.update({
         where: { id: subscription.id },

@@ -26,6 +26,7 @@ import { toast } from "sonner"
 import { requestNotificationPermission, getNotificationPermission, isNotificationSupported } from "@/lib/pwa"
 import { useWalletRecharge } from "@/hooks/use-wallet-recharge"
 import { StorefrontTheme } from "@/components/consumer/storefront-theme"
+import { PaymentModal } from "@/components/consumer/payment-modal"
 
 type OrderType = "DINE_IN" | "TAKEAWAY" | "DELIVERY"
 
@@ -55,6 +56,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
   const [loading, setLoading] = useState(false)
   const [walletBalance, setWalletBalance] = useState<number | null>(null)
   const { recharging, recharge } = useWalletRecharge()
+  const [paymentSession, setPaymentSession] = useState<any>(null)
 
   const [orderType, setOrderType] = useState<OrderType>("TAKEAWAY")
   const [pickedTableId, setPickedTableId] = useState("")
@@ -173,7 +175,10 @@ export default function CartPage({ params }: { params: { slug: string } }) {
 
   async function handleTopUp() {
     if (shortfall <= 0 || !restaurantId) return
-    await recharge(restaurantId, shortfall)
+    const session = await recharge(restaurantId, shortfall)
+    if (session) {
+      setPaymentSession({ ...session, kind: "topup" })
+    }
   }
 
   async function handlePlaceOrder() {
@@ -223,20 +228,24 @@ export default function CartPage({ params }: { params: { slug: string } }) {
         idempotencyKey: generateUUID(),
       })
 
-      clearCart()
       localStorage.setItem("orderkaro-has-placed-order", "true")
 
       if (isNotificationSupported() && getNotificationPermission() === "default") {
         requestNotificationPermission()
       }
 
-      const paymentRedirectUrl = data.data.paymentRedirectUrl
-      if (paymentRedirectUrl) {
-        toast.success("Redirecting to payment...")
-        window.location.href = paymentRedirectUrl
+      const payment = data.data.payment
+      if (payment) {
+        setPaymentSession({
+          ...payment,
+          kind: "order",
+          orderId: data.data.id,
+          fallbackTrackingToken: data.data.trackingToken,
+        })
         return
       }
 
+      clearCart()
       toast.success("Order placed! Track your order")
 
       const trackingToken = data.data.trackingToken
@@ -526,6 +535,35 @@ export default function CartPage({ params }: { params: { slug: string } }) {
           </Button>
         )}
       </motion.div>
+
+      <PaymentModal
+        open={!!paymentSession}
+        session={paymentSession}
+        title={paymentSession?.kind === "topup" ? "Add money" : "Pay for your order"}
+        onSuccess={(data) => {
+          if (paymentSession?.kind === "topup") {
+            if (typeof data?.balance !== "undefined") {
+              setWalletBalance(Number(data.balance))
+            }
+            toast.success("Wallet topped up")
+            setPaymentMethod("WALLET")
+            setPaymentSession(null)
+            return
+          }
+
+          const trackingToken = data?.trackingToken ?? paymentSession?.fallbackTrackingToken
+          const orderId = paymentSession?.orderId
+          clearCart()
+          toast.success("Payment successful! Track your order")
+          setPaymentSession(null)
+          if (trackingToken) {
+            router.push(`/${params.slug}/track/${trackingToken}`)
+          } else if (orderId) {
+            router.push(`/${params.slug}/order/${orderId}`)
+          }
+        }}
+        onClose={() => setPaymentSession(null)}
+      />
     </StorefrontTheme>
   )
 }

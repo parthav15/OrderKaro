@@ -26,6 +26,8 @@ export interface CheckoutRequest {
 export interface CheckoutSession {
   redirectUrl: string
   providerOrderId: string
+  qrUrl?: string
+  upiIntent?: string
 }
 
 export interface PaymentStatusResult {

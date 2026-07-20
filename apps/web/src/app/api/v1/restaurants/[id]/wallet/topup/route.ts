@@ -75,7 +75,17 @@ export async function POST(
         data: { reference: session.providerOrderId },
       })
 
-      return success({ redirectUrl: session.redirectUrl })
+      return success({
+        provider: gateway.provider,
+        redirectUrl: session.redirectUrl,
+        qrUrl: session.qrUrl ?? null,
+        upiIntent: session.upiIntent ?? null,
+        amount,
+        currency: currencyForCountry(restaurant.country),
+        pollUrl: `/api/v1/restaurants/${restaurantId}/wallet/topup/status`,
+        reference: pending.id,
+        pollBody: { transactionId: pending.id },
+      })
     } catch (paymentError) {
       await prisma.walletTransaction.update({
         where: { id: pending.id },

@@ -33,7 +33,12 @@ export async function POST(
       select: { plan: true, planValidUntil: true },
     })
 
-    return success({ outcome, plan: updated!.plan, planValidUntil: updated!.planValidUntil })
+    return success({
+      status: outcome,
+      outcome,
+      plan: updated!.plan,
+      planValidUntil: updated!.planValidUntil,
+    })
   } catch (err) {
     return handleError(err)
   }

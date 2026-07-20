@@ -8,28 +8,28 @@ export function useWalletRecharge() {
   const [recharging, setRecharging] = useState(false)
 
   const recharge = useCallback(
-    async (restaurantId: string, amount: number): Promise<boolean> => {
+    async (restaurantId: string, amount: number): Promise<any | null> => {
       setRecharging(true)
       try {
         const { data } = await api.post(
           `/api/v1/restaurants/${restaurantId}/wallet/topup`,
           { amount }
         )
-        const redirectUrl = data.data?.redirectUrl
-        if (!redirectUrl) {
+        const session = data.data
+        if (!session?.redirectUrl) {
           toast.error("Could not start the top-up")
           setRecharging(false)
-          return false
+          return null
         }
-        window.location.href = redirectUrl
-        return true
+        setRecharging(false)
+        return session
       } catch (err) {
         const message =
           (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
           "Could not start the top-up"
         toast.error(message)
         setRecharging(false)
-        return false
+        return null
       }
     },
     []

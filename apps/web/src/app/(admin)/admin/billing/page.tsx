@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { PaymentModal } from "@/components/consumer/payment-modal"
 import api from "@/lib/api"
 import { formatPrice } from "@/lib/utils"
 import { toast } from "sonner"
@@ -137,6 +138,7 @@ export default function BillingPage() {
   const queryClient = useQueryClient()
   const [restaurantId, setRestaurantId] = useState<string>("")
   const [upgradingPlan, setUpgradingPlan] = useState<PlanName | null>(null)
+  const [paymentSession, setPaymentSession] = useState<any>(null)
 
   const { data: restaurants } = useQuery({
     queryKey: ["restaurants"],
@@ -177,13 +179,13 @@ export default function BillingPage() {
         `/api/v1/restaurants/${restaurantId}/billing/checkout`,
         { plan }
       )
-      const redirectUrl = response.data?.redirectUrl
-      if (!redirectUrl) {
+      const session = response.data
+      if (!session?.redirectUrl) {
         toast.error("Could not start the upgrade")
         setUpgradingPlan(null)
         return
       }
-      window.location.href = redirectUrl
+      setPaymentSession(session)
     } catch (err) {
       const status = (err as { response?: { status?: number } })?.response?.status
       const message =
@@ -416,6 +418,23 @@ export default function BillingPage() {
           </motion.div>
         </div>
       )}
+
+      <PaymentModal
+        open={!!paymentSession}
+        session={paymentSession}
+        title={upgradingPlan ? `Upgrade to ${upgradingPlan}` : undefined}
+        onSuccess={() => {
+          toast.success("Plan upgraded — your subscription is active")
+          queryClient.invalidateQueries({ queryKey: ["billing"] })
+          queryClient.invalidateQueries({ queryKey: ["restaurants"] })
+          setPaymentSession(null)
+          setUpgradingPlan(null)
+        }}
+        onClose={() => {
+          setPaymentSession(null)
+          setUpgradingPlan(null)
+        }}
+      />
     </div>
   )
 }

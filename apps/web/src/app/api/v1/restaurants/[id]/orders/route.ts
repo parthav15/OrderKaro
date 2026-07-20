@@ -295,6 +295,17 @@ export async function POST(
           ...withPayment,
           trackingUrl,
           paymentRedirectUrl: session.redirectUrl,
+          payment: {
+            provider: gateway.provider,
+            redirectUrl: session.redirectUrl,
+            qrUrl: session.qrUrl ?? null,
+            upiIntent: session.upiIntent ?? null,
+            amount: Number(totalAmount.toFixed(2)),
+            currency: currencyForCountry(restaurant.country),
+            pollUrl: `/api/v1/restaurants/${restaurantId}/orders/${order.id}/payment-status`,
+            reference: order.id,
+            pollBody: {},
+          },
         })
       } catch (paymentError) {
         await prisma.order.update({

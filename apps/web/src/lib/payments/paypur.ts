@@ -138,13 +138,20 @@ export const paypurGateway: PaymentGateway = {
       ok?: boolean
       pay_url?: string
       txn_id?: string
+      qr_url?: string
+      upi_intent?: string
       error?: string
     }
     if (!data.ok || !data.pay_url || !data.txn_id) {
       throw new PaymentConfigurationError(data.error || "PayPur could not start the payment", 502)
     }
 
-    return { redirectUrl: data.pay_url, providerOrderId: data.txn_id }
+    return {
+      redirectUrl: data.pay_url,
+      providerOrderId: data.txn_id,
+      qrUrl: data.qr_url,
+      upiIntent: data.upi_intent,
+    }
   },
 
   async fetchStatus(
