@@ -1,5 +1,5 @@
 import Constants from "expo-constants"
-import { getToken, reidentify } from "./auth"
+import { getToken, refresh } from "./auth"
 
 const API_URL =
   process.env.EXPO_PUBLIC_API_URL ||
@@ -37,7 +37,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   })
 
   if (response.status === 401 && auth && retryOn401) {
-    const refreshed = await reidentify()
+    const refreshed = await refresh()
     if (refreshed) return request<T>(path, { ...options, retryOn401: false })
   }
 
