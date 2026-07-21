@@ -17,11 +17,22 @@ kitchen/counter staff, sharing the same backend as the web app (`apps/web`).
 cd apps/mobile
 pnpm install                 # from repo root also works
 npx expo install --fix       # reconcile every dep to the exact SDK 53 version
-npx expo start               # then press i / a, or scan the QR with Expo Go
 ```
 
-`npx expo install --fix` is important: the versions in `package.json` are pinned to
-SDK 53 but `--fix` guarantees the exact patch versions Expo expects.
+Then run it with ONE of these:
+
+```bash
+npx expo start   →  press i     # iOS Simulator (recommended; installs matching Expo Go SDK 53)
+npx expo start   →  press a     # Android emulator / Android Expo Go
+npx expo run:ios --device       # physical iPhone: builds a dev client (needs Xcode signing)
+```
+
+**Do not use Expo Go on a physical iPhone.** Expo Go for iOS only ships the *latest*
+SDK (currently 54); this project is on SDK 53 (pinned there because Moti's animations
+are broken on Reanimated 4 / SDK 54). A physical iPhone therefore needs a development
+build (`expo run:ios --device` or an EAS dev build), which is the correct way to ship
+this app anyway. The iOS **Simulator** has no such limitation — it installs the matching
+SDK 53 Expo Go automatically, so it's the fastest way to see the app.
 
 The API base URL comes from `EXPO_PUBLIC_API_URL` (see `.env.example`), defaulting to the
 deployed backend. Copy it to `.env` to point at a local/staging API.
