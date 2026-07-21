@@ -34,10 +34,13 @@ export default function CartScreen() {
   const router = useRouter()
   const { colors } = useTheme()
 
-  const { restaurantId, lines, changeQuantity, lineTotal, subtotal, clear } = useCart()
-  const [fulfillment, setFulfillment] = useState<Fulfillment>("TAKEAWAY")
+  const { restaurantId, tableId: storeTableId, lines, changeQuantity, lineTotal, subtotal, clear } =
+    useCart()
+  const [fulfillment, setFulfillment] = useState<Fulfillment>(
+    storeTableId ? "DINE_IN" : "TAKEAWAY"
+  )
   const [payment, setPayment] = useState<Payment>("CASH")
-  const [tableId, setTableId] = useState<string | null>(null)
+  const [tableId, setTableId] = useState<string | null>(storeTableId)
   const [deliveryLocation, setDeliveryLocation] = useState("")
   const [instructions, setInstructions] = useState("")
   const [placing, setPlacing] = useState(false)
@@ -99,7 +102,10 @@ export default function CartScreen() {
         return
       }
       clear()
-      router.replace(`/(diner)/r/${slug}/track/${order.trackingToken}`)
+      router.replace({
+        pathname: "/(diner)/r/[slug]/track/[token]",
+        params: { slug, token: order.trackingToken },
+      })
     } catch {
       setPlacing(false)
     }
@@ -134,7 +140,11 @@ export default function CartScreen() {
         </Text>
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+      >
         <View className="gap-3 mb-6">
           {lines.map((l) => (
             <View
@@ -295,7 +305,11 @@ export default function CartScreen() {
           const token = (data.trackingToken as string) || session?.token
           clear()
           setSession(null)
-          if (token) router.replace(`/(diner)/r/${slug}/track/${token}`)
+          if (token)
+            router.replace({
+              pathname: "/(diner)/r/[slug]/track/[token]",
+              params: { slug, token },
+            })
         }}
         onClose={() => setSession(null)}
       />

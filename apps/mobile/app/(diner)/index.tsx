@@ -7,6 +7,7 @@ import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
 import { identify, getIdentity } from "@/lib/auth"
 import { registerForPushNotifications } from "@/lib/push"
+import { DismissKeyboard } from "@/components/ui/dismiss-keyboard"
 import { useTheme } from "@/theme/theme-provider"
 
 export default function DinerEntry() {
@@ -45,6 +46,7 @@ export default function DinerEntry() {
 
   return (
     <Screen>
+      <DismissKeyboard>
       <View className="flex-1 justify-center">
         <MotiView
           from={{ opacity: 0, translateY: 20 }}
@@ -91,6 +93,7 @@ export default function DinerEntry() {
           />
         </MotiView>
       </View>
+      </DismissKeyboard>
     </Screen>
   )
 }

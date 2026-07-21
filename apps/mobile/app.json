@@ -19,7 +19,11 @@
       "expo-router",
       "expo-secure-store",
       "expo-web-browser",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-camera",
+        { "cameraPermission": "Allow Vision Menu to scan table QR codes." }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

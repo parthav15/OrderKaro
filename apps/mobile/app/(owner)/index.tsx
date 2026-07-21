@@ -6,6 +6,7 @@ import { Screen } from "@/components/ui/screen"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
 import { ownerLogin, getOwnerToken } from "@/lib/owner-auth"
+import { DismissKeyboard } from "@/components/ui/dismiss-keyboard"
 import { useTheme } from "@/theme/theme-provider"
 
 export default function OwnerLogin() {
@@ -38,6 +39,7 @@ export default function OwnerLogin() {
 
   return (
     <Screen>
+      <DismissKeyboard>
       <View className="flex-1 justify-center">
         <MotiView
           from={{ opacity: 0, translateY: 20 }}
@@ -86,6 +88,7 @@ export default function OwnerLogin() {
           />
         </MotiView>
       </View>
+      </DismissKeyboard>
     </Screen>
   )
 }
