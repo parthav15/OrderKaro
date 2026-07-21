@@ -28,21 +28,13 @@ import { useViewTracking } from "@/hooks/use-view-tracking"
 
 import type { Category, MenuItem, Announcement, ResolvedTable } from "@/components/consumer/menu/types"
 
-const CONSUMER_STORAGE_KEY = "orderkaro-consumer"
 const SIGNATURE_TAG_PATTERN = /popular|chef|signature|special|featured|bestseller/i
 const STICKY_OFFSET = 132
 
-interface StoredConsumer {
-  id: string
-  name: string
-  phone: string
-  accessToken: string
-}
-
-interface IdentifyResult {
+interface VerifiedResult {
   consumer: { id: string; name: string; phone: string }
-  wallet: { balance: string }
   accessToken: string
+  refreshToken: string
 }
 
 export default function MenuPage({ params }: { params: { slug: string } }) {
@@ -57,99 +49,40 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
   const updateQuantity = useCartStore((s) => s.updateQuantity)
   const setAuth = useAuthStore((s) => s.setAuth)
   const user = useAuthStore((s) => s.user)
+  const accessToken = useAuthStore((s) => s.accessToken)
 
   const [search, setSearch] = useState("")
   const [activeCategoryId, setActiveCategoryId] = useState<string>("")
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
   const [arItem, setArItem] = useState<MenuItem | null>(null)
-  const [walletBalance, setWalletBalance] = useState<number | null>(null)
 
   const [showIdentifyModal, setShowIdentifyModal] = useState(false)
-  const [identifyLoading, setIdentifyLoading] = useState(false)
-  const [identifyError, setIdentifyError] = useState("")
 
-  const identifyConsumer = useCallback(
-    async (name: string, phone: string): Promise<IdentifyResult> => {
-      const { data } = await api.post("/api/v1/public/identify", { name, phone, slug })
-      return data.data as IdentifyResult
-    },
-    []
-  )
+  const isConsumerSession = !!accessToken && user?.role === "CONSUMER"
+
+  const { data: walletData } = useQuery({
+    queryKey: ["consumer-wallet", slug, user?.id],
+    queryFn: () => api.get(`/api/v1/consumer/wallet?slug=${slug}`).then((r) => r.data.data),
+    enabled: isConsumerSession,
+  })
+  const walletBalance = walletData?.balance != null ? Number(walletData.balance) : null
 
   useEffect(() => {
-    let cancelled = false
+    if (!isConsumerSession) setShowIdentifyModal(true)
+  }, [isConsumerSession])
 
-    async function bootstrap() {
-      const raw = typeof window !== "undefined" ? localStorage.getItem(CONSUMER_STORAGE_KEY) : null
-      if (!raw) {
-        setShowIdentifyModal(true)
-        return
-      }
-      try {
-        const stored: StoredConsumer = JSON.parse(raw)
-        const result = await identifyConsumer(stored.name, stored.phone)
-        if (cancelled) return
-        const updated: StoredConsumer = {
-          id: result.consumer.id,
-          name: result.consumer.name,
-          phone: result.consumer.phone,
-          accessToken: result.accessToken,
-        }
-        localStorage.setItem(CONSUMER_STORAGE_KEY, JSON.stringify(updated))
-        setAuth(
-          {
-            id: result.consumer.id,
-            name: result.consumer.name,
-            phone: result.consumer.phone,
-            role: "CONSUMER",
-          },
-          result.accessToken,
-          ""
-        )
-        setWalletBalance(Number(result.wallet.balance))
-      } catch {
-        if (!cancelled) {
-          localStorage.removeItem(CONSUMER_STORAGE_KEY)
-          setShowIdentifyModal(true)
-        }
-      }
-    }
-
-    bootstrap()
-    return () => {
-      cancelled = true
-    }
-  }, [identifyConsumer, setAuth])
-
-  async function handleIdentifySubmit({ name, phone }: { name: string; phone: string }) {
-    setIdentifyError("")
-    setIdentifyLoading(true)
-    try {
-      const result = await identifyConsumer(name, phone)
-      const stored: StoredConsumer = {
+  function handleVerified(result: VerifiedResult) {
+    setAuth(
+      {
         id: result.consumer.id,
         name: result.consumer.name,
         phone: result.consumer.phone,
-        accessToken: result.accessToken,
-      }
-      localStorage.setItem(CONSUMER_STORAGE_KEY, JSON.stringify(stored))
-      setAuth(
-        {
-          id: result.consumer.id,
-          name: result.consumer.name,
-          phone: result.consumer.phone,
-          role: "CONSUMER",
-        },
-        result.accessToken,
-        ""
-      )
-      setWalletBalance(Number(result.wallet.balance))
-      setShowIdentifyModal(false)
-    } catch (err: any) {
-      setIdentifyError(err.response?.data?.error || "Something went wrong. Please try again.")
-    } finally {
-      setIdentifyLoading(false)
-    }
+        role: "CONSUMER",
+      },
+      result.accessToken,
+      result.refreshToken
+    )
+    setShowIdentifyModal(false)
   }
 
   const { data: qrData } = useQuery({
@@ -371,9 +304,7 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
       <IdentifyModal
         isOpen={showIdentifyModal}
         restaurantName={menuData?.restaurant?.name}
-        loading={identifyLoading}
-        error={identifyError}
-        onSubmit={handleIdentifySubmit}
+        onVerified={handleVerified}
       />
 
       <FlyToCartLayer />

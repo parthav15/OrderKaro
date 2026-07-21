@@ -80,48 +80,14 @@ export default function CartPage({ params }: { params: { slug: string } }) {
   const walletInsufficient =
     paymentMethod === "WALLET" && walletBalance !== null && walletBalance < total
 
-  async function reidentifyFromStorage(): Promise<boolean> {
-    const raw = typeof window !== "undefined" ? localStorage.getItem("orderkaro-consumer") : null
-    if (!raw) return false
-    try {
-      const stored = JSON.parse(raw)
-      const { data } = await api.post("/api/v1/public/identify", {
-        name: stored.name,
-        phone: stored.phone,
-        slug: params.slug,
-      })
-      const result = data.data
-      useAuthStore.getState().setAuth(
-        {
-          id: result.consumer.id,
-          name: result.consumer.name,
-          phone: result.consumer.phone,
-          role: "CONSUMER",
-        },
-        result.accessToken,
-        ""
-      )
-      localStorage.setItem(
-        "orderkaro-consumer",
-        JSON.stringify({ ...stored, accessToken: result.accessToken })
-      )
-      return true
-    } catch {
-      return false
-    }
-  }
-
   async function loadBalance() {
     try {
       const { data } = await api.get(`/api/v1/consumer/wallet?slug=${params.slug}`)
       setWalletBalance(Number(data.data.balance))
     } catch (err) {
       const status = (err as { response?: { status?: number } }).response?.status
-      if (status === 401 && (await reidentifyFromStorage())) {
-        try {
-          const { data } = await api.get(`/api/v1/consumer/wallet?slug=${params.slug}`)
-          setWalletBalance(Number(data.data.balance))
-        } catch {}
+      if (status === 401) {
+        router.replace(`/${params.slug}/menu`)
       }
     }
   }
@@ -255,8 +221,9 @@ export default function CartPage({ params }: { params: { slug: string } }) {
         router.push(`/${params.slug}/order/${data.data.id}`)
       }
     } catch (err: any) {
-      if (err.response?.status === 401 && (await reidentifyFromStorage())) {
-        toast.error("Session refreshed. Please try again.")
+      if (err.response?.status === 401) {
+        toast.error("Please sign in again to place your order")
+        router.replace(`/${params.slug}/menu`)
       } else {
         toast.error(err.response?.data?.error || "Failed to place order")
       }
