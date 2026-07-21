@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { MotiView } from "moti"
 import { SafeAreaView } from "react-native-safe-area-context"
 import * as Haptics from "expo-haptics"
-import { ChefHat, HandPlatter, LogOut } from "lucide-react-native"
+import { ChefHat, HandPlatter, LogOut, ArrowLeft } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
 import { Screen } from "@/components/ui/screen"
@@ -71,6 +71,14 @@ export default function KitchenBoard() {
   if (authed === false) {
     return (
       <Screen>
+        <View className="pt-1 pb-1">
+          <Pressable
+            onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))}
+            className="w-10 h-10 rounded-full bg-surface border border-line items-center justify-center"
+          >
+            <ArrowLeft size={18} color={colors.ink} />
+          </Pressable>
+        </View>
         <View className="flex-1 justify-center">
           <Card>
             <View className="w-12 h-12 rounded-2xl bg-primary/10 items-center justify-center mb-4">

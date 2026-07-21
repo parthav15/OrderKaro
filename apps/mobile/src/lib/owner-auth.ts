@@ -22,21 +22,74 @@ export async function getOwnerProfile(): Promise<OwnerProfile | null> {
   return raw ? (JSON.parse(raw) as OwnerProfile) : null
 }
 
-export async function ownerLogin(email: string, password: string): Promise<OwnerProfile> {
-  const response = await fetch(`${API_URL}/api/v1/auth/owner/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  })
-  const payload = await response.json()
-  if (!response.ok || !payload?.success) {
-    throw new Error(payload?.error || "Invalid credentials")
-  }
-  const { owner, accessToken, refreshToken } = payload.data
+async function persistSession(
+  owner: OwnerProfile,
+  accessToken: string,
+  refreshToken: string
+) {
   await SecureStore.setItemAsync(TOKEN_KEY, accessToken)
   await SecureStore.setItemAsync(REFRESH_KEY, refreshToken)
   await SecureStore.setItemAsync(PROFILE_KEY, JSON.stringify(owner))
-  return owner as OwnerProfile
+}
+
+async function postJson<T>(path: string, body: unknown): Promise<T> {
+  const response = await fetch(`${API_URL}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  })
+  const payload = await response.json().catch(() => null)
+  if (!response.ok || !payload?.success) {
+    throw new Error(payload?.error || "Something went wrong")
+  }
+  return payload.data as T
+}
+
+export async function ownerLogin(email: string, password: string): Promise<OwnerProfile> {
+  const data = await postJson<{
+    owner: OwnerProfile
+    accessToken: string
+    refreshToken: string
+  }>("/api/v1/auth/owner/login", { email, password })
+  await persistSession(data.owner, data.accessToken, data.refreshToken)
+  return data.owner
+}
+
+export async function ownerRegister(
+  name: string,
+  email: string,
+  phone: string,
+  password: string
+): Promise<OwnerProfile> {
+  const data = await postJson<{
+    owner: OwnerProfile
+    accessToken: string
+    refreshToken: string
+  }>("/api/v1/auth/owner/register", { name, email, phone, password })
+  await persistSession(data.owner, data.accessToken, data.refreshToken)
+  return data.owner
+}
+
+export async function ownerForgotPassword(email: string): Promise<string | null> {
+  const data = await postJson<{ sent: boolean; phoneHint?: string }>(
+    "/api/v1/auth/owner/forgot-password",
+    { email }
+  )
+  return data.phoneHint ?? null
+}
+
+export async function ownerResetPassword(
+  email: string,
+  code: string,
+  password: string
+): Promise<OwnerProfile> {
+  const data = await postJson<{
+    owner: OwnerProfile
+    accessToken: string
+    refreshToken: string
+  }>("/api/v1/auth/owner/reset-password", { email, code, password })
+  await persistSession(data.owner, data.accessToken, data.refreshToken)
+  return data.owner
 }
 
 export async function ownerRefresh(): Promise<boolean> {

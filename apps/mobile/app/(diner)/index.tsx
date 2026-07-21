@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { View, TextInput, Pressable } from "react-native"
 import { useRouter } from "expo-router"
 import { MotiView } from "moti"
+import { ArrowLeft } from "lucide-react-native"
 import { Screen } from "@/components/ui/screen"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
@@ -126,6 +127,23 @@ export default function DinerEntry() {
 
   return (
     <Screen>
+      <View className="pt-1 pb-1">
+        <Pressable
+          onPress={() => {
+            if (step === "code") {
+              setStep("phone")
+              setError("")
+            } else if (router.canGoBack()) {
+              router.back()
+            } else {
+              router.replace("/")
+            }
+          }}
+          className="w-10 h-10 rounded-full bg-surface border border-line items-center justify-center"
+        >
+          <ArrowLeft size={18} color={colors.ink} />
+        </Pressable>
+      </View>
       <DismissKeyboard>
         <View className="flex-1 justify-center">
           {step === "phone" ? (

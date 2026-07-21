@@ -5,6 +5,7 @@ export default function KitchenLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
+        gestureEnabled: false,
         contentStyle: { backgroundColor: "#141110" },
       }}
     />

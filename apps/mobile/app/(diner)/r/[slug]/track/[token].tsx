@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router"
 import { useQuery } from "@tanstack/react-query"
 import { MotiView } from "moti"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { Check, Clock, ChefHat, Bell, PartyPopper, X } from "lucide-react-native"
+import { Check, Clock, ChefHat, Bell, PartyPopper, X, ArrowLeft } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
 import { api } from "@/lib/api"
@@ -37,8 +37,18 @@ export default function TrackScreen() {
 
   if (isLoading || !data) {
     return (
-      <SafeAreaView className="flex-1 bg-canvas items-center justify-center">
-        <ActivityIndicator color={colors.primary} />
+      <SafeAreaView edges={["top"]} className="flex-1 bg-canvas">
+        <View className="px-6 pt-1">
+          <Pressable
+            onPress={() => router.replace(`/(diner)/r/${slug}/menu`)}
+            className="w-10 h-10 rounded-full bg-surface border border-line items-center justify-center"
+          >
+            <ArrowLeft size={18} color={colors.ink} />
+          </Pressable>
+        </View>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator color={colors.primary} />
+        </View>
       </SafeAreaView>
     )
   }
@@ -48,6 +58,14 @@ export default function TrackScreen() {
 
   return (
     <SafeAreaView edges={["top", "bottom"]} className="flex-1 bg-canvas">
+      <View className="px-6 pt-1">
+        <Pressable
+          onPress={() => router.replace(`/(diner)/r/${slug}/menu`)}
+          className="w-10 h-10 rounded-full bg-surface border border-line items-center justify-center"
+        >
+          <ArrowLeft size={18} color={colors.ink} />
+        </Pressable>
+      </View>
       <ScrollView contentContainerStyle={{ padding: 24, flexGrow: 1 }}>
         <View className="items-center mb-10 mt-6">
           <Text variant="muted" className="text-xs tracking-widest uppercase mb-2">
