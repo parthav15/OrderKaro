@@ -1,10 +1,27 @@
-import { useEffect, useState } from "react"
-import { View, ScrollView, Pressable, ActivityIndicator } from "react-native"
+import { useEffect, useMemo, useRef, useState } from "react"
+import {
+  View,
+  ScrollView,
+  Pressable,
+  ActivityIndicator,
+  TextInput,
+  type NativeSyntheticEvent,
+  type NativeScrollEvent,
+} from "react-native"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { useQuery } from "@tanstack/react-query"
 import { MotiView } from "moti"
 import { Image } from "expo-image"
-import { ArrowLeft, Plus, Box, ShoppingBag, Wallet as WalletIcon } from "lucide-react-native"
+import {
+  ArrowLeft,
+  Plus,
+  Box,
+  ShoppingBag,
+  Wallet as WalletIcon,
+  Search,
+  Leaf,
+  X,
+} from "lucide-react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
@@ -13,7 +30,11 @@ import { ArViewer } from "@/components/ar-viewer"
 import { api } from "@/lib/api"
 import { useCart } from "@/stores/cart"
 import { useTheme } from "@/theme/theme-provider"
-import type { MenuResponse, MenuItem } from "@/lib/types"
+import type { MenuResponse, MenuItem, Category } from "@/lib/types"
+
+const POPULAR = /popular|chef|signature|special|featured|bestseller|recommended/i
+
+type VegFilter = "ALL" | "VEG" | "NONVEG"
 
 export default function MenuScreen() {
   const { slug, table } = useLocalSearchParams<{ slug: string; table?: string }>()
@@ -25,6 +46,13 @@ export default function MenuScreen() {
 
   const [selected, setSelected] = useState<MenuItem | null>(null)
   const [arItem, setArItem] = useState<MenuItem | null>(null)
+  const [search, setSearch] = useState("")
+  const [veg, setVeg] = useState<VegFilter>("ALL")
+  const [arOnly, setArOnly] = useState(false)
+  const [activeCat, setActiveCat] = useState<string>("")
+
+  const scrollRef = useRef<ScrollView>(null)
+  const offsets = useRef<Record<string, number>>({})
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["menu", slug],
@@ -45,6 +73,50 @@ export default function MenuScreen() {
   }, [data, table, setContext])
 
   const brand = data?.restaurant.primaryColor || colors.primary
+  const filtering = search.trim().length > 0 || veg !== "ALL" || arOnly
+
+  const filtered = useMemo<Category[]>(() => {
+    if (!data) return []
+    const q = search.trim().toLowerCase()
+    return data.categories
+      .map((c) => ({
+        ...c,
+        items: c.items.filter((it) => {
+          if (veg === "VEG" && !it.isVeg) return false
+          if (veg === "NONVEG" && it.isVeg) return false
+          if (arOnly && !it.model3dUrl) return false
+          if (!q) return true
+          return (
+            it.name.toLowerCase().includes(q) ||
+            (it.description ?? "").toLowerCase().includes(q) ||
+            it.tags.some((t) => t.toLowerCase().includes(q))
+          )
+        }),
+      }))
+      .filter((c) => c.items.length > 0)
+  }, [data, search, veg, arOnly])
+
+  const popular = useMemo<MenuItem[]>(() => {
+    if (!data || filtering) return []
+    const tagged = data.categories
+      .flatMap((c) => c.items)
+      .filter((it) => it.tags.some((t) => POPULAR.test(t)))
+    return tagged.slice(0, 8)
+  }, [data, filtering])
+
+  function onScroll(e: NativeSyntheticEvent<NativeScrollEvent>) {
+    const y = e.nativeEvent.contentOffset.y + 140
+    let current = filtered[0]?.id ?? ""
+    for (const c of filtered) {
+      if ((offsets.current[c.id] ?? Infinity) <= y) current = c.id
+    }
+    if (current !== activeCat) setActiveCat(current)
+  }
+
+  function jumpTo(id: string) {
+    const y = offsets.current[id]
+    if (y != null) scrollRef.current?.scrollTo({ y: Math.max(0, y - 8), animated: true })
+  }
 
   if (isError) {
     return (
@@ -91,8 +163,66 @@ export default function MenuScreen() {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
-        <View className="px-5 pt-2 pb-6">
+      <View className="px-5 pb-2">
+        <View className="flex-row items-center bg-surface rounded-2xl border border-line px-4">
+          <Search size={18} color={colors.muted} />
+          <TextInput
+            value={search}
+            onChangeText={setSearch}
+            placeholder="Search dishes"
+            placeholderTextColor={colors.muted}
+            className="flex-1 h-12 text-ink font-sans-medium text-base ml-2"
+          />
+          {search.length > 0 ? (
+            <Pressable onPress={() => setSearch("")} className="w-8 h-8 items-center justify-center">
+              <X size={16} color={colors.muted} />
+            </Pressable>
+          ) : null}
+        </View>
+
+        <View className="flex-row gap-2 mt-2">
+          <FilterChip label="Veg" active={veg === "VEG"} onPress={() => setVeg(veg === "VEG" ? "ALL" : "VEG")} tint={colors.success} icon={<Leaf size={13} color={veg === "VEG" ? "#FFF7F3" : colors.success} />} />
+          <FilterChip label="Non-veg" active={veg === "NONVEG"} onPress={() => setVeg(veg === "NONVEG" ? "ALL" : "NONVEG")} tint={colors.danger} />
+          <FilterChip label="AR" active={arOnly} onPress={() => setArOnly(!arOnly)} tint={colors.accent} icon={<Box size={13} color={arOnly ? "#FFF7F3" : colors.accent} />} />
+        </View>
+      </View>
+
+      {!filtering && filtered.length > 0 ? (
+        <View className="pb-2">
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}
+          >
+            {filtered.map((c) => {
+              const on = activeCat === c.id
+              return (
+                <Pressable
+                  key={c.id}
+                  onPress={() => jumpTo(c.id)}
+                  style={on ? { backgroundColor: brand } : undefined}
+                  className={`px-4 py-2 rounded-full border ${on ? "" : "border-line bg-surface"}`}
+                >
+                  <Text className={`text-sm font-sans-semibold ${on ? "text-[#FFF7F3]" : "text-muted"}`}>
+                    {c.name}
+                  </Text>
+                </Pressable>
+              )
+            })}
+          </ScrollView>
+        </View>
+      ) : null}
+
+      <ScrollView
+        ref={scrollRef}
+        onScroll={onScroll}
+        scrollEventThrottle={64}
+        contentContainerStyle={{ paddingBottom: 140 }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+      >
+        <View className="px-5 pt-2 pb-4">
           <Text variant="display" className="text-4xl leading-tight" style={{ color: brand }}>
             {data.restaurant.name}
           </Text>
@@ -103,83 +233,118 @@ export default function MenuScreen() {
           ) : null}
         </View>
 
-        {data.categories.map((category, ci) => (
-          <View key={category.id} className="mb-8">
-            <Text variant="muted" className="text-xs uppercase tracking-widest px-5 mb-1">
-              From the kitchen
+        {popular.length > 0 ? (
+          <View className="mb-8">
+            <Text variant="muted" className="text-xs uppercase tracking-widest px-5 mb-3">
+              Popular right now
             </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
+            >
+              {popular.map((item) => (
+                <Pressable key={item.id} onPress={() => setSelected(item)} className="w-40">
+                  <View className="w-40 h-28 rounded-2xl overflow-hidden bg-surface-elevated mb-2">
+                    {item.imageUrl ? (
+                      <Image
+                        source={{ uri: item.imageUrl }}
+                        style={{ width: "100%", height: "100%" }}
+                        contentFit="cover"
+                      />
+                    ) : null}
+                  </View>
+                  <Text variant="title" className="text-sm" numberOfLines={1}>
+                    {item.name}
+                  </Text>
+                  <Text variant="price" className="text-sm mt-0.5" style={{ color: brand }}>
+                    ₹{Number(item.price)}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+        ) : null}
+
+        {filtered.length === 0 ? (
+          <View className="items-center py-24 px-8">
+            <Text variant="title" className="text-lg mb-1">
+              No dishes match
+            </Text>
+            <Text variant="muted" className="text-base text-center">
+              Try a different search or clear the filters.
+            </Text>
+          </View>
+        ) : null}
+
+        {filtered.map((category) => (
+          <View
+            key={category.id}
+            className="mb-8"
+            onLayout={(e) => {
+              offsets.current[category.id] = e.nativeEvent.layout.y
+            }}
+          >
             <Text variant="heading" className="text-2xl px-5 mb-4">
               {category.name}
             </Text>
             <View className="px-5 gap-3">
-              {category.items.map((item, ii) => (
-                <MotiView
-                  key={item.id}
-                  from={{ opacity: 0, translateY: 14 }}
-                  animate={{ opacity: 1, translateY: 0 }}
-                  transition={{
-                    type: "spring",
-                    damping: 20,
-                    stiffness: 180,
-                    delay: Math.min(ci * 60 + ii * 40, 400),
-                  }}
-                >
-                  <Pressable onPress={() => setSelected(item)}>
-                    <View className="flex-row h-36 bg-surface rounded-3xl border border-line overflow-hidden">
-                      <View className="flex-1 p-4 justify-center">
-                        <View className="flex-row items-center gap-2 mb-1">
-                          <View
-                            className={`w-3.5 h-3.5 rounded-sm border ${
-                              item.isVeg ? "border-success" : "border-danger"
-                            } items-center justify-center`}
-                          >
-                            <View
-                              className={`w-1.5 h-1.5 rounded-full ${
-                                item.isVeg ? "bg-success" : "bg-danger"
-                              }`}
-                            />
-                          </View>
-                          {item.model3dUrl ? (
-                            <View className="flex-row items-center gap-1 rounded-full bg-accent/15 px-2 py-0.5">
-                              <Box size={10} color={colors.accent} />
-                              <Text className="text-accent text-[10px] font-sans-bold">AR</Text>
-                            </View>
-                          ) : null}
-                        </View>
-                        <Text variant="title" className="text-base mb-1">
-                          {item.name}
-                        </Text>
-                        {item.description ? (
-                          <Text variant="muted" className="text-sm leading-snug" numberOfLines={2}>
-                            {item.description}
-                          </Text>
-                        ) : null}
-                        <Text variant="price" className="text-lg mt-2" style={{ color: brand }}>
-                          ₹{Number(item.price)}
-                        </Text>
-                      </View>
-
-                      <View className="w-28 relative">
-                        {item.imageUrl ? (
-                          <Image
-                            source={{ uri: item.imageUrl }}
-                            style={{ width: "100%", height: "100%" }}
-                            contentFit="cover"
-                          />
-                        ) : (
-                          <View className="flex-1 bg-surface-elevated" />
-                        )}
-                        <Pressable
-                          onPress={() => setSelected(item)}
-                          style={{ backgroundColor: brand }}
-                          className="absolute bottom-2 right-2 w-9 h-9 rounded-full items-center justify-center"
+              {category.items.map((item) => (
+                <Pressable key={item.id} onPress={() => setSelected(item)}>
+                  <View className="flex-row h-36 bg-surface rounded-3xl border border-line overflow-hidden">
+                    <View className="flex-1 p-4 justify-center">
+                      <View className="flex-row items-center gap-2 mb-1">
+                        <View
+                          className={`w-3.5 h-3.5 rounded-sm border ${
+                            item.isVeg ? "border-success" : "border-danger"
+                          } items-center justify-center`}
                         >
-                          <Plus size={18} color="#FFF7F3" strokeWidth={2.6} />
-                        </Pressable>
+                          <View
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              item.isVeg ? "bg-success" : "bg-danger"
+                            }`}
+                          />
+                        </View>
+                        {item.model3dUrl ? (
+                          <View className="flex-row items-center gap-1 rounded-full bg-accent/15 px-2 py-0.5">
+                            <Box size={10} color={colors.accent} />
+                            <Text className="text-accent text-[10px] font-sans-bold">AR</Text>
+                          </View>
+                        ) : null}
                       </View>
+                      <Text variant="title" className="text-base mb-1" numberOfLines={1}>
+                        {item.name}
+                      </Text>
+                      {item.description ? (
+                        <Text variant="muted" className="text-sm leading-snug" numberOfLines={2}>
+                          {item.description}
+                        </Text>
+                      ) : null}
+                      <Text variant="price" className="text-lg mt-2" style={{ color: brand }}>
+                        ₹{Number(item.price)}
+                      </Text>
                     </View>
-                  </Pressable>
-                </MotiView>
+
+                    <View className="w-28 relative">
+                      {item.imageUrl ? (
+                        <Image
+                          source={{ uri: item.imageUrl }}
+                          style={{ width: "100%", height: "100%" }}
+                          contentFit="cover"
+                        />
+                      ) : (
+                        <View className="flex-1 bg-surface-elevated" />
+                      )}
+                      <Pressable
+                        onPress={() => setSelected(item)}
+                        style={{ backgroundColor: brand }}
+                        className="absolute bottom-2 right-2 w-9 h-9 rounded-full items-center justify-center"
+                      >
+                        <Plus size={18} color="#FFF7F3" strokeWidth={2.6} />
+                      </Pressable>
+                    </View>
+                  </View>
+                </Pressable>
               ))}
             </View>
           </View>
@@ -228,5 +393,34 @@ export default function MenuScreen() {
         />
       ) : null}
     </SafeAreaView>
+  )
+}
+
+function FilterChip({
+  label,
+  active,
+  onPress,
+  tint,
+  icon,
+}: {
+  label: string
+  active: boolean
+  onPress: () => void
+  tint: string
+  icon?: React.ReactNode
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={active ? { backgroundColor: tint } : undefined}
+      className={`flex-row items-center gap-1.5 px-3.5 py-2 rounded-full border ${
+        active ? "" : "border-line bg-surface"
+      }`}
+    >
+      {icon}
+      <Text className={`text-sm font-sans-semibold ${active ? "text-[#FFF7F3]" : "text-ink"}`}>
+        {label}
+      </Text>
+    </Pressable>
   )
 }
