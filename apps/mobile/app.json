@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "Vision Menu",
+    "slug": "vision-menu",
+    "scheme": "visionmenu",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "backgroundColor": "#141110",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.visionmenu.app"
+    },
+    "android": {
+      "package": "com.visionmenu.app"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-web-browser",
+      [
+        "expo-notifications",
+        {
+          "color": "#A31D33"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "apiUrl": "https://order-karo-frontend.vercel.app"
+    }
+  }
+}
