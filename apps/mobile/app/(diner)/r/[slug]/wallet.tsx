@@ -1,5 +1,13 @@
 import { useState } from "react"
-import { View, Pressable, TextInput, ActivityIndicator } from "react-native"
+import {
+  View,
+  Pressable,
+  TextInput,
+  ActivityIndicator,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { useQuery } from "@tanstack/react-query"
 import { SafeAreaView } from "react-native-safe-area-context"
@@ -61,7 +69,15 @@ export default function WalletScreen() {
         </Text>
       </View>
 
-      <View className="px-5 pt-4">
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+      <ScrollView
+        contentContainerStyle={{ padding: 20, paddingTop: 16 }}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+      >
         <Card>
           <View className="flex-row items-center gap-3 mb-2">
             <View className="w-10 h-10 rounded-2xl bg-accent/15 items-center justify-center">
@@ -112,7 +128,8 @@ export default function WalletScreen() {
           disabled={!amount || Number(amount) < 1}
           onPress={topUp}
         />
-      </View>
+      </ScrollView>
+      </KeyboardAvoidingView>
 
       <PaymentSheet
         session={session}

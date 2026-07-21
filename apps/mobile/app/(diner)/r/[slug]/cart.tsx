@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { View, ScrollView, Pressable, TextInput } from "react-native"
+import { View, ScrollView, Pressable, TextInput, KeyboardAvoidingView, Platform } from "react-native"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { useQuery } from "@tanstack/react-query"
 import { SafeAreaView } from "react-native-safe-area-context"
@@ -140,6 +140,10 @@ export default function CartScreen() {
         </Text>
       </View>
 
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
       <ScrollView
         contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
         keyboardShouldPersistTaps="handled"
@@ -297,6 +301,7 @@ export default function CartScreen() {
           onPress={placeOrder}
         />
       </View>
+      </KeyboardAvoidingView>
 
       <PaymentSheet
         session={session}
