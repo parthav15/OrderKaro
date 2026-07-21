@@ -125,8 +125,8 @@ export default function MenuScreen() {
                   }}
                 >
                   <Pressable onPress={() => setSelected(item)}>
-                    <View className="flex-row bg-surface rounded-3xl border border-line overflow-hidden">
-                      <View className="flex-1 p-4">
+                    <View className="flex-row h-36 bg-surface rounded-3xl border border-line overflow-hidden">
+                      <View className="flex-1 p-4 justify-center">
                         <View className="flex-row items-center gap-2 mb-1">
                           <View
                             className={`w-3.5 h-3.5 rounded-sm border ${
