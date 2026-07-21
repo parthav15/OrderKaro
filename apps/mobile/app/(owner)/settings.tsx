@@ -253,15 +253,12 @@ export default function OwnerSettings() {
             </View>
 
             {gate.branding ? (
-              <Pressable
-                onPress={() => router.push("/(owner)/billing")}
-                className="flex-row items-center gap-2 bg-canvas border border-line rounded-2xl p-3 mb-3"
-              >
+              <View className="flex-row items-center gap-2 bg-canvas border border-line rounded-2xl p-3 mb-3">
                 <Lock size={15} color={colors.accent} />
                 <Text variant="muted" className="text-sm flex-1">
-                  {gate.branding}
+                  {gate.branding} Manage your plan from the Vision Menu web dashboard.
                 </Text>
-              </Pressable>
+              </View>
             ) : null}
 
             <Button title="Save branding" loading={saveBrand.isPending} onPress={() => saveBrand.mutate()} />
@@ -324,15 +321,12 @@ export default function OwnerSettings() {
             </View>
 
             {gate.delivery ? (
-              <Pressable
-                onPress={() => router.push("/(owner)/billing")}
-                className="flex-row items-center gap-2 bg-canvas border border-line rounded-2xl p-3 mb-3"
-              >
+              <View className="flex-row items-center gap-2 bg-canvas border border-line rounded-2xl p-3 mb-3">
                 <Lock size={15} color={colors.accent} />
                 <Text variant="muted" className="text-sm flex-1">
-                  {gate.delivery}
+                  {gate.delivery} Manage your plan from the Vision Menu web dashboard.
                 </Text>
-              </Pressable>
+              </View>
             ) : null}
 
             <View className="mt-1">

@@ -121,33 +121,6 @@ export interface OwnerRestaurant {
   currency?: string
 }
 
-export interface PlanFeatures {
-  branding: boolean
-  delivery: boolean
-  viewAnalytics: boolean
-  ar: boolean
-}
-
-export interface PlanDefinition {
-  name: "FREE" | "BASIC" | "PRO"
-  label: string
-  monthlyPrice: number
-  maxMenuItems: number
-  maxTables: number
-  features: PlanFeatures
-}
-
-export interface BillingInfo {
-  plan: string
-  storedPlan: string
-  planValidUntil: string | null
-  expired: boolean
-  definition: PlanDefinition
-  usage: { menuItems: number; maxMenuItems: number; tables: number; maxTables: number }
-  catalogue: PlanDefinition[]
-  subscriptions: { id: string; plan: string; amount?: string; createdAt?: string; status?: string }[]
-}
-
 export interface ActiveOrder {
   id: string
   orderNumber: number

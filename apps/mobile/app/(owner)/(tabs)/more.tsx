@@ -6,7 +6,6 @@ import {
   QrCode,
   Users,
   Wallet,
-  CreditCard,
   Banknote,
   Settings,
   Megaphone,
@@ -37,7 +36,6 @@ const GROUPS: Array<{ title: string; rows: Row[] }> = [
     title: "Money",
     rows: [
       { label: "Wallet", hint: "Credits & recharge requests", icon: Wallet, href: "/(owner)/wallet" },
-      { label: "Billing & plan", hint: "Subscription and usage", icon: CreditCard, href: "/(owner)/billing" },
       { label: "Payments", hint: "Connect your gateway", icon: Banknote, href: "/(owner)/payments" },
     ],
   },

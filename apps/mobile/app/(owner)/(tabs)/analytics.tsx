@@ -1,9 +1,8 @@
 import { useState } from "react"
 import { View, ScrollView, Pressable, ActivityIndicator } from "react-native"
-import { useRouter } from "expo-router"
 import { useQuery } from "@tanstack/react-query"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { Lock, ArrowUpRight } from "lucide-react-native"
+import { Lock } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { ownerApi, OwnerApiError } from "@/lib/owner-api"
 import { useOwnerRestaurant } from "@/lib/use-owner-restaurant"
@@ -61,7 +60,6 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default function OwnerAnalytics() {
-  const router = useRouter()
   const { colors } = useTheme()
   const { restaurant } = useOwnerRestaurant()
   const rid = restaurant?.id
@@ -231,26 +229,18 @@ export default function OwnerAnalytics() {
 
         <Section title="Menu views">
           {viewsLocked ? (
-            <Pressable
-              onPress={() => router.push("/(owner)/billing")}
-              className="bg-surface rounded-3xl border border-line p-6 items-center"
-            >
+            <View className="bg-surface rounded-3xl border border-line p-6 items-center">
               <View className="w-12 h-12 rounded-full bg-accent/15 items-center justify-center mb-3">
                 <Lock size={22} color={colors.accent} />
               </View>
               <Text variant="title" className="text-base mb-1">
-                Unlock menu-view insights
+                Menu-view insights
               </Text>
-              <Text variant="muted" className="text-sm text-center mb-4">
-                See views, unique visitors and view-to-order conversion on a paid plan.
+              <Text variant="muted" className="text-sm text-center">
+                Views, unique visitors and view-to-order conversion are available on a higher plan.
+                Manage your plan from the Vision Menu web dashboard.
               </Text>
-              <View className="flex-row items-center gap-1">
-                <Text variant="label" className="text-sm text-accent">
-                  View plans
-                </Text>
-                <ArrowUpRight size={16} color={colors.accent} />
-              </View>
-            </Pressable>
+            </View>
           ) : (
             <View className="bg-surface rounded-3xl border border-line p-5">
               <View className="flex-row justify-end mb-4">
