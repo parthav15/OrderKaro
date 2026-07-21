@@ -1,22 +1,40 @@
-import { View, ScrollView, Pressable, ActivityIndicator, RefreshControl } from "react-native"
+import { useState } from "react"
+import {
+  View,
+  ScrollView,
+  Pressable,
+  ActivityIndicator,
+  RefreshControl,
+  Modal,
+  TextInput,
+} from "react-native"
 import { useRouter } from "expo-router"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { MotiView } from "moti"
 import { SafeAreaView } from "react-native-safe-area-context"
 import * as Haptics from "expo-haptics"
-import { LogOut, Clock } from "lucide-react-native"
+import { Clock, Receipt, Banknote, X } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
 import { ownerApi } from "@/lib/owner-api"
-import { ownerSignOut } from "@/lib/owner-auth"
+import { useOwnerRestaurant } from "@/lib/use-owner-restaurant"
 import { useTheme } from "@/theme/theme-provider"
-import type { OwnerRestaurant, ActiveOrder, AnalyticsSummary, OrderStatus } from "@/lib/types"
+import type { ActiveOrder, AnalyticsSummary, OrderStatus } from "@/lib/types"
 
 const NEXT: Partial<Record<OrderStatus, { label: string; to: OrderStatus }>> = {
   PLACED: { label: "Accept", to: "ACCEPTED" },
   ACCEPTED: { label: "Start preparing", to: "PREPARING" },
   PREPARING: { label: "Mark ready", to: "READY" },
   READY: { label: "Picked up", to: "PICKED_UP" },
+}
+
+interface CashResult {
+  orderNumber: number
+  consumerName: string | null
+  orderAmount: string
+  amountReceived: string
+  changeAmount: string
+  newWalletBalance: string
 }
 
 function money(v: string | number) {
@@ -28,17 +46,16 @@ function minutesAgo(iso: string) {
   return mins <= 0 ? "just now" : `${mins} min ago`
 }
 
-export default function Dashboard() {
+export default function OwnerOrders() {
   const router = useRouter()
   const { colors } = useTheme()
   const queryClient = useQueryClient()
-
-  const { data: restaurants } = useQuery({
-    queryKey: ["owner-restaurants"],
-    queryFn: () => ownerApi.get<OwnerRestaurant[]>("/api/v1/restaurants"),
-  })
-  const restaurant = restaurants?.[0]
+  const { restaurant } = useOwnerRestaurant()
   const rid = restaurant?.id
+
+  const [cashOrder, setCashOrder] = useState<ActiveOrder | null>(null)
+  const [cashInput, setCashInput] = useState("")
+  const [cashResult, setCashResult] = useState<CashResult | null>(null)
 
   const { data: summary } = useQuery({
     queryKey: ["owner-summary", rid],
@@ -64,16 +81,31 @@ export default function Dashboard() {
     },
   })
 
-  async function signOut() {
-    await ownerSignOut()
-    router.replace("/(owner)")
-  }
+  const collectCash = useMutation({
+    mutationFn: ({ orderId, amountReceived }: { orderId: string; amountReceived: number }) =>
+      ownerApi.post<CashResult>(
+        `/api/v1/restaurants/${rid}/orders/${orderId}/collect-cash`,
+        { amountReceived }
+      ),
+    onSuccess: (result) => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      setCashOrder(null)
+      setCashInput("")
+      setCashResult(result)
+      queryClient.invalidateQueries({ queryKey: ["owner-active", rid] })
+      queryClient.invalidateQueries({ queryKey: ["owner-summary", rid] })
+    },
+  })
 
   const KPIS = [
     { label: "Today's orders", value: summary ? String(summary.todayOrders) : "—" },
     { label: "Today's revenue", value: summary ? money(summary.todayRevenue) : "—" },
     { label: "Active now", value: summary ? String(summary.activeOrders) : "—" },
   ]
+
+  const cashAmount = Number(cashInput || 0)
+  const cashDue = cashOrder ? Number(cashOrder.totalAmount) : 0
+  const cashChange = Math.max(0, cashAmount - cashDue)
 
   return (
     <SafeAreaView edges={["top"]} className="flex-1 bg-canvas">
@@ -83,14 +115,17 @@ export default function Dashboard() {
             Live orders
           </Text>
           <Text variant="heading" className="text-2xl">
-            {restaurant?.name ?? "Dashboard"}
+            {restaurant?.name ?? "Orders"}
           </Text>
         </View>
         <Pressable
-          onPress={signOut}
-          className="w-10 h-10 rounded-full bg-surface border border-line items-center justify-center"
+          onPress={() => router.push("/(owner)/order-history")}
+          className="flex-row items-center gap-1.5 h-10 px-3.5 rounded-full bg-surface border border-line"
         >
-          <LogOut size={18} color={colors.muted} />
+          <Receipt size={16} color={colors.muted} />
+          <Text variant="label" className="text-sm">
+            History
+          </Text>
         </Pressable>
       </View>
 
@@ -131,6 +166,9 @@ export default function Dashboard() {
             <View className="gap-3">
               {orders.map((order, i) => {
                 const next = NEXT[order.status]
+                const canCancel = order.status === "PLACED"
+                const canCollect =
+                  order.paymentMethod === "CASH" && order.paymentStatus !== "PAID"
                 return (
                   <MotiView
                     key={order.id}
@@ -182,16 +220,27 @@ export default function Dashboard() {
                       </Text>
                     </View>
 
+                    {canCollect ? (
+                      <View className="mt-4">
+                        <Button
+                          title="Collect cash"
+                          variant="outline"
+                          onPress={() => {
+                            setCashOrder(order)
+                            setCashInput("")
+                          }}
+                        />
+                      </View>
+                    ) : null}
+
                     {next ? (
-                      <View className="flex-row gap-2 mt-4">
-                        {(order.status === "PLACED" || order.status === "ACCEPTED") ? (
+                      <View className="flex-row gap-2 mt-2.5">
+                        {canCancel ? (
                           <View className="flex-1">
                             <Button
                               title="Decline"
                               variant="outline"
-                              onPress={() =>
-                                advance.mutate({ orderId: order.id, to: "CANCELLED" })
-                              }
+                              onPress={() => advance.mutate({ orderId: order.id, to: "CANCELLED" })}
                             />
                           </View>
                         ) : null}
@@ -211,6 +260,104 @@ export default function Dashboard() {
           )}
         </ScrollView>
       )}
+
+      <Modal
+        visible={!!cashOrder}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setCashOrder(null)}
+      >
+        <Pressable
+          onPress={() => setCashOrder(null)}
+          className="flex-1 bg-black/60 items-center justify-center px-6"
+        >
+          <Pressable className="w-full bg-surface rounded-3xl border border-line p-6">
+            <View className="flex-row items-center justify-between mb-5">
+              <Text variant="heading" className="text-xl">
+                Collect cash · #{cashOrder?.orderNumber}
+              </Text>
+              <Pressable onPress={() => setCashOrder(null)}>
+                <X size={20} color={colors.muted} />
+              </Pressable>
+            </View>
+
+            <View className="flex-row justify-between mb-3">
+              <Text variant="muted" className="text-base">
+                Order total
+              </Text>
+              <Text variant="title" className="text-base">
+                {money(cashDue)}
+              </Text>
+            </View>
+
+            <Text variant="muted" className="text-xs uppercase tracking-widest mb-2">
+              Amount received
+            </Text>
+            <TextInput
+              value={cashInput}
+              onChangeText={(t) => setCashInput(t.replace(/[^\d]/g, ""))}
+              placeholder="0"
+              placeholderTextColor={colors.muted}
+              keyboardType="number-pad"
+              autoFocus
+              className="h-14 rounded-2xl bg-canvas border border-line px-5 text-ink font-sans-bold text-2xl mb-3"
+            />
+
+            <View className="flex-row justify-between mb-5">
+              <Text variant="muted" className="text-base">
+                Change to return
+              </Text>
+              <Text variant="price" className="text-lg">
+                {money(cashChange)}
+              </Text>
+            </View>
+
+            <Button
+              title="Confirm payment"
+              loading={collectCash.isPending}
+              disabled={cashAmount < cashDue}
+              onPress={() =>
+                cashOrder &&
+                collectCash.mutate({ orderId: cashOrder.id, amountReceived: cashAmount })
+              }
+            />
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      <Modal
+        visible={!!cashResult}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setCashResult(null)}
+      >
+        <Pressable
+          onPress={() => setCashResult(null)}
+          className="flex-1 bg-black/60 items-center justify-center px-6"
+        >
+          <Pressable className="w-full bg-surface rounded-3xl border border-line p-6 items-center">
+            <View className="w-14 h-14 rounded-full bg-primary/15 items-center justify-center mb-4">
+              <Banknote size={26} color={colors.primary} />
+            </View>
+            <Text variant="heading" className="text-xl mb-1">
+              Payment collected
+            </Text>
+            <Text variant="muted" className="text-base text-center mb-5">
+              #{cashResult?.orderNumber}
+              {cashResult?.consumerName ? ` · ${cashResult.consumerName}` : ""}
+            </Text>
+            {cashResult && Number(cashResult.changeAmount) > 0 ? (
+              <View className="w-full bg-canvas rounded-2xl border border-line p-4 mb-5">
+                <Text variant="body" className="text-base text-center">
+                  Return {money(cashResult.changeAmount)} change, or it was credited to their
+                  wallet (new balance {money(cashResult.newWalletBalance)}).
+                </Text>
+              </View>
+            ) : null}
+            <Button title="Done" onPress={() => setCashResult(null)} />
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   )
 }

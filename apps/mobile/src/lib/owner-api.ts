@@ -46,4 +46,6 @@ export const ownerApi = {
   get: <T>(path: string) => ownerRequest<T>(path, "GET"),
   post: <T>(path: string, body?: unknown) => ownerRequest<T>(path, "POST", body),
   patch: <T>(path: string, body?: unknown) => ownerRequest<T>(path, "PATCH", body),
+  put: <T>(path: string, body?: unknown) => ownerRequest<T>(path, "PUT", body),
+  delete: <T>(path: string, body?: unknown) => ownerRequest<T>(path, "DELETE", body),
 }

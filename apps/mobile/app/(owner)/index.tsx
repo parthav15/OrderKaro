@@ -19,7 +19,7 @@ export default function OwnerLogin() {
 
   useEffect(() => {
     getOwnerToken().then((token) => {
-      if (token) router.replace("/(owner)/dashboard")
+      if (token) router.replace("/(owner)/(tabs)/orders")
     })
   }, [])
 
@@ -29,7 +29,7 @@ export default function OwnerLogin() {
     setError("")
     try {
       await ownerLogin(email.trim(), password)
-      router.replace("/(owner)/dashboard")
+      router.replace("/(owner)/(tabs)/orders")
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not sign in")
     } finally {
