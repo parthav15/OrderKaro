@@ -1,29 +1,22 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, type FC, type DetailedHTMLProps, type HTMLAttributes } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, Box, Loader2 } from "lucide-react"
 
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      "model-viewer": React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
-        HTMLElement
-      > & {
-        src?: string
-        poster?: string
-        alt?: string
-        ar?: boolean
-        "ar-modes"?: string
-        "camera-controls"?: boolean
-        "auto-rotate"?: boolean
-        "shadow-intensity"?: string
-        "touch-action"?: string
-      }
-    }
-  }
+type ModelViewerAttributes = DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> & {
+  src?: string
+  poster?: string
+  alt?: string
+  ar?: boolean
+  "ar-modes"?: string
+  "camera-controls"?: boolean
+  "auto-rotate"?: boolean
+  "shadow-intensity"?: string
+  "touch-action"?: string
 }
+
+const ModelViewer = "model-viewer" as unknown as FC<ModelViewerAttributes>
 
 let modelViewerLoader: Promise<unknown> | null = null
 
@@ -109,7 +102,7 @@ export function ArViewer({
               <p className="text-neutral-400 text-sm font-medium">Preparing 3D view...</p>
             </div>
           ) : (
-            <model-viewer
+            <ModelViewer
               src={modelUrl}
               poster={posterUrl ?? undefined}
               alt={itemName}

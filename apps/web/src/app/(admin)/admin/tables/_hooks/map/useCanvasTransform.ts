@@ -5,7 +5,7 @@ import { useMotionValue, animate } from "framer-motion"
 import { MAX_SCALE, MIN_SCALE, FIT_PADDING, type Bounds } from "../../_utils/map/bounds"
 
 interface UseCanvasTransformOptions {
-  containerRef: React.RefObject<HTMLDivElement>
+  containerRef: React.RefObject<HTMLDivElement | null>
 }
 
 export function useCanvasTransform({ containerRef }: UseCanvasTransformOptions) {

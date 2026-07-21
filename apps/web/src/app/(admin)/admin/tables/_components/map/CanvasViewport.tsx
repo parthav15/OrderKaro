@@ -6,7 +6,7 @@ interface CanvasViewportProps {
   x: MotionValue<number>
   y: MotionValue<number>
   scale: MotionValue<number>
-  containerRef: React.RefObject<HTMLDivElement>
+  containerRef: React.RefObject<HTMLDivElement | null>
   onWheel: (e: React.WheelEvent) => void
   onPointerDown: (e: React.PointerEvent) => void
   onPointerMove: (e: React.PointerEvent) => void

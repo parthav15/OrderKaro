@@ -10,7 +10,7 @@ import { snapToGrid } from "../../_utils/map/bounds"
 interface UnplacedTrayProps {
   tables: TableRow[]
   restaurantId: string
-  canvasRef: React.RefObject<HTMLDivElement>
+  canvasRef: React.RefObject<HTMLDivElement | null>
   x: MotionValue<number>
   y: MotionValue<number>
   scale: MotionValue<number>
@@ -110,7 +110,7 @@ function UnplacedItem({
 }: {
   table: TableRow
   restaurantId: string
-  canvasRef: React.RefObject<HTMLDivElement>
+  canvasRef: React.RefObject<HTMLDivElement | null>
   x: MotionValue<number>
   y: MotionValue<number>
   scale: MotionValue<number>
