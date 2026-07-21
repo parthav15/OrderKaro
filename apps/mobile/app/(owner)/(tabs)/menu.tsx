@@ -39,11 +39,11 @@ export default function OwnerMenu() {
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ["owner-menu", rid],
-    queryFn: () => ownerApi.get<{ categories: Category[] }>(`/api/v1/restaurants/${rid}/menu`),
+    queryFn: () => ownerApi.get<Category[]>(`/api/v1/restaurants/${rid}/menu`),
     enabled: !!rid,
   })
 
-  const categories = data?.categories ?? []
+  const categories = data ?? []
 
   const toggle = useMutation({
     mutationFn: ({ itemId, next }: { itemId: string; next: boolean }) =>

@@ -31,10 +31,10 @@ export default function MenuItemEditor() {
 
   const { data } = useQuery({
     queryKey: ["owner-menu", rid],
-    queryFn: () => ownerApi.get<{ categories: Category[] }>(`/api/v1/restaurants/${rid}/menu`),
+    queryFn: () => ownerApi.get<Category[]>(`/api/v1/restaurants/${rid}/menu`),
     enabled: !!rid,
   })
-  const categories = useMemo(() => data?.categories ?? [], [data])
+  const categories = useMemo(() => data ?? [], [data])
 
   const existing = useMemo(() => {
     if (!itemId) return null
