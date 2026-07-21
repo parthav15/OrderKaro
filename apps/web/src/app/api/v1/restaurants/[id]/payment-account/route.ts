@@ -8,7 +8,7 @@ import {
   parseBody,
   AuthError,
 } from "@/lib/api-utils"
-import { connectPaypurSchema, connectStripeSchema } from "@orderkaro/shared"
+import { connectPaypurSchema, connectStripeSchema, connectCashfreeSchema } from "@orderkaro/shared"
 import { encryptSecret, isCredentialStoreConfigured, maskSecret } from "@/lib/secure-store"
 import { providerForCountry, currencyForCountry, gatewayFor } from "@/lib/payments"
 import { verifyStripeKey } from "@/lib/payments/stripe"
@@ -46,6 +46,9 @@ export async function GET(
       status: account?.status ?? "PENDING",
       paypurKeyPreview: account?.paypurKeyCipher ? maskSecret(account.paypurKeyCipher) : null,
       stripeKeyPreview: account?.stripeKeyCipher ? maskSecret(account.stripeKeyCipher) : null,
+      cashfreeKeyPreview: account?.cashfreeAppIdCipher
+        ? maskSecret(account.cashfreeAppIdCipher)
+        : null,
     })
   } catch (err) {
     return handleError(err)
@@ -88,6 +91,28 @@ export async function PUT(
           provider: "STRIPE",
           status: "ACTIVE",
           stripeKeyCipher: encryptSecret(data.secretKey),
+        },
+        select: { id: true, status: true, provider: true },
+      })
+      return success(account)
+    }
+
+    if (provider === "CASHFREE") {
+      const data = parseBody(connectCashfreeSchema, body)
+      const account = await prisma.restaurantPaymentAccount.upsert({
+        where: { restaurantId: id },
+        create: {
+          restaurantId: id,
+          provider: "CASHFREE",
+          status: "ACTIVE",
+          cashfreeAppIdCipher: encryptSecret(data.appId),
+          cashfreeSecretCipher: encryptSecret(data.secretKey),
+        },
+        update: {
+          provider: "CASHFREE",
+          status: "ACTIVE",
+          cashfreeAppIdCipher: encryptSecret(data.appId),
+          cashfreeSecretCipher: encryptSecret(data.secretKey),
         },
         select: { id: true, status: true, provider: true },
       })

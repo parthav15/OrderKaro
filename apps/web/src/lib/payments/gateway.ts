@@ -1,10 +1,12 @@
-export type PaymentProviderName = "PAYPUR" | "STRIPE"
+export type PaymentProviderName = "PAYPUR" | "STRIPE" | "CASHFREE"
 
 export interface PaymentAccountRecord {
   provider: PaymentProviderName
   status: string
   paypurKeyCipher: string | null
   paypurSaltCipher: string | null
+  cashfreeAppIdCipher: string | null
+  cashfreeSecretCipher: string | null
   stripeKeyCipher: string | null
   stripeAccountId: string | null
   stripeChargesEnabled: boolean

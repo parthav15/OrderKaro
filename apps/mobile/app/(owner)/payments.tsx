@@ -20,13 +20,14 @@ import { useOwnerRestaurant } from "@/lib/use-owner-restaurant"
 import { useTheme } from "@/theme/theme-provider"
 
 interface PaymentAccount {
-  provider: "PAYPUR" | "STRIPE"
+  provider: "PAYPUR" | "STRIPE" | "CASHFREE"
   country: string
   currency: string
   connected: boolean
   status: string
   paypurKeyPreview?: string | null
   stripeKeyPreview?: string | null
+  cashfreeKeyPreview?: string | null
   commissionPercent?: number
 }
 
@@ -40,6 +41,7 @@ export default function OwnerPayments() {
   const [editing, setEditing] = useState(false)
   const [apiKey, setApiKey] = useState("")
   const [signingSecret, setSigningSecret] = useState("")
+  const [appId, setAppId] = useState("")
   const [secretKey, setSecretKey] = useState("")
   const [error, setError] = useState("")
   const [reconcileMsg, setReconcileMsg] = useState("")
@@ -51,20 +53,32 @@ export default function OwnerPayments() {
   })
 
   const isStripe = data?.provider === "STRIPE"
-  const preview = isStripe ? data?.stripeKeyPreview : data?.paypurKeyPreview
+  const isCashfree = data?.provider === "CASHFREE"
+  const providerName = isStripe ? "Stripe" : isCashfree ? "Cashfree" : "PayPur"
+  const preview = isStripe
+    ? data?.stripeKeyPreview
+    : isCashfree
+    ? data?.cashfreeKeyPreview
+    : data?.paypurKeyPreview
 
   function resetForm() {
     setApiKey("")
     setSigningSecret("")
+    setAppId("")
     setSecretKey("")
     setError("")
   }
 
   const connect = useMutation({
     mutationFn: () =>
-      ownerApi.put(`/api/v1/restaurants/${rid}/payment-account`, isStripe
-        ? { secretKey: secretKey.trim() }
-        : { apiKey: apiKey.trim(), signingSecret: signingSecret.trim() }),
+      ownerApi.put(
+        `/api/v1/restaurants/${rid}/payment-account`,
+        isStripe
+          ? { secretKey: secretKey.trim() }
+          : isCashfree
+          ? { appId: appId.trim(), secretKey: secretKey.trim() }
+          : { apiKey: apiKey.trim(), signingSecret: signingSecret.trim() }
+      ),
     onSuccess: () => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
       queryClient.invalidateQueries({ queryKey: ["owner-payment-account", rid] })
@@ -88,7 +102,11 @@ export default function OwnerPayments() {
       setReconcileMsg(`Checked ${r.checked} pending · confirmed ${r.confirmed} paid`),
   })
 
-  const canSave = isStripe ? secretKey.trim().length > 0 : apiKey.trim() && signingSecret.trim()
+  const canSave = isStripe
+    ? secretKey.trim().length > 0
+    : isCashfree
+    ? Boolean(appId.trim() && secretKey.trim())
+    : Boolean(apiKey.trim() && signingSecret.trim())
 
   return (
     <SafeAreaView edges={["top"]} className="flex-1 bg-canvas">
@@ -119,7 +137,7 @@ export default function OwnerPayments() {
                 <View className="flex-row items-center gap-2">
                   <ShieldCheck size={18} color={colors.accent} />
                   <Text variant="heading" className="text-xl">
-                    {isStripe ? "Stripe" : "PayPur"}
+                    {providerName}
                   </Text>
                 </View>
                 <View
@@ -154,7 +172,7 @@ export default function OwnerPayments() {
             {editing || !data.connected ? (
               <View className="bg-surface rounded-3xl border border-line p-5 mb-4">
                 <Text variant="title" className="text-base mb-4">
-                  {data.connected ? "Replace credentials" : `Connect ${isStripe ? "Stripe" : "PayPur"}`}
+                  {data.connected ? "Replace credentials" : `Connect ${providerName}`}
                 </Text>
 
                 {isStripe ? (
@@ -167,6 +185,26 @@ export default function OwnerPayments() {
                     secureTextEntry
                     className="h-14 rounded-2xl bg-canvas border border-line px-5 text-ink font-sans-medium text-base mb-3"
                   />
+                ) : isCashfree ? (
+                  <>
+                    <TextInput
+                      value={appId}
+                      onChangeText={setAppId}
+                      placeholder="Cashfree App ID (x-client-id)"
+                      placeholderTextColor={colors.muted}
+                      autoCapitalize="none"
+                      className="h-14 rounded-2xl bg-canvas border border-line px-5 text-ink font-sans-medium text-base mb-3"
+                    />
+                    <TextInput
+                      value={secretKey}
+                      onChangeText={setSecretKey}
+                      placeholder="Secret key (cfsk_…)"
+                      placeholderTextColor={colors.muted}
+                      autoCapitalize="none"
+                      secureTextEntry
+                      className="h-14 rounded-2xl bg-canvas border border-line px-5 text-ink font-sans-medium text-base mb-3"
+                    />
+                  </>
                 ) : (
                   <>
                     <TextInput

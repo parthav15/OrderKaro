@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge"
 import api from "@/lib/api"
 import { toast } from "sonner"
 
-type Provider = "PAYPUR" | "STRIPE"
+type Provider = "STRIPE" | "CASHFREE"
 type PaymentAccountStatus = "PENDING" | "ACTIVE" | "DISABLED"
 
 interface PaymentAccountData {
@@ -33,7 +33,7 @@ interface PaymentAccountData {
   }
   connected: boolean
   status: PaymentAccountStatus
-  paypurKeyPreview: string | null
+  cashfreeKeyPreview: string | null
   stripeKeyPreview: string | null
 }
 
@@ -64,8 +64,7 @@ function extractErrorMessage(err: unknown, fallback: string) {
 export default function PaymentsPage() {
   const queryClient = useQueryClient()
   const [restaurantId, setRestaurantId] = useState<string>("")
-  const [apiKey, setApiKey] = useState("")
-  const [signingSecret, setSigningSecret] = useState("")
+  const [appId, setAppId] = useState("")
   const [secretKey, setSecretKey] = useState("")
   const [replacingCredentials, setReplacingCredentials] = useState(false)
   const [confirmDisconnect, setConfirmDisconnect] = useState(false)
@@ -92,13 +91,12 @@ export default function PaymentsPage() {
     mutationFn: () =>
       api.put(
         `/api/v1/restaurants/${restaurantId}/payment-account`,
-        data?.provider === "PAYPUR" ? { apiKey, signingSecret } : { secretKey }
+        data?.provider === "CASHFREE" ? { appId, secretKey } : { secretKey }
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["payment-account", restaurantId] })
       toast.success("Payment credentials saved")
-      setApiKey("")
-      setSigningSecret("")
+      setAppId("")
       setSecretKey("")
       setReplacingCredentials(false)
     },
@@ -176,7 +174,7 @@ export default function PaymentsPage() {
                     </div>
                     <div>
                       <h2 className="text-lg font-bold text-brand-black">
-                        {data.provider === "PAYPUR" ? "PayPur" : "Stripe"}
+                        {data.provider === "CASHFREE" ? "Cashfree" : "Stripe"}
                       </h2>
                       <p className="text-sm text-neutral-400">
                         Settles in {data.currency} · {data.country}
@@ -187,22 +185,22 @@ export default function PaymentsPage() {
                 </div>
               </CardHeader>
 
-              {data.provider === "PAYPUR" ? (
+              {data.provider === "CASHFREE" ? (
                 <CardContent className="space-y-6 py-6">
                   <ol className="space-y-3">
                     <GuideStep index={1}>
-                      Create a free account at{" "}
+                      Create an account at{" "}
                       <a
-                        href="https://upi.paypur.in"
+                        href="https://merchant.cashfree.com"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-brand-red font-semibold hover:underline inline-flex items-center gap-1"
                       >
-                        upi.paypur.in <ExternalLink className="w-3.5 h-3.5" />
+                        merchant.cashfree.com <ExternalLink className="w-3.5 h-3.5" />
                       </a>
                     </GuideStep>
-                    <GuideStep index={2}>Open API &amp; SDK → Credentials</GuideStep>
-                    <GuideStep index={3}>Copy the Gateway Key and Gateway Salt</GuideStep>
+                    <GuideStep index={2}>Open Developers → API Keys</GuideStep>
+                    <GuideStep index={3}>Generate and copy your App ID and Secret Key</GuideStep>
                     <GuideStep index={4}>Paste them below</GuideStep>
                   </ol>
 
@@ -213,7 +211,7 @@ export default function PaymentsPage() {
                           Connected key
                         </p>
                         <p className="text-sm font-semibold text-brand-black font-mono">
-                          {data.paypurKeyPreview}
+                          {data.cashfreeKeyPreview}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
@@ -271,24 +269,24 @@ export default function PaymentsPage() {
                       className="space-y-4"
                     >
                       <div className="space-y-2">
-                        <label className="block text-sm font-bold text-brand-black">API key</label>
+                        <label className="block text-sm font-bold text-brand-black">App ID</label>
                         <input
-                          type="password"
-                          value={apiKey}
-                          onChange={(e) => setApiKey(e.target.value)}
-                          placeholder="Gateway Key"
+                          type="text"
+                          value={appId}
+                          onChange={(e) => setAppId(e.target.value)}
+                          placeholder="x-client-id"
                           className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
                         />
                       </div>
                       <div className="space-y-2">
                         <label className="block text-sm font-bold text-brand-black">
-                          Signing secret (salt)
+                          Secret key
                         </label>
                         <input
                           type="password"
-                          value={signingSecret}
-                          onChange={(e) => setSigningSecret(e.target.value)}
-                          placeholder="Gateway Salt"
+                          value={secretKey}
+                          onChange={(e) => setSecretKey(e.target.value)}
+                          placeholder="cfsk_…"
                           className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
                         />
                       </div>
@@ -296,7 +294,7 @@ export default function PaymentsPage() {
                         <Button
                           type="submit"
                           loading={saveCredentials.isPending}
-                          disabled={!apiKey || !signingSecret}
+                          disabled={!appId || !secretKey}
                         >
                           Save credentials
                         </Button>
@@ -306,8 +304,8 @@ export default function PaymentsPage() {
                             variant="ghost"
                             onClick={() => {
                               setReplacingCredentials(false)
-                              setApiKey("")
-                              setSigningSecret("")
+                              setAppId("")
+                              setSecretKey("")
                             }}
                           >
                             Cancel

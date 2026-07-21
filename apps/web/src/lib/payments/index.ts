@@ -1,16 +1,18 @@
 import { paypurGateway } from "./paypur"
 import { stripeGateway } from "./stripe"
+import { cashfreeGateway } from "./cashfree"
 import type { PaymentGateway, PaymentProviderName } from "./gateway"
 
 const GATEWAYS: Record<PaymentProviderName, PaymentGateway> = {
   PAYPUR: paypurGateway,
   STRIPE: stripeGateway,
+  CASHFREE: cashfreeGateway,
 }
 
-const PAYPUR_COUNTRIES = new Set(["IN"])
+const CASHFREE_COUNTRIES = new Set(["IN"])
 
 export function providerForCountry(country: string): PaymentProviderName {
-  return PAYPUR_COUNTRIES.has(country.toUpperCase()) ? "PAYPUR" : "STRIPE"
+  return CASHFREE_COUNTRIES.has(country.toUpperCase()) ? "CASHFREE" : "STRIPE"
 }
 
 export function currencyForCountry(country: string): string {
