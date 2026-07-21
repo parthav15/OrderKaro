@@ -6,6 +6,7 @@ import { Screen } from "@/components/ui/screen"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
 import { identify, getIdentity } from "@/lib/auth"
+import { registerForPushNotifications } from "@/lib/push"
 import { useTheme } from "@/theme/theme-provider"
 
 export default function DinerEntry() {
@@ -33,6 +34,7 @@ export default function DinerEntry() {
     setError("")
     try {
       await identify(name.trim(), phone)
+      registerForPushNotifications()
       router.replace("/(diner)/discover")
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong")

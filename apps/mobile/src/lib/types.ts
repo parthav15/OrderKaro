@@ -81,6 +81,36 @@ export type OrderStatus =
   | "PICKED_UP"
   | "CANCELLED"
 
+export interface OwnerRestaurant {
+  id: string
+  name: string
+  slug: string
+}
+
+export interface ActiveOrder {
+  id: string
+  orderNumber: number
+  status: OrderStatus
+  orderType: "DINE_IN" | "TAKEAWAY" | "DELIVERY"
+  totalAmount: string
+  paymentMethod: string
+  paymentStatus: string
+  deliveryLocation: string | null
+  specialInstructions: string | null
+  placedAt: string
+  items: { id: string; quantity: number; menuItem: { name: string } }[]
+  table: { label: string } | null
+}
+
+export interface AnalyticsSummary {
+  totalOrders: number
+  totalRevenue: string
+  todayOrders: number
+  todayRevenue: string
+  activeOrders: number
+  avgPrepTimeMinutes: number | null
+}
+
 export interface TrackedOrder {
   id: string
   orderNumber: number
