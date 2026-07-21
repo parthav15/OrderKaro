@@ -115,7 +115,7 @@ export function PaymentSheet({
                   </Text>
                   <Button title="Close" variant="outline" onPress={close} />
                 </View>
-              ) : session?.provider === "PAYPUR" ? (
+              ) : session?.provider === "PAYPUR" || session?.provider === "CASHFREE" ? (
                 <View className="items-center">
                   <View className="bg-white rounded-3xl p-5 mb-5">
                     {session.upiIntent ? (

@@ -7,7 +7,7 @@ import QRCode from "qrcode"
 import { usePaymentPolling } from "@/hooks/use-payment-polling"
 
 interface PaymentSession {
-  provider: "PAYPUR" | "STRIPE"
+  provider: "PAYPUR" | "STRIPE" | "CASHFREE"
   redirectUrl: string
   qrUrl?: string | null
   upiIntent?: string | null
@@ -54,7 +54,7 @@ export function PaymentModal({ open, session, title, onSuccess, onClose }: Payme
   }, [open, session])
 
   useEffect(() => {
-    if (!open || session?.provider !== "PAYPUR" || !session.upiIntent) {
+    if (!open || !session?.upiIntent || (session.provider !== "PAYPUR" && session.provider !== "CASHFREE")) {
       setQrDataUrl(null)
       setQrFailed(false)
       return
@@ -171,7 +171,7 @@ export function PaymentModal({ open, session, title, onSuccess, onClose }: Payme
                     <span className="text-sm text-neutral-400">{session.currency}</span>
                   </div>
 
-                  {session.provider === "PAYPUR" && (
+                  {(session.provider === "PAYPUR" || session.provider === "CASHFREE") && (
                     <>
                       <div className="flex justify-center mb-4">
                         <motion.div

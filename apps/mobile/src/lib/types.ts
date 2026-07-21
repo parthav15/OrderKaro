@@ -62,7 +62,7 @@ export interface MenuResponse {
 }
 
 export interface PaymentSession {
-  provider: "PAYPUR" | "STRIPE"
+  provider: "PAYPUR" | "STRIPE" | "CASHFREE"
   redirectUrl: string
   qrUrl: string | null
   upiIntent: string | null
