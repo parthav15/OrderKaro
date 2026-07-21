@@ -2,7 +2,7 @@ import { useState } from "react"
 import { View, TextInput, Pressable } from "react-native"
 import { useRouter } from "expo-router"
 import { MotiView } from "moti"
-import { ArrowRight, UtensilsCrossed, ScanLine } from "lucide-react-native"
+import { ArrowRight, UtensilsCrossed, ScanLine, Receipt, User } from "lucide-react-native"
 import { Screen } from "@/components/ui/screen"
 import { Text } from "@/components/ui/text"
 import { DismissKeyboard } from "@/components/ui/dismiss-keyboard"
@@ -23,7 +23,21 @@ export default function Discover() {
   return (
     <Screen>
       <DismissKeyboard>
-        <View className="flex-1 pt-6">
+        <View className="flex-1 pt-4">
+          <View className="flex-row justify-end gap-3 mb-4">
+            <Pressable
+              onPress={() => router.push("/(diner)/orders")}
+              className="w-11 h-11 rounded-full bg-surface border border-line items-center justify-center"
+            >
+              <Receipt size={20} color={colors.ink} />
+            </Pressable>
+            <Pressable
+              onPress={() => router.push("/(diner)/profile")}
+              className="w-11 h-11 rounded-full bg-surface border border-line items-center justify-center"
+            >
+              <User size={20} color={colors.ink} />
+            </Pressable>
+          </View>
           <MotiView
             from={{ opacity: 0, translateY: 20 }}
             animate={{ opacity: 1, translateY: 0 }}

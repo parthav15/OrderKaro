@@ -81,6 +81,27 @@ export type OrderStatus =
   | "PICKED_UP"
   | "CANCELLED"
 
+export interface ConsumerOrder {
+  id: string
+  orderNumber: number
+  status: OrderStatus
+  orderType: "DINE_IN" | "TAKEAWAY" | "DELIVERY"
+  totalAmount: string
+  paymentStatus: string
+  placedAt: string
+  trackingToken: string | null
+  restaurantId: string
+  restaurant: { name: string; slug: string }
+  items: { id: string; menuItemId: string; quantity: number; unitPrice: string; menuItem: { name: string } }[]
+}
+
+export interface WalletSummary {
+  id: string
+  balance: string
+  updatedAt: string
+  restaurant: { id: string; name: string; slug: string }
+}
+
 export interface OwnerRestaurant {
   id: string
   name: string
