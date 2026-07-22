@@ -42,7 +42,7 @@ export default function MenuManagement() {
   const [customizationTarget, setCustomizationTarget] = useState<CustomizationPanelTarget | null>(null)
   const [deleteCategoryTarget, setDeleteCategoryTarget] = useState<any>(null)
   const [deleteItemTarget, setDeleteItemTarget] = useState<any>(null)
-  const [model3dForm, setModel3dForm] = useState({ model3dUrl: "", model3dPosterUrl: "" })
+  const [model3dForm, setModel3dForm] = useState({ model3dUrl: "", model3dUsdzUrl: "", model3dPosterUrl: "" })
   const [modelRequestNotes, setModelRequestNotes] = useState("")
 
   const { data: restaurants } = useQuery({
@@ -203,7 +203,7 @@ export default function MenuManagement() {
       tags: item.tags?.join(", ") || "",
       imageUrl: item.imageUrl || "",
     })
-    setModel3dForm({ model3dUrl: item.model3dUrl || "", model3dPosterUrl: item.model3dPosterUrl || "" })
+    setModel3dForm({ model3dUrl: item.model3dUrl || "", model3dUsdzUrl: item.model3dUsdzUrl || "", model3dPosterUrl: item.model3dPosterUrl || "" })
     setModelRequestNotes("")
     setShowItemModal(true)
   }
@@ -218,7 +218,7 @@ export default function MenuManagement() {
     setShowItemModal(false)
     setEditingItem(null)
     setItemForm({ name: "", description: "", price: "", isVeg: true, categoryId: "", tags: "", imageUrl: "" })
-    setModel3dForm({ model3dUrl: "", model3dPosterUrl: "" })
+    setModel3dForm({ model3dUrl: "", model3dUsdzUrl: "", model3dPosterUrl: "" })
     setModelRequestNotes("")
   }
 
@@ -227,12 +227,18 @@ export default function MenuManagement() {
     return /^https?:\/\/.+\.(glb|gltf)$/i.test(url.trim())
   }
 
+  function isValidModel3dUsdzUrl(url: string) {
+    if (!url) return true
+    return /^https?:\/\/.+\.usdz$/i.test(url.trim())
+  }
+
   function handleModel3dSubmit() {
     if (!editingItem) return
     saveModel3d.mutate({
       itemId: editingItem.id,
       data: {
         model3dUrl: model3dForm.model3dUrl.trim() || null,
+        model3dUsdzUrl: model3dForm.model3dUsdzUrl.trim() || null,
         model3dPosterUrl: model3dForm.model3dPosterUrl.trim() || null,
       },
     })
@@ -303,7 +309,7 @@ export default function MenuManagement() {
             onClick={() => {
               setEditingItem(null)
               setItemForm({ name: "", description: "", price: "", isVeg: true, categoryId: categories?.[0]?.id || "", tags: "", imageUrl: "" })
-              setModel3dForm({ model3dUrl: "", model3dPosterUrl: "" })
+              setModel3dForm({ model3dUrl: "", model3dUsdzUrl: "", model3dPosterUrl: "" })
               setModelRequestNotes("")
               setShowItemModal(true)
             }}
@@ -479,7 +485,7 @@ export default function MenuManagement() {
                               onClick={() => {
                                 setEditingItem(null)
                                 setItemForm({ name: "", description: "", price: "", isVeg: true, categoryId: category.id, tags: "", imageUrl: "" })
-                                setModel3dForm({ model3dUrl: "", model3dPosterUrl: "" })
+                                setModel3dForm({ model3dUrl: "", model3dUsdzUrl: "", model3dPosterUrl: "" })
                                 setModelRequestNotes("")
                                 setShowItemModal(true)
                               }}
@@ -760,6 +766,19 @@ export default function MenuManagement() {
                 />
                 {!isValidModel3dUrl(model3dForm.model3dUrl) && (
                   <p className="text-xs font-medium text-brand-red">Must be a URL ending in .glb or .gltf</p>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-sm font-bold text-brand-black">USDZ URL (iOS AR — .usdz) <span className="font-normal text-neutral-400">(optional)</span></label>
+                <input
+                  value={model3dForm.model3dUsdzUrl}
+                  onChange={(e) => setModel3dForm({ ...model3dForm, model3dUsdzUrl: e.target.value })}
+                  placeholder="https://cdn.example.com/models/dish.usdz"
+                  className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                />
+                {!isValidModel3dUsdzUrl(model3dForm.model3dUsdzUrl) && (
+                  <p className="text-xs font-medium text-brand-red">Must be a URL ending in .usdz</p>
                 )}
               </div>
 

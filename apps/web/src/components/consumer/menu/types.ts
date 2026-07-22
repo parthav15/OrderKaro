@@ -26,6 +26,7 @@ export interface MenuItem {
   tags: string[]
   customizations: Customization[]
   model3dUrl?: string | null
+  model3dUsdzUrl?: string | null
   model3dPosterUrl?: string | null
 }
 

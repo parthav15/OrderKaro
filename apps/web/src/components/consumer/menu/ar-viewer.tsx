@@ -14,6 +14,7 @@ type ModelViewerAttributes = DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTML
   "auto-rotate"?: boolean
   "shadow-intensity"?: string
   "touch-action"?: string
+  "ios-src"?: string
 }
 
 const ModelViewer = "model-viewer" as unknown as FC<ModelViewerAttributes>
@@ -30,11 +31,13 @@ function loadModelViewer() {
 export function ArViewer({
   modelUrl,
   posterUrl,
+  usdzUrl,
   itemName,
   onClose,
 }: {
   modelUrl: string
   posterUrl?: string | null
+  usdzUrl?: string | null
   itemName: string
   onClose: () => void
 }) {
@@ -105,6 +108,7 @@ export function ArViewer({
             <ModelViewer
               src={modelUrl}
               poster={posterUrl ?? undefined}
+              ios-src={usdzUrl ?? undefined}
               alt={itemName}
               ar
               ar-modes="webxr scene-viewer quick-look"
