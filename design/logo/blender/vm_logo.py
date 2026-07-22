@@ -15,6 +15,8 @@ def setin(node, name, val):
 bpy.ops.wm.read_factory_settings(use_empty=True)
 scene = bpy.context.scene
 MODE = os.environ.get("VM_MODE", "logo")
+WM = MODE in ("wordmark", "wordmark-h")
+GOLD = os.environ.get("VM_GOLD", "") == "1"
 
 font_path = None
 patterns = [
@@ -34,18 +36,19 @@ for cand in ["/System/Library/Fonts/Supplemental/Georgia.ttf",
 print("FONT:", font_path)
 
 curve = bpy.data.curves.new(name="VM", type="FONT")
-curve.body = "VM"
+curve.body = "Vision Menu" if MODE == "wordmark-h" else "Vision\nMenu" if MODE == "wordmark" else "VM"
 if font_path:
     try:
         curve.font = bpy.data.fonts.load(font_path)
     except Exception as e:
         print("font load failed", e)
-curve.extrude = 0.13
+curve.extrude = 0.09 if WM else 0.13
 curve.bevel_depth = 0.02
 curve.bevel_resolution = 6
 curve.align_x = "CENTER"
 curve.align_y = "CENTER"
 curve.space_character = 0.92
+curve.space_line = 0.84 if MODE == "wordmark" else 1.0
 
 obj = bpy.data.objects.new("VM", curve)
 scene.collection.objects.link(obj)
@@ -66,7 +69,7 @@ obj.location = (0, 0, 0)
 mat = bpy.data.materials.new("WineLacquer")
 mat.use_nodes = True
 bsdf = mat.node_tree.nodes.get("Principled BSDF")
-if MODE == "icon":
+if MODE == "icon" or GOLD:
     setin(bsdf, "Base Color", hexlin("E4C368"))
     setin(bsdf, "Metallic", 1.0)
     setin(bsdf, "Roughness", 0.30)
@@ -98,6 +101,14 @@ scene.camera = cam
 if MODE == "icon":
     cam.location = (0.28, -5.4, 0.05)
     cam_data.lens = 110
+elif MODE == "wordmark-h":
+    cam.location = (0.0, -8.6, 0.5)
+    cam_data.type = "ORTHO"
+    cam_data.ortho_scale = 5.4
+elif MODE == "wordmark":
+    cam.location = (0.0, -8.6, 0.62)
+    cam_data.type = "ORTHO"
+    cam_data.ortho_scale = 3.05
 else:
     cam.location = (0.8, -4.6, 0.4)
     cam_data.lens = 95
@@ -126,20 +137,28 @@ scene.world = bpy.data.worlds.new("W")
 scene.world.use_nodes = True
 bg = scene.world.node_tree.nodes["Background"]
 bg.inputs["Color"].default_value = (0.03, 0.02, 0.025, 1.0)
-bg.inputs["Strength"].default_value = 1.2 if MODE == "icon" else 0.35
+bg.inputs["Strength"].default_value = 1.2 if (MODE == "icon" or GOLD) else 0.35
 
 scene.render.engine = "CYCLES"
 scene.cycles.samples = 160
 scene.cycles.use_denoising = True
-scene.render.resolution_x = 1024
-scene.render.resolution_y = 1024
+scene.render.resolution_x = 1600 if MODE == "wordmark-h" else 1024
+scene.render.resolution_y = 640 if MODE == "wordmark-h" else 1024
 scene.render.film_transparent = True
 try:
     scene.view_settings.view_transform = "Standard"
 except Exception:
     pass
 
-out = "/Users/parthav./Documents/OrderKaro/design/logo/render/" + ("vm-icon-mark.png" if MODE == "icon" else "vm-3d.png")
+if MODE == "icon":
+    name = "vm-icon-mark.png"
+elif MODE == "wordmark-h":
+    name = "vision-menu-h" + ("-gold" if GOLD else "") + "-3d.png"
+elif MODE == "wordmark":
+    name = "vision-menu" + ("-gold" if GOLD else "") + "-3d.png"
+else:
+    name = "vm-3d.png"
+out = "/Users/parthav./Documents/OrderKaro/design/logo/render/" + name
 os.makedirs(os.path.dirname(out), exist_ok=True)
 scene.render.filepath = out
 bpy.ops.render.render(write_still=True)
