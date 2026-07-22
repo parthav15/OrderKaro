@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { View, ScrollView, Pressable, useWindowDimensions } from "react-native"
 import { useRouter } from "expo-router"
 import { MotiView } from "moti"
@@ -40,11 +40,24 @@ export default function Intro() {
   const router = useRouter()
   const { colors } = useTheme()
   const insets = useSafeAreaInsets()
-  const { width } = useWindowDimensions()
+  const { width, height } = useWindowDimensions()
   const [index, setIndex] = useState(0)
+  const [phase, setPhase] = useState(0)
   const scrollRef = useRef<ScrollView>(null)
 
+  useEffect(() => {
+    const t1 = setTimeout(() => setPhase(1), 980)
+    const t2 = setTimeout(() => setPhase(2), 1680)
+    return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
+    }
+  }, [])
+
   const last = index === SLIDES.length - 1
+  const anchorTop = insets.top + 14
+  const centerShift = height / 2 - anchorTop - 26
+  const shown = phase >= 2
 
   async function finish() {
     await SecureStore.setItemAsync("vm-intro-seen", "1")
@@ -62,18 +75,24 @@ export default function Intro() {
         ref={scrollRef}
         horizontal
         pagingEnabled
+        scrollEnabled={shown}
         showsHorizontalScrollIndicator={false}
         scrollEventThrottle={16}
         onScroll={(e) => setIndex(Math.round(e.nativeEvent.contentOffset.x / width))}
       >
         {SLIDES.map((s, i) => {
           const active = i === index
+          const revealed = i !== 0 || shown
           const Icon = s.Icon
           return (
             <View key={s.key} style={{ width }} className="flex-1 justify-center px-8">
               <MotiView
-                animate={{ opacity: active ? 1 : 0.25, scale: active ? 1 : 0.96 }}
-                transition={{ type: "timing", duration: 450 }}
+                animate={{
+                  opacity: revealed ? (active ? 1 : 0.25) : 0,
+                  translateY: revealed ? 0 : 28,
+                  scale: active ? 1 : 0.96,
+                }}
+                transition={{ type: "timing", duration: 520 }}
               >
                 <View className="w-20 h-20 rounded-[26px] bg-surface border border-line items-center justify-center mb-9">
                   <MotiView
@@ -104,24 +123,54 @@ export default function Intro() {
 
       <View
         pointerEvents="none"
-        style={{ position: "absolute", left: 0, right: 0, top: insets.top + 14, alignItems: "center" }}
+        style={{ position: "absolute", left: 0, right: 0, top: anchorTop, alignItems: "center" }}
       >
-        <Text variant="heading" style={{ fontSize: 48, lineHeight: 52, color: "#D9B24A" }}>
-          VM
-        </Text>
+        <MotiView
+          from={{ translateY: centerShift, scale: 4.2 }}
+          animate={{ translateY: phase >= 1 ? 0 : centerShift, scale: phase >= 1 ? 1 : 4.2 }}
+          transition={{ type: "spring", damping: 18, stiffness: 90 }}
+          style={{ flexDirection: "row" }}
+        >
+          <MotiView
+            from={{ opacity: 0, translateY: 18 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ delay: 150, type: "timing", duration: 500 }}
+          >
+            <Text variant="heading" style={{ fontSize: 48, lineHeight: 52, color: "#D9B24A" }}>
+              V
+            </Text>
+          </MotiView>
+          <MotiView
+            from={{ opacity: 0, translateY: 18 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ delay: 430, type: "timing", duration: 500 }}
+          >
+            <Text variant="heading" style={{ fontSize: 48, lineHeight: 52, color: "#D9B24A" }}>
+              M
+            </Text>
+          </MotiView>
+        </MotiView>
       </View>
 
-      <Pressable
-        onPress={finish}
-        hitSlop={12}
+      <MotiView
+        from={{ opacity: 0 }}
+        animate={{ opacity: shown ? 1 : 0 }}
+        transition={{ delay: 180, duration: 400 }}
+        pointerEvents={shown ? "auto" : "none"}
         style={{ position: "absolute", right: 24, top: insets.top + 22 }}
       >
-        <Text variant="label" className="text-sm text-muted">
-          Skip
-        </Text>
-      </Pressable>
+        <Pressable onPress={finish} hitSlop={12}>
+          <Text variant="label" className="text-sm text-muted">
+            Skip
+          </Text>
+        </Pressable>
+      </MotiView>
 
-      <View
+      <MotiView
+        from={{ opacity: 0, translateY: 16 }}
+        animate={{ opacity: shown ? 1 : 0, translateY: shown ? 0 : 16 }}
+        transition={{ delay: 120, duration: 500 }}
+        pointerEvents={shown ? "auto" : "none"}
         style={{ position: "absolute", left: 0, right: 0, bottom: insets.bottom + 22 }}
         className="px-8 flex-row items-center justify-between"
       >
@@ -148,7 +197,7 @@ export default function Intro() {
             <ArrowRight size={22} color="#FFF7F3" />
           </Pressable>
         )}
-      </View>
+      </MotiView>
     </View>
   )
 }
