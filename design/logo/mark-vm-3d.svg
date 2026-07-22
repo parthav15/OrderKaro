@@ -1,0 +1,16 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Vision Menu VM">
+  <title>Vision Menu — extruded VM</title>
+  <defs>
+    <linearGradient id="vmFace" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0%" stop-color="#CB374F"/>
+      <stop offset="55%" stop-color="#A31D33"/>
+      <stop offset="100%" stop-color="#7E1728"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="264" cy="432" rx="176" ry="22" fill="#2E0B14" opacity="0.34"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" transform="translate(42 126) scale(2.06)">
+    <path d="M12 15 L52 95 L92 15 M120 15 L120 113 M196 15 L196 113 M120 20 L158 74 L196 20" transform="translate(10 12)" stroke="#54101D" stroke-width="20"/>
+    <path d="M12 15 L52 95 L92 15 M120 15 L120 113 M196 15 L196 113 M120 20 L158 74 L196 20" stroke="url(#vmFace)" stroke-width="20"/>
+    <path d="M12 15 L52 95 L92 15 M120 15 L120 113 M196 15 L196 113 M120 20 L158 74 L196 20" transform="translate(-2 -3)" stroke="#EAC978" stroke-width="3" opacity="0.92"/>
+  </g>
+</svg>

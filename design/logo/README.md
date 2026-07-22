@@ -8,8 +8,8 @@ The previous flat-monogram set is preserved in **`backup-v1/`**.
 
 ## Concepts
 
-1. **The Lens — recommended.** A glossy 3D lens/eye: beveled gold rim, domed wine body, a champagne "focus" at the centre with a wine **V** carved into it. Reads as *Vision* + a *viewfinder* (fitting for an AR menu), and it's unmistakably premium at app-icon scale. Fully geometric — no font needed. → `mark.svg`
-2. **Extruded V.** An isometric, extruded serif-less **V** with a lit front face, a dark extruded side, and a gold top edge-light. Bold, iconic, font-independent. → `mark-v-3d.svg`
+1. **The Lens — recommended.** A glossy 3D lens/eye: beveled gold rim, domed wine body, and a **VM** monogram at its focus rendered in dimensional champagne gold (depth + edge-light). Reads as *Vision* + a *viewfinder* (fitting for an AR menu), with the brand initials front and centre. Fully geometric — no font needed. → `mark.svg`
+2. **Extruded VM.** An isometric, extruded **VM** monogram with a lit front face, a dark extruded side, and a gold top edge-light. Bold, dimensional, font-independent. → `mark-vm-3d.svg`
 3. **Cloche.** A dimensional fine-dining serving dome with a gold finial and base — the "reveal" moment of a premium meal. → `mark-cloche.svg`
 
 Supporting files: `app-icon.svg` (1024 iOS tile — the Lens on a wine-gradient tile, safe margins), `lockup.svg` (mark + "Vision Menu" wordmark, serif "Vision" + tagline).

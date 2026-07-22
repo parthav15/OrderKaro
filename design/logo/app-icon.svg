@@ -1,5 +1,5 @@
 <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Vision Menu app icon">
-  <title>Vision Menu — app icon</title>
+  <title>Vision Menu — app icon (VM)</title>
   <defs>
     <linearGradient id="icnTile" x1="0" y1="0" x2="0.4" y2="1">
       <stop offset="0%" stop-color="#8E1A2D"/>
@@ -19,22 +19,26 @@
       <stop offset="45%" stop-color="#D9B24A"/>
       <stop offset="100%" stop-color="#976F1D"/>
     </linearGradient>
-    <radialGradient id="icnPupil" cx="40%" cy="33%" r="74%">
-      <stop offset="0%" stop-color="#F8E099"/>
-      <stop offset="55%" stop-color="#D9B24A"/>
-      <stop offset="100%" stop-color="#A9822B"/>
-    </radialGradient>
+    <linearGradient id="icnVM" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F4D77F"/>
+      <stop offset="100%" stop-color="#C79A38"/>
+    </linearGradient>
     <radialGradient id="icnSpec" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#FFF7F3" stop-opacity="0.9"/>
+      <stop offset="0%" stop-color="#FFF7F3" stop-opacity="0.85"/>
       <stop offset="100%" stop-color="#FFF7F3" stop-opacity="0"/>
     </radialGradient>
   </defs>
   <rect width="1024" height="1024" rx="228" fill="url(#icnTile)"/>
   <rect width="1024" height="1024" rx="228" fill="url(#icnGlow)"/>
-  <circle cx="512" cy="504" r="300" fill="url(#icnRim)"/>
-  <circle cx="512" cy="504" r="272" fill="url(#icnDome)"/>
-  <circle cx="512" cy="504" r="150" fill="none" stroke="url(#icnRim)" stroke-width="14"/>
-  <circle cx="512" cy="504" r="120" fill="url(#icnPupil)"/>
-  <path d="M 464 452 L 512 566 L 560 452" fill="none" stroke="#5E1220" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
-  <ellipse cx="420" cy="384" rx="158" ry="99" fill="url(#icnSpec)" transform="rotate(-26 420 384)"/>
+  <g transform="translate(512 504) scale(1.42) translate(-256 -246)">
+    <circle cx="256" cy="246" r="200" fill="url(#icnRim)"/>
+    <circle cx="256" cy="246" r="181" fill="url(#icnDome)"/>
+    <ellipse cx="194" cy="166" rx="106" ry="66" fill="url(#icnSpec)" transform="rotate(-26 194 166)"/>
+    <circle cx="256" cy="246" r="122" fill="none" stroke="url(#icnRim)" stroke-width="7" opacity="0.9"/>
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round" transform="translate(157 187) scale(0.95)">
+      <path d="M12 15 L52 95 L92 15 M120 15 L120 113 M196 15 L196 113 M120 20 L158 74 L196 20" transform="translate(6 8)" stroke="#6E4E14" stroke-width="17.5"/>
+      <path d="M12 15 L52 95 L92 15 M120 15 L120 113 M196 15 L196 113 M120 20 L158 74 L196 20" stroke="url(#icnVM)" stroke-width="17.5"/>
+      <path d="M12 15 L52 95 L92 15 M120 15 L120 113 M196 15 L196 113 M120 20 L158 74 L196 20" transform="translate(-2 -3)" stroke="#FCEFC2" stroke-width="3.5"/>
+    </g>
+  </g>
 </svg>

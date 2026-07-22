@@ -11,24 +11,26 @@
       <stop offset="45%" stop-color="#D9B24A"/>
       <stop offset="100%" stop-color="#976F1D"/>
     </linearGradient>
-    <radialGradient id="lckPupil" cx="40%" cy="33%" r="74%">
-      <stop offset="0%" stop-color="#F8E099"/>
-      <stop offset="55%" stop-color="#D9B24A"/>
-      <stop offset="100%" stop-color="#A9822B"/>
-    </radialGradient>
+    <linearGradient id="lckVM" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F4D77F"/>
+      <stop offset="100%" stop-color="#C79A38"/>
+    </linearGradient>
     <radialGradient id="lckSpec" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#FFF7F3" stop-opacity="0.9"/>
+      <stop offset="0%" stop-color="#FFF7F3" stop-opacity="0.85"/>
       <stop offset="100%" stop-color="#FFF7F3" stop-opacity="0"/>
     </radialGradient>
   </defs>
-  <g transform="translate(24 6) scale(0.44)">
+  <g transform="translate(20 4) scale(0.46)">
     <circle cx="256" cy="246" r="200" fill="url(#lckRim)"/>
     <circle cx="256" cy="246" r="181" fill="url(#lckDome)"/>
-    <circle cx="256" cy="246" r="100" fill="none" stroke="url(#lckRim)" stroke-width="9"/>
-    <circle cx="256" cy="246" r="80" fill="url(#lckPupil)"/>
-    <path d="M 224 212 L 256 288 L 288 212" fill="none" stroke="#5E1220" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
     <ellipse cx="194" cy="166" rx="106" ry="66" fill="url(#lckSpec)" transform="rotate(-26 194 166)"/>
+    <circle cx="256" cy="246" r="122" fill="none" stroke="url(#lckRim)" stroke-width="7" opacity="0.9"/>
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round" transform="translate(157 187) scale(0.95)">
+      <path d="M12 15 L52 95 L92 15 M120 15 L120 113 M196 15 L196 113 M120 20 L158 74 L196 20" transform="translate(6 8)" stroke="#6E4E14" stroke-width="17.5"/>
+      <path d="M12 15 L52 95 L92 15 M120 15 L120 113 M196 15 L196 113 M120 20 L158 74 L196 20" stroke="url(#lckVM)" stroke-width="17.5"/>
+      <path d="M12 15 L52 95 L92 15 M120 15 L120 113 M196 15 L196 113 M120 20 L158 74 L196 20" transform="translate(-2 -3)" stroke="#FCEFC2" stroke-width="3.5"/>
+    </g>
   </g>
-  <text x="272" y="150" font-family="'Playfair Display', Georgia, serif" font-size="90" letter-spacing="0.5"><tspan font-style="italic" fill="#A31D33">Vision</tspan><tspan fill="#1A1512"> Menu</tspan></text>
-  <text x="276" y="196" font-family="Inter, 'Helvetica Neue', Arial, sans-serif" font-size="22" letter-spacing="7" fill="#6B615A">PREMIUM QR ORDERING</text>
+  <text x="290" y="150" font-family="'Playfair Display', Georgia, serif" font-size="90" letter-spacing="0.5"><tspan font-style="italic" fill="#A31D33">Vision</tspan><tspan fill="#1A1512"> Menu</tspan></text>
+  <text x="294" y="196" font-family="Inter, 'Helvetica Neue', Arial, sans-serif" font-size="22" letter-spacing="7" fill="#6B615A">PREMIUM QR ORDERING</text>
 </svg>
