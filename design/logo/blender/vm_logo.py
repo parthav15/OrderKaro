@@ -14,6 +14,7 @@ def setin(node, name, val):
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 scene = bpy.context.scene
+MODE = os.environ.get("VM_MODE", "logo")
 
 font_path = None
 patterns = [
@@ -65,12 +66,19 @@ obj.location = (0, 0, 0)
 mat = bpy.data.materials.new("WineLacquer")
 mat.use_nodes = True
 bsdf = mat.node_tree.nodes.get("Principled BSDF")
-setin(bsdf, "Base Color", hexlin("911A2E"))
-setin(bsdf, "Metallic", 0.2)
-setin(bsdf, "Roughness", 0.34)
-setin(bsdf, "Coat Weight", 0.4)
-setin(bsdf, "Coat Roughness", 0.12)
-setin(bsdf, "Specular IOR Level", 0.5)
+if MODE == "icon":
+    setin(bsdf, "Base Color", hexlin("E4C368"))
+    setin(bsdf, "Metallic", 1.0)
+    setin(bsdf, "Roughness", 0.30)
+    setin(bsdf, "Coat Weight", 0.2)
+    setin(bsdf, "Specular IOR Level", 0.6)
+else:
+    setin(bsdf, "Base Color", hexlin("911A2E"))
+    setin(bsdf, "Metallic", 0.2)
+    setin(bsdf, "Roughness", 0.34)
+    setin(bsdf, "Coat Weight", 0.4)
+    setin(bsdf, "Coat Roughness", 0.12)
+    setin(bsdf, "Specular IOR Level", 0.5)
 obj.data.materials.append(mat)
 
 target = bpy.data.objects.new("Target", None)
@@ -87,8 +95,12 @@ cam_data = bpy.data.cameras.new("Cam")
 cam = bpy.data.objects.new("Cam", cam_data)
 scene.collection.objects.link(cam)
 scene.camera = cam
-cam.location = (0.8, -4.6, 0.4)
-cam_data.lens = 95
+if MODE == "icon":
+    cam.location = (0.28, -5.4, 0.05)
+    cam_data.lens = 110
+else:
+    cam.location = (0.8, -4.6, 0.4)
+    cam_data.lens = 95
 aim(cam)
 
 def area(name, loc, energy, size, color):
@@ -105,15 +117,16 @@ area("Key", (-2.6, -2.6, 3.0), 380, 4.0, (1.0, 0.93, 0.80))
 area("Fill", (3.0, -1.6, 0.7), 110, 3.6, (0.86, 0.84, 1.0))
 area("RimGold", (1.8, 2.6, 1.7), 430, 2.4, (1.0, 0.76, 0.38))
 
-bpy.ops.mesh.primitive_plane_add(size=16, location=(0, 0, -0.64))
-ground = bpy.context.active_object
-ground.is_shadow_catcher = True
+if MODE != "icon":
+    bpy.ops.mesh.primitive_plane_add(size=16, location=(0, 0, -0.64))
+    ground = bpy.context.active_object
+    ground.is_shadow_catcher = True
 
 scene.world = bpy.data.worlds.new("W")
 scene.world.use_nodes = True
 bg = scene.world.node_tree.nodes["Background"]
 bg.inputs["Color"].default_value = (0.03, 0.02, 0.025, 1.0)
-bg.inputs["Strength"].default_value = 0.35
+bg.inputs["Strength"].default_value = 1.2 if MODE == "icon" else 0.35
 
 scene.render.engine = "CYCLES"
 scene.cycles.samples = 160
@@ -126,7 +139,7 @@ try:
 except Exception:
     pass
 
-out = "/Users/parthav./Documents/OrderKaro/design/logo/render/vm-3d.png"
+out = "/Users/parthav./Documents/OrderKaro/design/logo/render/" + ("vm-icon-mark.png" if MODE == "icon" else "vm-3d.png")
 os.makedirs(os.path.dirname(out), exist_ok=True)
 scene.render.filepath = out
 bpy.ops.render.render(write_still=True)
