@@ -53,7 +53,6 @@ const nextStatus: Record<string, string> = {
   PLACED: "ACCEPTED",
   ACCEPTED: "PREPARING",
   PREPARING: "READY",
-  READY: "PICKED_UP",
 }
 
 const nextStatusConfig: Record<
@@ -77,12 +76,6 @@ const nextStatusConfig: Record<
     icon: PackageCheck,
     className:
       "bg-green-600 hover:bg-green-700 text-white flex-1",
-  },
-  READY: {
-    label: "Picked Up",
-    icon: CircleCheck,
-    className:
-      "bg-[#0A0A0A] hover:bg-neutral-800 text-white flex-1",
   },
 }
 

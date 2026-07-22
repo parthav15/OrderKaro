@@ -30,7 +30,7 @@ export const ORDER_STATUS_FLOW: Record<string, string[]> = {
   PLACED: ["ACCEPTED", "CANCELLED"],
   ACCEPTED: ["PREPARING", "CANCELLED"],
   PREPARING: ["READY"],
-  READY: ["PICKED_UP"],
+  READY: [],
   PICKED_UP: [],
   CANCELLED: [],
 }

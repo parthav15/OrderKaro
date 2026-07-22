@@ -16,10 +16,10 @@ import {
   ORDER_STATUS_FLOW,
   CANCEL_WINDOW_MS,
 } from "@orderkaro/shared"
-import type { OrderStatus } from "@prisma/client"
 import { distanceInKm, roundKm } from "@/lib/geo"
 import { gatewayForRestaurant, currencyForCountry } from "@/lib/payments"
 import { resolveAppUrl } from "@/lib/app-url"
+import { activeOrderWhere } from "@/lib/active-orders"
 
 export async function POST(
   request: NextRequest,
@@ -40,16 +40,14 @@ export async function POST(
     const restaurant = await prisma.restaurant.findUnique({ where: { id: restaurantId } })
     if (!restaurant) throw new AuthError("Restaurant not found", 404)
 
-    const activeStatuses: OrderStatus[] = ["PLACED", "ACCEPTED", "PREPARING", "READY"]
-
     const restaurantActiveCount = await prisma.order.count({
-      where: { restaurantId, status: { in: activeStatuses } },
+      where: { restaurantId, ...activeOrderWhere() },
     })
     const maxActive = restaurant.maxActiveOrders ?? 50
     if (restaurantActiveCount >= maxActive) throw new AuthError("Restaurant is at capacity", 429)
 
     const consumerActiveCount = await prisma.order.count({
-      where: { consumerId: user.id, restaurantId, status: { in: activeStatuses } },
+      where: { consumerId: user.id, restaurantId, ...activeOrderWhere() },
     })
     if (consumerActiveCount >= 3) throw new AuthError("You already have 3 active orders", 429)
 

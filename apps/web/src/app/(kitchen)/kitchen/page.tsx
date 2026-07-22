@@ -111,11 +111,6 @@ function OrderCard({
       icon: <PackageCheck className="w-6 h-6" />,
       className: "bg-white hover:bg-neutral-100 text-brand-black",
     },
-    READY: {
-      label: "Order Picked Up",
-      icon: <CheckCircle2 className="w-6 h-6" />,
-      className: "bg-neutral-700 hover:bg-neutral-600 text-white",
-    },
   }
 
   const action = actionConfig[order.status]
@@ -290,7 +285,6 @@ export default function KitchenDisplay() {
     PLACED: "ACCEPTED",
     ACCEPTED: "PREPARING",
     PREPARING: "READY",
-    READY: "PICKED_UP",
   }
 
   function handleAction(orderId: string, currentStatus: string) {

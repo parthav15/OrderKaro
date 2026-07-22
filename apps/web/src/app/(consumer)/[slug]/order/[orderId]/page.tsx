@@ -23,8 +23,12 @@ const STATUS_STEPS = [
   { key: "ACCEPTED", label: "Accepted", icon: CheckCircle2 },
   { key: "PREPARING", label: "Preparing", icon: ChefHat },
   { key: "READY", label: "Ready for Pickup", icon: Bell },
-  { key: "PICKED_UP", label: "Picked Up", icon: Package },
 ]
+
+function getStepIndex(status: string) {
+  if (status === "PICKED_UP") return STATUS_STEPS.length - 1
+  return STATUS_STEPS.findIndex((s) => s.key === status)
+}
 
 const CACHE_KEY_PREFIX = "orderkaro-order-cache-"
 
@@ -166,7 +170,7 @@ export default function OrderTrackingPage({
 
   const displayOrder = order || cachedOrder
   const currentStatus = liveStatus || displayOrder?.status || "PLACED"
-  const currentStepIndex = STATUS_STEPS.findIndex((s) => s.key === currentStatus)
+  const currentStepIndex = getStepIndex(currentStatus)
   const isCancelled = currentStatus === "CANCELLED"
 
   async function handleCancel() {
@@ -310,7 +314,7 @@ export default function OrderTrackingPage({
             <div className="space-y-0 mb-8">
               {STATUS_STEPS.map((step, idx) => {
                 const isCompleted = idx <= currentStepIndex
-                const isActive = idx === currentStepIndex
+                const isActive = idx === currentStepIndex && currentStatus !== "PICKED_UP"
                 const Icon = step.icon
 
                 return (

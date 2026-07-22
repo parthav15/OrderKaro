@@ -12,10 +12,10 @@ const STATUS_STEPS = [
   { key: "ACCEPTED", label: "Accepted", icon: CheckCircle },
   { key: "PREPARING", label: "Preparing", icon: ChefHat },
   { key: "READY", label: "Ready", icon: Bell },
-  { key: "PICKED_UP", label: "Picked Up", icon: CheckCircle },
 ]
 
 function getStepIndex(status: string) {
+  if (status === "PICKED_UP") return STATUS_STEPS.length - 1
   return STATUS_STEPS.findIndex((s) => s.key === status)
 }
 
@@ -57,7 +57,7 @@ export default function TrackOrderPage({
       api.get(`/api/v1/public/track/${params.token}`).then((r) => r.data.data),
     refetchInterval: (query) => {
       const status = query.state.data?.status
-      if (status === "PICKED_UP" || status === "CANCELLED") return false
+      if (status === "READY" || status === "PICKED_UP" || status === "CANCELLED") return false
       return 5000
     },
   })
@@ -66,6 +66,7 @@ export default function TrackOrderPage({
   const currentStepIndex = order ? getStepIndex(order.status) : -1
   const isReady = order?.status === "READY"
   const isPickedUp = order?.status === "PICKED_UP"
+  const isDone = isReady || isPickedUp
 
   if (isLoading) {
     return (
@@ -198,7 +199,7 @@ export default function TrackOrderPage({
                       >
                         {step.label}
                       </p>
-                      {isCurrent && !isPickedUp && (
+                      {isCurrent && !isDone && (
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: "40%" }}
@@ -207,7 +208,7 @@ export default function TrackOrderPage({
                         />
                       )}
                     </div>
-                    {isCurrent && !isPickedUp && (
+                    {isCurrent && !isDone && (
                       <motion.div
                         animate={{ opacity: [1, 0.4, 1] }}
                         transition={{ repeat: Infinity, duration: 1.4 }}
@@ -269,7 +270,7 @@ export default function TrackOrderPage({
           </div>
         </motion.div>
 
-        {!isPickedUp && (
+        {!isDone && (
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

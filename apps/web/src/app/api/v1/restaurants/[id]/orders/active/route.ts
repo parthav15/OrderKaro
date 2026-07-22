@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server"
 import prisma from "@/lib/prisma"
 import { success, handleError, requireRole } from "@/lib/api-utils"
-import type { OrderStatus } from "@prisma/client"
+import { activeOrderWhere } from "@/lib/active-orders"
 
 export async function GET(
   request: NextRequest,
@@ -11,12 +11,10 @@ export async function GET(
     const { id: restaurantId } = await params
     requireRole(request, "KITCHEN", "COUNTER", "MANAGER", "OWNER")
 
-    const activeStatuses: OrderStatus[] = ["PLACED", "ACCEPTED", "PREPARING", "READY"]
-
     const orders = await prisma.order.findMany({
       where: {
         restaurantId,
-        status: { in: activeStatuses },
+        ...activeOrderWhere(),
       },
       include: {
         items: {

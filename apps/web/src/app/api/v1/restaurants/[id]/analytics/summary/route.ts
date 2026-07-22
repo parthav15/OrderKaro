@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server"
 import prisma from "@/lib/prisma"
 import { success, handleError, requireRole } from "@/lib/api-utils"
-import type { OrderStatus } from "@prisma/client"
+import { activeOrderWhere } from "@/lib/active-orders"
 
 export async function GET(
   request: NextRequest,
@@ -15,8 +15,6 @@ export async function GET(
     todayStart.setHours(0, 0, 0, 0)
     const todayEnd = new Date()
     todayEnd.setHours(23, 59, 59, 999)
-
-    const activeStatuses: OrderStatus[] = ["PLACED", "ACCEPTED", "PREPARING", "READY"]
 
     const [
       todayOrders,
@@ -52,7 +50,7 @@ export async function GET(
       prisma.order.count({
         where: {
           restaurantId,
-          status: { in: activeStatuses },
+          ...activeOrderWhere(),
         },
       }),
       prisma.order.count({

@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router"
 import { useQuery } from "@tanstack/react-query"
 import { MotiView } from "moti"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { Check, Clock, ChefHat, Bell, PartyPopper, X, ArrowLeft } from "lucide-react-native"
+import { Check, Clock, ChefHat, Bell, X, ArrowLeft } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
 import { api } from "@/lib/api"
@@ -14,11 +14,10 @@ const STEPS: { key: OrderStatus; label: string; hint: string; Icon: typeof Clock
   { key: "PLACED", label: "Order placed", hint: "We've received your order", Icon: Check },
   { key: "ACCEPTED", label: "Accepted", hint: "The kitchen confirmed it", Icon: Clock },
   { key: "PREPARING", label: "Preparing", hint: "Your food is being made", Icon: ChefHat },
-  { key: "READY", label: "Ready", hint: "Come collect it", Icon: Bell },
-  { key: "PICKED_UP", label: "Picked up", hint: "Enjoy your meal", Icon: PartyPopper },
+  { key: "READY", label: "Ready", hint: "Ready to collect — enjoy!", Icon: Bell },
 ]
 
-const ORDER: OrderStatus[] = ["PLACED", "ACCEPTED", "PREPARING", "READY", "PICKED_UP"]
+const ORDER: OrderStatus[] = ["PLACED", "ACCEPTED", "PREPARING", "READY"]
 
 export default function TrackScreen() {
   const { token, slug } = useLocalSearchParams<{ token: string; slug: string }>()
@@ -31,7 +30,7 @@ export default function TrackScreen() {
     enabled: !!token,
     refetchInterval: (query) => {
       const s = query.state.data?.status
-      return s === "PICKED_UP" || s === "CANCELLED" ? false : 5000
+      return s === "READY" || s === "PICKED_UP" || s === "CANCELLED" ? false : 5000
     },
   })
 
@@ -54,7 +53,7 @@ export default function TrackScreen() {
   }
 
   const cancelled = data.status === "CANCELLED"
-  const currentIndex = ORDER.indexOf(data.status)
+  const currentIndex = data.status === "PICKED_UP" ? STEPS.length - 1 : ORDER.indexOf(data.status)
 
   return (
     <SafeAreaView edges={["top", "bottom"]} className="flex-1 bg-canvas">
@@ -77,8 +76,8 @@ export default function TrackScreen() {
           <Text variant="muted" className="text-base mt-2">
             {cancelled
               ? "This order was cancelled"
-              : data.status === "PICKED_UP"
-                ? "All done — enjoy!"
+              : data.status === "READY" || data.status === "PICKED_UP"
+                ? "Ready to collect — enjoy!"
                 : `Usually ready in ~${data.restaurant.avgPrepTime} min`}
           </Text>
         </View>

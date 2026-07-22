@@ -75,14 +75,12 @@ const nextStatus: Record<string, string> = {
   PLACED: "ACCEPTED",
   ACCEPTED: "PREPARING",
   PREPARING: "READY",
-  READY: "PICKED_UP",
 }
 
 const nextStatusLabel: Record<string, string> = {
   PLACED: "Accept Order",
   ACCEPTED: "Start Preparing",
   PREPARING: "Mark as Ready",
-  READY: "Mark as Picked Up",
 }
 
 export default function OrderHistory() {
