@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { View, Pressable } from "react-native"
+import { View, Pressable, Image } from "react-native"
 import { useRouter, type Href } from "expo-router"
 import { MotiView } from "moti"
 import { introShownThisSession } from "@/lib/intro-session"
@@ -99,11 +99,13 @@ export default function Entry() {
           from={{ opacity: 0, translateY: -10 }}
           animate={{ opacity: 1, translateY: 0 }}
           transition={{ type: "timing", duration: 600 }}
-          className="items-center pt-2"
+          className="items-center pt-3"
         >
-          <Text variant="heading" style={{ fontSize: 44, lineHeight: 48, color: "#D9B24A" }}>
-            VM
-          </Text>
+          <Image
+            source={require("../assets/vision-menu-wordmark.png")}
+            style={{ width: 212, height: 212 / 5.934 }}
+            resizeMode="contain"
+          />
         </MotiView>
 
         <View className="flex-1 justify-center">

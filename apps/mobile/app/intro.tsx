@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { View, ScrollView, Pressable, useWindowDimensions } from "react-native"
+import { View, ScrollView, Pressable, Image, useWindowDimensions } from "react-native"
 import { useRouter } from "expo-router"
 import { MotiView } from "moti"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -37,7 +37,19 @@ const SLIDES = [
   },
 ]
 
-const SHINE = [0, 0.6, 0]
+const WORDMARK = require("../assets/vision-menu-wordmark.png")
+const ASPECT = 5.934
+const WORDMARK_W = 226
+const WORDMARK_H = WORDMARK_W / ASPECT
+const BIG = 1.42
+const BOUNDS = [0.13, 0.2113, 0.2908, 0.3909, 0.4867, 0.6133, 0.6989, 0.7981, 0.8948, 1]
+const REVEAL = BOUNDS.map((b, i) => ({
+  value: b * WORDMARK_W,
+  delay: i === 0 ? 260 : 26,
+  type: "timing" as const,
+  duration: 64,
+}))
+const SHINE = [0, 0.45, 0]
 
 export default function Intro() {
   const router = useRouter()
@@ -49,9 +61,9 @@ export default function Intro() {
   const scrollRef = useRef<ScrollView>(null)
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase(1), 980)
-    const tH = setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light), 1520)
-    const t2 = setTimeout(() => setPhase(2), 1680)
+    const t1 = setTimeout(() => setPhase(1), 1240)
+    const tH = setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light), 1240)
+    const t2 = setTimeout(() => setPhase(2), 1660)
     return () => {
       clearTimeout(t1)
       clearTimeout(tH)
@@ -60,8 +72,8 @@ export default function Intro() {
   }, [])
 
   const last = index === SLIDES.length - 1
-  const anchorTop = insets.top + 14
-  const centerShift = height / 2 - anchorTop - 26
+  const anchorTop = insets.top + 16
+  const centerShift = height / 2 - anchorTop - WORDMARK_H / 2
   const shown = phase >= 2
 
   function finish() {
@@ -136,42 +148,36 @@ export default function Intro() {
         style={{ position: "absolute", left: 0, right: 0, top: anchorTop, alignItems: "center" }}
       >
         <MotiView
-          from={{ translateY: centerShift, scale: 4.2 }}
-          animate={{ translateY: phase >= 1 ? 0 : centerShift, scale: phase >= 1 ? 1 : 4.2 }}
+          from={{ translateY: centerShift, scale: BIG }}
+          animate={{ translateY: phase >= 1 ? 0 : centerShift, scale: phase >= 1 ? 1 : BIG }}
           transition={{ type: "spring", damping: 18, stiffness: 90 }}
-          style={{ flexDirection: "row" }}
         >
-          <MotiView
-            from={{ opacity: 0, translateY: 18 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ delay: 150, type: "timing", duration: 500 }}
-          >
-            <Text variant="heading" style={{ fontSize: 48, lineHeight: 52, color: "#D9B24A" }}>
-              V
-            </Text>
-          </MotiView>
-          <MotiView
-            from={{ opacity: 0, translateY: 18 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ delay: 430, type: "timing", duration: 500 }}
-          >
-            <Text variant="heading" style={{ fontSize: 48, lineHeight: 52, color: "#D9B24A" }}>
-              M
-            </Text>
-          </MotiView>
-          <MotiView
-            pointerEvents="none"
-            style={{ position: "absolute", left: 0, top: 0, flexDirection: "row" }}
-            animate={{ opacity: phase >= 1 ? SHINE : 0 }}
-            transition={{ opacity: { delay: 540, duration: 320, type: "timing" } }}
-          >
-            <Text variant="heading" style={{ fontSize: 48, lineHeight: 52, color: "#FBEFC2" }}>
-              V
-            </Text>
-            <Text variant="heading" style={{ fontSize: 48, lineHeight: 52, color: "#FBEFC2" }}>
-              M
-            </Text>
-          </MotiView>
+          <View style={{ width: WORDMARK_W, height: WORDMARK_H }}>
+            <MotiView
+              from={{ width: 0 }}
+              animate={{ width: REVEAL }}
+              style={{ position: "absolute", left: 0, top: 0, height: WORDMARK_H, overflow: "hidden" }}
+            >
+              <Image
+                source={WORDMARK}
+                style={{ width: WORDMARK_W, height: WORDMARK_H }}
+                resizeMode="contain"
+              />
+            </MotiView>
+            <MotiView
+              pointerEvents="none"
+              style={{ position: "absolute", left: 0, top: 0, width: WORDMARK_W, height: WORDMARK_H }}
+              animate={{ opacity: phase >= 1 ? SHINE : 0 }}
+              transition={{ opacity: { delay: 120, duration: 360, type: "timing" } }}
+            >
+              <Image
+                source={WORDMARK}
+                style={{ width: WORDMARK_W, height: WORDMARK_H }}
+                resizeMode="contain"
+                tintColor="#FFF1C6"
+              />
+            </MotiView>
+          </View>
         </MotiView>
       </View>
 
