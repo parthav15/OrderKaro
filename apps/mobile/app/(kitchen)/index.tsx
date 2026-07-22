@@ -163,7 +163,7 @@ export default function KitchenBoard() {
         ) : (
           <View className="flex-row flex-wrap gap-3">
             {visible.map((order, i) => {
-              const next = mode === "COUNTER" ? { label: "Picked up", to: "PICKED_UP" as OrderStatus } : KITCHEN_NEXT[order.status]
+              const next = mode === "COUNTER" ? null : KITCHEN_NEXT[order.status]
               const urgent = order.status === "PLACED"
               return (
                 <MotiView

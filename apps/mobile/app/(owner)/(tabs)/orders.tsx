@@ -25,7 +25,6 @@ const NEXT: Partial<Record<OrderStatus, { label: string; to: OrderStatus }>> = {
   PLACED: { label: "Accept", to: "ACCEPTED" },
   ACCEPTED: { label: "Start preparing", to: "PREPARING" },
   PREPARING: { label: "Mark ready", to: "READY" },
-  READY: { label: "Picked up", to: "PICKED_UP" },
 }
 
 interface CashResult {
