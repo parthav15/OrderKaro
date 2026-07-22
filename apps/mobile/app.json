@@ -30,17 +30,17 @@
       "expo-font",
       [
         "expo-camera",
-        { "cameraPermission": "Allow Vision Menu to scan table QR codes." }
+        {
+          "cameraPermission": "Allow Vision Menu to scan table QR codes."
+        }
       ],
       [
         "expo-splash-screen",
         {
-          "image": "./assets/splash.png",
-          "imageWidth": 220,
-          "resizeMode": "contain",
           "backgroundColor": "#141110"
         }
-      ]
+      ],
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true
