@@ -59,7 +59,7 @@ export default function RootLayout() {
       player.pause()
       hide()
     })
-    const timer = setTimeout(hide, 2900)
+    const timer = setTimeout(hide, 3400)
     return () => {
       sub.remove()
       clearTimeout(timer)

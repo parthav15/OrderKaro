@@ -104,7 +104,7 @@ export default function Intro() {
 
       <View
         pointerEvents="none"
-        style={{ position: "absolute", left: 24, top: insets.top + 14 }}
+        style={{ position: "absolute", left: 0, right: 0, top: insets.top + 14, alignItems: "center" }}
       >
         <Text variant="heading" style={{ fontSize: 48, lineHeight: 52, color: "#D9B24A" }}>
           VM
