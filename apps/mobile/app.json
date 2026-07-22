@@ -5,6 +5,7 @@
     "scheme": "visionmenu",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "backgroundColor": "#141110",
@@ -13,7 +14,14 @@
       "bundleIdentifier": "com.visionmenu.app"
     },
     "android": {
-      "package": "com.visionmenu.app"
+      "package": "com.visionmenu.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#7A1626"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-router",
@@ -23,6 +31,15 @@
       [
         "expo-camera",
         { "cameraPermission": "Allow Vision Menu to scan table QR codes." }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "backgroundColor": "#141110"
+        }
       ]
     ],
     "experiments": {
