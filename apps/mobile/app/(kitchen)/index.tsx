@@ -127,7 +127,10 @@ export default function KitchenBoard() {
               ) : (
                 <HandPlatter size={16} color={mode === m ? "#FFF7F3" : colors.muted} />
               )}
-              <Text className={`text-sm font-sans-bold ${mode === m ? "text-[#FFF7F3]" : "text-muted"}`}>
+              <Text
+                className="text-sm font-sans-bold"
+                style={{ color: mode === m ? colors.onPrimary : colors.muted }}
+              >
                 {m === "KITCHEN" ? "Kitchen" : "Counter"}
               </Text>
             </Pressable>

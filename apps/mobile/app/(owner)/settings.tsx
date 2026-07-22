@@ -245,7 +245,11 @@ export default function OwnerSettings() {
                     themeMode === m ? "bg-primary border-primary" : "bg-canvas border-line"
                   }`}
                 >
-                  <Text variant="label" className={`text-sm ${themeMode === m ? "text-[#FFF7F3]" : "text-ink"}`}>
+                  <Text
+                    variant="label"
+                    className="text-sm"
+                    style={{ color: themeMode === m ? colors.onPrimary : colors.ink }}
+                  >
                     {m}
                   </Text>
                 </Pressable>

@@ -233,7 +233,8 @@ export default function OwnerStaff() {
                     >
                       <Text
                         variant="label"
-                        className={`text-xs ${active ? "text-[#FFF7F3]" : "text-ink"}`}
+                        className="text-xs"
+                        style={{ color: active ? colors.onPrimary : colors.ink }}
                       >
                         {r}
                       </Text>

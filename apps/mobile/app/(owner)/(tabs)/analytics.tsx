@@ -253,7 +253,8 @@ export default function OwnerAnalytics() {
                     >
                       <Text
                         variant="label"
-                        className={`text-xs ${viewDays === d ? "text-[#FFF7F3]" : "text-muted"}`}
+                        className="text-xs"
+                        style={{ color: viewDays === d ? colors.onPrimary : colors.muted }}
                       >
                         {d}d
                       </Text>

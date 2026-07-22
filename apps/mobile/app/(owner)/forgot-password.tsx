@@ -53,7 +53,11 @@ function CodeBoxes({ value, onChange }: { value: string; onChange: (v: string) =
                 : "bg-surface border-line"
             }`}
           >
-            <Text variant="heading" className={`text-2xl ${filled ? "text-[#FFF7F3]" : "text-ink"}`}>
+            <Text
+              variant="heading"
+              className="text-2xl"
+              style={{ color: filled ? colors.onPrimary : colors.ink }}
+            >
               {value[i] ?? ""}
             </Text>
           </View>

@@ -182,7 +182,8 @@ export default function OwnerWallet() {
           >
             <Text
               variant="label"
-              className={`text-[13px] ${tab === t.id ? "text-[#FFF7F3]" : "text-ink"}`}
+              className="text-[13px]"
+              style={{ color: tab === t.id ? colors.onPrimary : colors.ink }}
             >
               {t.label}
             </Text>

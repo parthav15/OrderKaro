@@ -13,12 +13,6 @@ const surface: Record<Variant, string> = {
   ghost: "bg-transparent",
 }
 
-const label: Record<Variant, string> = {
-  primary: "text-[#FFF7F3]",
-  outline: "text-ink",
-  ghost: "text-ink",
-}
-
 export function Button({
   title,
   variant = "primary",
@@ -34,6 +28,7 @@ export function Button({
   const [pressed, setPressed] = useState(false)
   const { colors } = useTheme()
   const isDisabled = disabled || loading
+  const labelColor = variant === "primary" ? colors.onPrimary : colors.ink
 
   return (
     <Pressable
@@ -52,9 +47,9 @@ export function Button({
         className={`h-14 rounded-2xl items-center justify-center px-6 ${surface[variant]}`}
       >
         {loading ? (
-          <ActivityIndicator color={variant === "primary" ? "#FFF7F3" : colors.ink} />
+          <ActivityIndicator color={labelColor} />
         ) : (
-          <Text variant="label" className={`text-base ${label[variant]}`}>
+          <Text variant="label" className="text-base" style={{ color: labelColor }}>
             {title}
           </Text>
         )}

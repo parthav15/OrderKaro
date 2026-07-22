@@ -23,6 +23,7 @@ function OtpBoxes({
   onComplete: () => void
 }) {
   const ref = useRef<TextInput>(null)
+  const { colors } = useTheme()
 
   useEffect(() => {
     const t = setTimeout(() => ref.current?.focus(), 350)
@@ -58,7 +59,7 @@ function OtpBoxes({
                 : "bg-surface border-line"
             }`}
           >
-            <Text variant="heading" className={`text-2xl ${filled ? "text-[#FFF7F3]" : "text-ink"}`}>
+            <Text variant="heading" className="text-2xl" style={{ color: filled ? colors.onPrimary : colors.ink }}>
               {value[i] ?? ""}
             </Text>
           </View>

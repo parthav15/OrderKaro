@@ -96,6 +96,7 @@ function Chip({
   active: boolean
   onPress: () => void
 }) {
+  const { colors } = useTheme()
   return (
     <Pressable
       onPress={onPress}
@@ -103,7 +104,11 @@ function Chip({
         active ? "bg-primary border-primary" : "bg-surface border-line"
       }`}
     >
-      <Text variant="label" className={`text-[13px] ${active ? "text-[#FFF7F3]" : "text-ink"}`}>
+      <Text
+        variant="label"
+        className="text-[13px]"
+        style={{ color: active ? colors.onPrimary : colors.ink }}
+      >
         {label}
       </Text>
     </Pressable>

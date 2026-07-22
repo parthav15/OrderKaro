@@ -149,7 +149,7 @@ export default function Orders() {
                         style={{ backgroundColor: colors.primary }}
                         className="flex-row items-center gap-1 rounded-full px-3.5 py-2"
                       >
-                        <Text className="text-[#FFF7F3] font-sans-semibold text-sm">Track</Text>
+                        <Text className="font-sans-semibold text-sm" style={{ color: colors.onPrimary }}>Track</Text>
                         <ChevronRight size={14} color="#FFF7F3" />
                       </Pressable>
                     ) : null}

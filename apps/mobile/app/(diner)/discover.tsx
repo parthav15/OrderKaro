@@ -61,7 +61,7 @@ export default function Discover() {
             <Pressable onPress={() => router.push("/(diner)/scan")}>
               <View className="flex-row items-center bg-primary rounded-2xl px-5 py-4 mb-4">
                 <ScanLine size={22} color="#FFF7F3" />
-                <Text className="text-[#FFF7F3] font-sans-bold text-base ml-3 flex-1">
+                <Text className="font-sans-bold text-base ml-3 flex-1" style={{ color: colors.onPrimary }}>
                   Scan a table QR
                 </Text>
                 <ArrowRight size={20} color="#FFF7F3" />

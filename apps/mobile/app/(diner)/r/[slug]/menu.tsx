@@ -203,7 +203,7 @@ export default function MenuScreen() {
                   style={on ? { backgroundColor: brand } : undefined}
                   className={`px-4 py-2 rounded-full border ${on ? "" : "border-line bg-surface"}`}
                 >
-                  <Text className={`text-sm font-sans-semibold ${on ? "text-[#FFF7F3]" : "text-muted"}`}>
+                  <Text className="text-sm font-sans-semibold" style={{ color: on ? colors.onPrimary : colors.muted }}>
                     {c.name}
                   </Text>
                 </Pressable>
@@ -365,11 +365,11 @@ export default function MenuScreen() {
           >
             <View className="flex-row items-center gap-2">
               <ShoppingBag size={20} color="#FFF7F3" />
-              <Text className="text-[#FFF7F3] font-sans-bold text-base">
+              <Text className="font-sans-bold text-base" style={{ color: colors.onPrimary }}>
                 {itemCount} {itemCount === 1 ? "item" : "items"}
               </Text>
             </View>
-            <Text className="text-[#FFF7F3] font-sans-bold text-base">View cart · ₹{subtotal}</Text>
+            <Text className="font-sans-bold text-base" style={{ color: colors.onPrimary }}>View cart · ₹{subtotal}</Text>
           </Pressable>
         </MotiView>
       ) : null}
@@ -409,6 +409,7 @@ function FilterChip({
   tint: string
   icon?: React.ReactNode
 }) {
+  const { colors } = useTheme()
   return (
     <Pressable
       onPress={onPress}
@@ -418,7 +419,7 @@ function FilterChip({
       }`}
     >
       {icon}
-      <Text className={`text-sm font-sans-semibold ${active ? "text-[#FFF7F3]" : "text-ink"}`}>
+      <Text className="text-sm font-sans-semibold" style={{ color: active ? colors.onPrimary : colors.ink }}>
         {label}
       </Text>
     </Pressable>

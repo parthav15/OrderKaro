@@ -134,7 +134,11 @@ export default function MenuItemEditor() {
                     active ? "bg-primary border-primary" : "bg-surface border-line"
                   }`}
                 >
-                  <Text variant="label" className={`text-sm ${active ? "text-[#FFF7F3]" : "text-ink"}`}>
+                  <Text
+                    variant="label"
+                    className="text-sm"
+                    style={{ color: active ? colors.onPrimary : colors.ink }}
+                  >
                     {c.name}
                   </Text>
                 </Pressable>
