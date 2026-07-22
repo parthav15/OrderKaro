@@ -26,6 +26,7 @@ export interface MenuItem {
   isAvailable: boolean
   tags: string[]
   model3dUrl: string | null
+  model3dUsdzUrl?: string | null
   model3dPosterUrl: string | null
   customizations: Customization[]
 }

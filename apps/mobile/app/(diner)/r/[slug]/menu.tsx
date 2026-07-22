@@ -387,6 +387,7 @@ export default function MenuScreen() {
       {arItem?.model3dUrl ? (
         <ArViewer
           modelUrl={arItem.model3dUrl}
+          usdzUrl={arItem.model3dUsdzUrl}
           posterUrl={arItem.model3dPosterUrl}
           itemName={arItem.name}
           onClose={() => setArItem(null)}
