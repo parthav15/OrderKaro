@@ -1,5 +1,12 @@
 import { memo, useEffect, useRef, useState } from "react"
-import { View, ScrollView, Pressable, Image, useWindowDimensions } from "react-native"
+import {
+  View,
+  ScrollView,
+  Pressable,
+  Image,
+  useWindowDimensions,
+  type ImageSourcePropType,
+} from "react-native"
 import { useRouter } from "expo-router"
 import { MotiView } from "moti"
 import { Easing } from "react-native-reanimated"
@@ -9,6 +16,8 @@ import { markIntroShown } from "@/lib/intro-session"
 import { Sparkles, ScanLine, UtensilsCrossed, ArrowRight } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { useTheme } from "@/theme/theme-provider"
 
 const SLIDES = [
   {
@@ -40,36 +49,6 @@ const SLIDES = [
 const GOLD_WORDMARK = require("../assets/vision-menu-wordmark.png")
 const WINE_WORDMARK = require("../assets/vision-menu-wordmark-wine.png")
 
-const LOOKS = {
-  gold: {
-    canvas: "#141110",
-    ink: "#F6EFE7",
-    primary: "#BE2540",
-    accent: "#D9B24A",
-    muted: "#A89C90",
-    surface: "#1E1A17",
-    line: "#352E29",
-    onPrimary: "#FFF7F3",
-    wordmark: GOLD_WORDMARK,
-    shine: "#FFF1C6",
-  },
-  wine: {
-    canvas: "#F6F1EA",
-    ink: "#1A1512",
-    primary: "#A31D33",
-    accent: "#A9822B",
-    muted: "#6B615A",
-    surface: "#FFFFFF",
-    line: "#E7DFD4",
-    onPrimary: "#FFF7F3",
-    wordmark: WINE_WORDMARK,
-    shine: "#F6DFA0",
-  },
-}
-
-const LOOK: keyof typeof LOOKS = "wine"
-const T = LOOKS[LOOK]
-
 const ASPECT = 5.934
 const WORDMARK_W = 226
 const WORDMARK_H = WORDMARK_W / ASPECT
@@ -83,23 +62,27 @@ const REVEAL = BOUNDS.map((b, i) => ({
 }))
 const SHINE = [0, 0.45, 0]
 
-const RevealMark = memo(function RevealMark() {
+const RevealMark = memo(function RevealMark({ src }: { src: ImageSourcePropType }) {
   return (
     <MotiView
       from={{ width: 0 }}
       animate={{ width: REVEAL }}
       style={{ position: "absolute", left: 0, top: 0, height: WORDMARK_H, overflow: "hidden" }}
     >
-      <Image
-        source={T.wordmark}
-        style={{ width: WORDMARK_W, height: WORDMARK_H }}
-        resizeMode="contain"
-      />
+      <Image source={src} style={{ width: WORDMARK_W, height: WORDMARK_H }} resizeMode="contain" />
     </MotiView>
   )
 })
 
-const ShimmerMark = memo(function ShimmerMark({ on }: { on: boolean }) {
+const ShimmerMark = memo(function ShimmerMark({
+  src,
+  shine,
+  on,
+}: {
+  src: ImageSourcePropType
+  shine: string
+  on: boolean
+}) {
   return (
     <MotiView
       pointerEvents="none"
@@ -108,10 +91,10 @@ const ShimmerMark = memo(function ShimmerMark({ on }: { on: boolean }) {
       transition={{ opacity: { delay: 120, duration: 360, type: "timing" } }}
     >
       <Image
-        source={T.wordmark}
+        source={src}
         style={{ width: WORDMARK_W, height: WORDMARK_H }}
         resizeMode="contain"
-        tintColor={T.shine}
+        tintColor={shine}
       />
     </MotiView>
   )
@@ -119,6 +102,7 @@ const ShimmerMark = memo(function ShimmerMark({ on }: { on: boolean }) {
 
 export default function Intro() {
   const router = useRouter()
+  const { scheme, colors } = useTheme()
   const insets = useSafeAreaInsets()
   const { width, height } = useWindowDimensions()
   const [index, setIndex] = useState(0)
@@ -140,6 +124,9 @@ export default function Intro() {
   const anchorTop = insets.top + 16
   const centerShift = height / 2 - anchorTop - WORDMARK_H / 2
   const shown = phase >= 2
+  const dark = scheme === "dark"
+  const wordmark = dark ? GOLD_WORDMARK : WINE_WORDMARK
+  const shine = dark ? "#FFF1C6" : "#F6DFA0"
 
   function finish() {
     markIntroShown()
@@ -152,7 +139,7 @@ export default function Intro() {
   }
 
   return (
-    <View className="flex-1" style={{ backgroundColor: T.canvas }}>
+    <View className="flex-1 bg-canvas">
       <ScrollView
         ref={scrollRef}
         horizontal
@@ -178,37 +165,27 @@ export default function Intro() {
                 transition={{ type: "timing", duration: 400 }}
               >
                 <MotiView {...step(0)}>
-                  <View
-                    className="w-20 h-20 rounded-[26px] items-center justify-center mb-9"
-                    style={{ backgroundColor: T.surface, borderColor: T.line, borderWidth: 1 }}
-                  >
-                    <Icon size={34} color={T.accent} />
+                  <View className="w-20 h-20 rounded-[26px] bg-surface border border-line items-center justify-center mb-9">
+                    <Icon size={34} color={colors.accent} />
                   </View>
                 </MotiView>
                 <MotiView {...step(80)}>
-                  <Text
-                    className="tracking-[4px] text-xs font-sans-bold mb-3"
-                    style={{ color: T.accent }}
-                  >
+                  <Text className="text-accent tracking-[4px] text-xs font-sans-bold mb-3">
                     {s.kicker}
                   </Text>
                 </MotiView>
                 <MotiView {...step(150)}>
-                  <Text variant="display" className="text-[52px] leading-[1.03]" style={{ color: T.ink }}>
+                  <Text variant="display" className="text-[52px] leading-[1.03]">
                     {s.line1}
                   </Text>
                 </MotiView>
                 <MotiView {...step(210)}>
-                  <Text
-                    variant="display"
-                    className="text-[52px] leading-[1.03] mb-5"
-                    style={{ color: T.primary }}
-                  >
+                  <Text variant="display" className="text-[52px] leading-[1.03] text-primary mb-5">
                     {s.line2}
                   </Text>
                 </MotiView>
                 <MotiView {...step(280)}>
-                  <Text variant="muted" className="text-base leading-relaxed pr-6" style={{ color: T.muted }}>
+                  <Text variant="muted" className="text-base leading-relaxed pr-6">
                     {s.body}
                   </Text>
                 </MotiView>
@@ -228,8 +205,8 @@ export default function Intro() {
           transition={{ type: "timing", duration: 640, easing: Easing.out(Easing.cubic) }}
         >
           <View style={{ width: WORDMARK_W, height: WORDMARK_H }}>
-            <RevealMark />
-            <ShimmerMark on={phase >= 1} />
+            <RevealMark src={wordmark} />
+            <ShimmerMark src={wordmark} shine={shine} on={phase >= 1} />
           </View>
         </MotiView>
       </View>
@@ -237,12 +214,22 @@ export default function Intro() {
       <MotiView
         from={{ opacity: 0 }}
         animate={{ opacity: shown ? 1 : 0 }}
+        transition={{ delay: 220, duration: 400 }}
+        pointerEvents={shown ? "auto" : "none"}
+        style={{ position: "absolute", left: 20, top: insets.top + 18 }}
+      >
+        <ThemeToggle />
+      </MotiView>
+
+      <MotiView
+        from={{ opacity: 0 }}
+        animate={{ opacity: shown ? 1 : 0 }}
         transition={{ delay: 180, duration: 400 }}
         pointerEvents={shown ? "auto" : "none"}
-        style={{ position: "absolute", right: 24, top: insets.top + 22 }}
+        style={{ position: "absolute", right: 24, top: insets.top + 24 }}
       >
         <Pressable onPress={finish} hitSlop={12}>
-          <Text variant="label" className="text-sm" style={{ color: T.muted }}>
+          <Text variant="label" className="text-sm text-muted">
             Skip
           </Text>
         </Pressable>
@@ -262,8 +249,7 @@ export default function Intro() {
               key={s.key}
               animate={{ width: i === index ? 26 : 8, opacity: i === index ? 1 : 0.4 }}
               transition={{ type: "timing", duration: 300 }}
-              className="h-2 rounded-full"
-              style={{ backgroundColor: T.primary }}
+              className="h-2 rounded-full bg-primary"
             />
           ))}
         </View>
@@ -275,10 +261,9 @@ export default function Intro() {
         ) : (
           <Pressable
             onPress={next}
-            className="w-14 h-14 rounded-full items-center justify-center"
-            style={{ backgroundColor: T.primary }}
+            className="w-14 h-14 rounded-full bg-primary items-center justify-center"
           >
-            <ArrowRight size={22} color={T.onPrimary} />
+            <ArrowRight size={22} color={colors.onPrimary} />
           </Pressable>
         )}
       </MotiView>

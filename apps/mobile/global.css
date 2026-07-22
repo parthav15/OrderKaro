@@ -1,3 +1,43 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --primary: 163 29 51;
+    --primary-hover: 142 26 45;
+    --primary-pressed: 122 22 38;
+    --on-primary: 255 247 243;
+    --accent: 169 130 43;
+    --on-accent: 26 21 18;
+    --canvas: 246 241 234;
+    --surface: 255 255 255;
+    --surface-elevated: 251 246 239;
+    --ink: 26 21 18;
+    --muted: 107 97 90;
+    --line: 231 223 212;
+    --ring: 163 29 51;
+    --success: 20 122 69;
+    --warning: 180 83 9;
+    --danger: 180 35 24;
+  }
+
+  .dark:root {
+    --primary: 190 37 64;
+    --primary-hover: 206 46 74;
+    --primary-pressed: 163 29 51;
+    --on-primary: 255 247 243;
+    --accent: 217 178 74;
+    --on-accent: 26 21 18;
+    --canvas: 20 17 16;
+    --surface: 30 26 23;
+    --surface-elevated: 40 35 32;
+    --ink: 246 239 231;
+    --muted: 168 156 144;
+    --line: 53 46 41;
+    --ring: 217 178 74;
+    --success: 61 214 140;
+    --warning: 245 185 68;
+    --danger: 249 112 102;
+  }
+}

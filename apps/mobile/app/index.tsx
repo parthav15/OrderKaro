@@ -6,7 +6,11 @@ import { introShownThisSession } from "@/lib/intro-session"
 import { UtensilsCrossed, Store, ChefHat, ArrowUpRight } from "lucide-react-native"
 import { Screen } from "@/components/ui/screen"
 import { Text } from "@/components/ui/text"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { useTheme } from "@/theme/theme-provider"
+
+const GOLD_WORDMARK = require("../assets/vision-menu-wordmark.png")
+const WINE_WORDMARK = require("../assets/vision-menu-wordmark-wine.png")
 
 interface Role {
   key: string
@@ -84,6 +88,7 @@ function RoleCard({ role, index, onPress }: { role: Role; index: number; onPress
 
 export default function Entry() {
   const router = useRouter()
+  const { scheme } = useTheme()
   const [ready] = useState(() => introShownThisSession())
 
   useEffect(() => {
@@ -96,13 +101,21 @@ export default function Entry() {
     <Screen>
       <View className="flex-1">
         <MotiView
+          from={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ type: "timing", duration: 600, delay: 200 }}
+          style={{ position: "absolute", left: 0, top: 4, zIndex: 10 }}
+        >
+          <ThemeToggle />
+        </MotiView>
+        <MotiView
           from={{ opacity: 0, translateY: -10 }}
           animate={{ opacity: 1, translateY: 0 }}
           transition={{ type: "timing", duration: 600 }}
           className="items-center pt-3"
         >
           <Image
-            source={require("../assets/vision-menu-wordmark.png")}
+            source={scheme === "dark" ? GOLD_WORDMARK : WINE_WORDMARK}
             style={{ width: 212, height: 212 / 5.934 }}
             resizeMode="contain"
           />

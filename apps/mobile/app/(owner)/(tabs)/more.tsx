@@ -13,6 +13,7 @@ import {
   LogOut,
 } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { ownerSignOut, getOwnerProfile, type OwnerProfile } from "@/lib/owner-auth"
 import { useOwnerRestaurant } from "@/lib/use-owner-restaurant"
 import { useTheme } from "@/theme/theme-provider"
@@ -66,18 +67,21 @@ export default function OwnerMore() {
   return (
     <SafeAreaView edges={["top"]} className="flex-1 bg-canvas">
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
-        <View className="mb-6">
-          <Text variant="muted" className="text-xs tracking-widest uppercase mb-1">
-            Console
-          </Text>
-          <Text variant="heading" className="text-3xl">
-            {restaurant?.name ?? "Your restaurant"}
-          </Text>
-          {profile ? (
-            <Text variant="muted" className="text-sm mt-1">
-              {profile.name} · {profile.email}
+        <View className="flex-row items-start justify-between mb-6">
+          <View className="flex-1 pr-3">
+            <Text variant="muted" className="text-xs tracking-widest uppercase mb-1">
+              Console
             </Text>
-          ) : null}
+            <Text variant="heading" className="text-3xl">
+              {restaurant?.name ?? "Your restaurant"}
+            </Text>
+            {profile ? (
+              <Text variant="muted" className="text-sm mt-1">
+                {profile.name} · {profile.email}
+              </Text>
+            ) : null}
+          </View>
+          <ThemeToggle />
         </View>
 
         {GROUPS.map((group) => (

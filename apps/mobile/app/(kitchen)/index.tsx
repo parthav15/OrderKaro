@@ -10,6 +10,7 @@ import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
 import { Screen } from "@/components/ui/screen"
 import { Card } from "@/components/ui/card"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { ownerApi } from "@/lib/owner-api"
 import { getOwnerToken, ownerSignOut } from "@/lib/owner-auth"
 import { useTheme } from "@/theme/theme-provider"
@@ -132,15 +133,18 @@ export default function KitchenBoard() {
             </Pressable>
           ))}
         </View>
-        <Pressable
-          onPress={async () => {
-            await ownerSignOut()
-            setAuthed(false)
-          }}
-          className="w-11 h-11 rounded-full bg-surface border border-line items-center justify-center"
-        >
-          <LogOut size={18} color={colors.muted} />
-        </Pressable>
+        <View className="flex-row items-center gap-2">
+          <ThemeToggle />
+          <Pressable
+            onPress={async () => {
+              await ownerSignOut()
+              setAuthed(false)
+            }}
+            className="w-11 h-11 rounded-full bg-surface border border-line items-center justify-center"
+          >
+            <LogOut size={18} color={colors.muted} />
+          </Pressable>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>

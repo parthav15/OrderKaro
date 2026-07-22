@@ -1,29 +1,30 @@
-const { bordeauxNoir } = require("./src/theme/tokens")
-
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
   presets: [require("nativewind/preset")],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
         primary: {
-          DEFAULT: bordeauxNoir.dark.primary,
-          hover: bordeauxNoir.dark.primaryHover,
-          pressed: bordeauxNoir.dark.primaryPressed,
+          DEFAULT: "rgb(var(--primary) / <alpha-value>)",
+          hover: "rgb(var(--primary-hover) / <alpha-value>)",
+          pressed: "rgb(var(--primary-pressed) / <alpha-value>)",
         },
-        accent: bordeauxNoir.dark.accent,
-        canvas: bordeauxNoir.dark.canvas,
+        "on-primary": "rgb(var(--on-primary) / <alpha-value>)",
+        accent: "rgb(var(--accent) / <alpha-value>)",
+        canvas: "rgb(var(--canvas) / <alpha-value>)",
         surface: {
-          DEFAULT: bordeauxNoir.dark.surface,
-          elevated: bordeauxNoir.dark.surfaceElevated,
+          DEFAULT: "rgb(var(--surface) / <alpha-value>)",
+          elevated: "rgb(var(--surface-elevated) / <alpha-value>)",
         },
-        ink: bordeauxNoir.dark.ink,
-        muted: bordeauxNoir.dark.muted,
-        line: bordeauxNoir.dark.line,
-        success: bordeauxNoir.dark.success,
-        warning: bordeauxNoir.dark.warning,
-        danger: bordeauxNoir.dark.danger,
+        ink: "rgb(var(--ink) / <alpha-value>)",
+        muted: "rgb(var(--muted) / <alpha-value>)",
+        line: "rgb(var(--line) / <alpha-value>)",
+        ring: "rgb(var(--ring) / <alpha-value>)",
+        success: "rgb(var(--success) / <alpha-value>)",
+        warning: "rgb(var(--warning) / <alpha-value>)",
+        danger: "rgb(var(--danger) / <alpha-value>)",
       },
       fontFamily: {
         serif: ["PlayfairDisplay_700Bold", "Georgia", "serif"],

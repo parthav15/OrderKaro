@@ -1,12 +1,14 @@
 import { Stack } from "expo-router"
+import { useTheme } from "@/theme/theme-provider"
 
 export default function KitchenLayout() {
+  const { colors } = useTheme()
   return (
     <Stack
       screenOptions={{
         headerShown: false,
         gestureEnabled: false,
-        contentStyle: { backgroundColor: "#141110" },
+        contentStyle: { backgroundColor: colors.canvas },
       }}
     />
   )

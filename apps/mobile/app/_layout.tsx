@@ -17,10 +17,27 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
 } from "@expo-google-fonts/inter"
-import { ThemeProvider } from "@/theme/theme-provider"
+import { ThemeProvider, useTheme } from "@/theme/theme-provider"
 import { queryClient } from "@/lib/query"
 
 SplashScreen.preventAutoHideAsync()
+
+function Shell() {
+  const { colors, scheme } = useTheme()
+  return (
+    <>
+      <StatusBar style={scheme === "dark" ? "light" : "dark"} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          gestureEnabled: false,
+          contentStyle: { backgroundColor: colors.canvas },
+          animation: "fade",
+        }}
+      />
+    </>
+  )
+}
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -43,15 +60,7 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
-            <StatusBar style="light" />
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                gestureEnabled: false,
-                contentStyle: { backgroundColor: "#141110" },
-                animation: "fade",
-              }}
-            />
+            <Shell />
           </ThemeProvider>
         </QueryClientProvider>
       </SafeAreaProvider>

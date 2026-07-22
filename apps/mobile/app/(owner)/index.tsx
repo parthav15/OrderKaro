@@ -6,6 +6,7 @@ import { ArrowLeft, Eye, EyeOff } from "lucide-react-native"
 import { Screen } from "@/components/ui/screen"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { ownerLogin, getOwnerToken } from "@/lib/owner-auth"
 import { DismissKeyboard } from "@/components/ui/dismiss-keyboard"
 import { useTheme } from "@/theme/theme-provider"
@@ -46,13 +47,14 @@ export default function OwnerLogin() {
 
   return (
     <Screen>
-      <View className="pt-1 pb-1">
+      <View className="flex-row items-center justify-between pt-1 pb-1">
         <Pressable
           onPress={goBack}
           className="w-10 h-10 rounded-full bg-surface border border-line items-center justify-center"
         >
           <ArrowLeft size={18} color={colors.ink} />
         </Pressable>
+        <ThemeToggle />
       </View>
 
       <DismissKeyboard>

@@ -7,6 +7,7 @@ import { ArrowLeft, LogOut, Wallet as WalletIcon, User } from "lucide-react-nati
 import { Text } from "@/components/ui/text"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { api } from "@/lib/api"
 import { getIdentity, signOut, type Identity } from "@/lib/auth"
 import { useCart } from "@/stores/cart"
@@ -48,6 +49,8 @@ export default function Profile() {
         <Text variant="heading" className="text-2xl">
           Profile
         </Text>
+        <View className="flex-1" />
+        <ThemeToggle />
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
