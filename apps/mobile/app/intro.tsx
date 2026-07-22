@@ -67,7 +67,7 @@ const RevealMark = memo(function RevealMark({ src }: { src: ImageSourcePropType 
     <MotiView
       from={{ width: 0 }}
       animate={{ width: REVEAL }}
-      style={{ position: "absolute", left: 0, top: 0, height: WORDMARK_H, overflow: "hidden" }}
+      style={{ position: "absolute", left: 0, top: 0, width: 0, height: WORDMARK_H, overflow: "hidden" }}
     >
       <Image source={src} style={{ width: WORDMARK_W, height: WORDMARK_H }} resizeMode="contain" />
     </MotiView>
@@ -86,6 +86,7 @@ const ShimmerMark = memo(function ShimmerMark({
   return (
     <MotiView
       pointerEvents="none"
+      from={{ opacity: 0 }}
       style={{ position: "absolute", left: 0, top: 0, width: WORDMARK_W, height: WORDMARK_H }}
       animate={{ opacity: on ? SHINE : 0 }}
       transition={{ opacity: { delay: 120, duration: 360, type: "timing" } }}
