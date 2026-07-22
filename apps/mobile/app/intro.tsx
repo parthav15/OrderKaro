@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { memo, useEffect, useRef, useState } from "react"
 import { View, ScrollView, Pressable, Image, useWindowDimensions } from "react-native"
 import { useRouter } from "expo-router"
 import { MotiView } from "moti"
@@ -50,6 +50,36 @@ const REVEAL = BOUNDS.map((b, i) => ({
   duration: 64,
 }))
 const SHINE = [0, 0.45, 0]
+
+const RevealMark = memo(function RevealMark() {
+  return (
+    <MotiView
+      from={{ width: 0 }}
+      animate={{ width: REVEAL }}
+      style={{ position: "absolute", left: 0, top: 0, height: WORDMARK_H, overflow: "hidden" }}
+    >
+      <Image source={WORDMARK} style={{ width: WORDMARK_W, height: WORDMARK_H }} resizeMode="contain" />
+    </MotiView>
+  )
+})
+
+const ShimmerMark = memo(function ShimmerMark({ on }: { on: boolean }) {
+  return (
+    <MotiView
+      pointerEvents="none"
+      style={{ position: "absolute", left: 0, top: 0, width: WORDMARK_W, height: WORDMARK_H }}
+      animate={{ opacity: on ? SHINE : 0 }}
+      transition={{ opacity: { delay: 120, duration: 360, type: "timing" } }}
+    >
+      <Image
+        source={WORDMARK}
+        style={{ width: WORDMARK_W, height: WORDMARK_H }}
+        resizeMode="contain"
+        tintColor="#FFF1C6"
+      />
+    </MotiView>
+  )
+})
 
 export default function Intro() {
   const router = useRouter()
@@ -153,30 +183,8 @@ export default function Intro() {
           transition={{ type: "spring", damping: 18, stiffness: 90 }}
         >
           <View style={{ width: WORDMARK_W, height: WORDMARK_H }}>
-            <MotiView
-              from={{ width: 0 }}
-              animate={{ width: REVEAL }}
-              style={{ position: "absolute", left: 0, top: 0, height: WORDMARK_H, overflow: "hidden" }}
-            >
-              <Image
-                source={WORDMARK}
-                style={{ width: WORDMARK_W, height: WORDMARK_H }}
-                resizeMode="contain"
-              />
-            </MotiView>
-            <MotiView
-              pointerEvents="none"
-              style={{ position: "absolute", left: 0, top: 0, width: WORDMARK_W, height: WORDMARK_H }}
-              animate={{ opacity: phase >= 1 ? SHINE : 0 }}
-              transition={{ opacity: { delay: 120, duration: 360, type: "timing" } }}
-            >
-              <Image
-                source={WORDMARK}
-                style={{ width: WORDMARK_W, height: WORDMARK_H }}
-                resizeMode="contain"
-                tintColor="#FFF1C6"
-              />
-            </MotiView>
+            <RevealMark />
+            <ShimmerMark on={phase >= 1} />
           </View>
         </MotiView>
       </View>
