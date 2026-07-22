@@ -36,6 +36,8 @@ const SLIDES = [
   },
 ]
 
+const SHINE = [0, 0.6, 0]
+
 export default function Intro() {
   const router = useRouter()
   const { colors } = useTheme()
@@ -146,6 +148,19 @@ export default function Intro() {
             transition={{ delay: 430, type: "timing", duration: 500 }}
           >
             <Text variant="heading" style={{ fontSize: 48, lineHeight: 52, color: "#D9B24A" }}>
+              M
+            </Text>
+          </MotiView>
+          <MotiView
+            pointerEvents="none"
+            style={{ position: "absolute", left: 0, top: 0, flexDirection: "row" }}
+            animate={{ opacity: phase >= 1 ? SHINE : 0 }}
+            transition={{ opacity: { delay: 540, duration: 320, type: "timing" } }}
+          >
+            <Text variant="heading" style={{ fontSize: 48, lineHeight: 52, color: "#FBEFC2" }}>
+              V
+            </Text>
+            <Text variant="heading" style={{ fontSize: 48, lineHeight: 52, color: "#FBEFC2" }}>
               M
             </Text>
           </MotiView>
