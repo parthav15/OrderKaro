@@ -198,6 +198,7 @@ model MenuItem {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   model3dUrl       String?
+  model3dUsdzUrl   String?
   model3dPosterUrl String?
 
   customizations Customization[]

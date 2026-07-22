@@ -2,6 +2,7 @@ import { z } from "zod"
 
 export const menuItemModelSchema = z.object({
   model3dUrl: z.string().url().nullable(),
+  model3dUsdzUrl: z.string().url().nullable().optional(),
   model3dPosterUrl: z.string().url().nullable().optional(),
 })
 

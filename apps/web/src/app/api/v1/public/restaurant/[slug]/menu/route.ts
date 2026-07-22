@@ -99,6 +99,7 @@ export async function GET(
             items: category.items.map((item) => ({
               ...item,
               model3dUrl: null,
+              model3dUsdzUrl: null,
               model3dPosterUrl: null,
             })),
           })),

@@ -36,9 +36,16 @@ export async function PUT(
       where: { id: itemId },
       data: {
         model3dUrl: data.model3dUrl,
+        model3dUsdzUrl: data.model3dUsdzUrl ?? null,
         model3dPosterUrl: data.model3dPosterUrl ?? null,
       },
-      select: { id: true, name: true, model3dUrl: true, model3dPosterUrl: true },
+      select: {
+        id: true,
+        name: true,
+        model3dUrl: true,
+        model3dUsdzUrl: true,
+        model3dPosterUrl: true,
+      },
     })
 
     return success(updated)
