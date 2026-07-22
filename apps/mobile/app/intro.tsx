@@ -3,8 +3,8 @@ import { View, ScrollView, Pressable, useWindowDimensions } from "react-native"
 import { useRouter } from "expo-router"
 import { MotiView } from "moti"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import * as SecureStore from "expo-secure-store"
 import * as Haptics from "expo-haptics"
+import { markIntroShown } from "@/lib/intro-session"
 import { Sparkles, ScanLine, UtensilsCrossed, ArrowRight } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
@@ -64,8 +64,8 @@ export default function Intro() {
   const centerShift = height / 2 - anchorTop - 26
   const shown = phase >= 2
 
-  async function finish() {
-    await SecureStore.setItemAsync("vm-intro-seen", "1")
+  function finish() {
+    markIntroShown()
     router.replace("/")
   }
 

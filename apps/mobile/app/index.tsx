@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { View, Pressable } from "react-native"
 import { useRouter, type Href } from "expo-router"
 import { MotiView } from "moti"
-import * as SecureStore from "expo-secure-store"
+import { introShownThisSession } from "@/lib/intro-session"
 import { UtensilsCrossed, Store, ChefHat, ArrowUpRight } from "lucide-react-native"
 import { Screen } from "@/components/ui/screen"
 import { Text } from "@/components/ui/text"
@@ -84,14 +84,11 @@ function RoleCard({ role, index, onPress }: { role: Role; index: number; onPress
 
 export default function Entry() {
   const router = useRouter()
-  const [ready, setReady] = useState(false)
+  const [ready] = useState(() => introShownThisSession())
 
   useEffect(() => {
-    SecureStore.getItemAsync("vm-intro-seen").then((seen) => {
-      if (seen) setReady(true)
-      else router.replace("/intro")
-    })
-  }, [])
+    if (!ready) router.replace("/intro")
+  }, [ready])
 
   if (!ready) return <View className="flex-1 bg-canvas" />
 
