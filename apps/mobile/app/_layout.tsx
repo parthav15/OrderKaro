@@ -1,6 +1,6 @@
 import "../global.css"
-import { useEffect, useState } from "react"
-import { View, StyleSheet } from "react-native"
+import { useEffect, useRef, useState } from "react"
+import { View, StyleSheet, Animated } from "react-native"
 import { Stack } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
@@ -34,6 +34,8 @@ export default function RootLayout() {
     Inter_700Bold,
   })
   const [splashDone, setSplashDone] = useState(false)
+  const opacity = useRef(new Animated.Value(1)).current
+  const hiding = useRef(false)
 
   const player = useVideoPlayer(require("../assets/splash-anim.mp4"), (p) => {
     p.loop = false
@@ -46,16 +48,23 @@ export default function RootLayout() {
   }, [fontsLoaded])
 
   useEffect(() => {
+    function hide() {
+      if (hiding.current) return
+      hiding.current = true
+      Animated.timing(opacity, { toValue: 0, duration: 420, useNativeDriver: true }).start(() =>
+        setSplashDone(true)
+      )
+    }
     const sub = player.addListener("playToEnd", () => {
       player.pause()
-      setSplashDone(true)
+      hide()
     })
-    const timer = setTimeout(() => setSplashDone(true), 3600)
+    const timer = setTimeout(hide, 2900)
     return () => {
       sub.remove()
       clearTimeout(timer)
     }
-  }, [player])
+  }, [player, opacity])
 
   if (!fontsLoaded) return null
 
@@ -74,7 +83,7 @@ export default function RootLayout() {
               }}
             />
             {!splashDone ? (
-              <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+              <Animated.View style={[StyleSheet.absoluteFillObject, { opacity }]} pointerEvents="none">
                 <View style={[StyleSheet.absoluteFillObject, { backgroundColor: "#141110" }]} />
                 <VideoView
                   player={player}
@@ -82,7 +91,7 @@ export default function RootLayout() {
                   contentFit="cover"
                   nativeControls={false}
                 />
-              </View>
+              </Animated.View>
             ) : null}
           </ThemeProvider>
         </QueryClientProvider>
