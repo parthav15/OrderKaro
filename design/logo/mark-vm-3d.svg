@@ -9,8 +9,8 @@
   </defs>
   <ellipse cx="264" cy="432" rx="176" ry="22" fill="#2E0B14" opacity="0.34"/>
   <g fill="none" stroke-linecap="round" stroke-linejoin="round" transform="translate(42 126) scale(2.06)">
-    <path d="M12 15 L52 95 L92 15 M120 15 L120 113 M196 15 L196 113 M120 20 L158 74 L196 20" transform="translate(10 12)" stroke="#54101D" stroke-width="20"/>
-    <path d="M12 15 L52 95 L92 15 M120 15 L120 113 M196 15 L196 113 M120 20 L158 74 L196 20" stroke="url(#vmFace)" stroke-width="20"/>
-    <path d="M12 15 L52 95 L92 15 M120 15 L120 113 M196 15 L196 113 M120 20 L158 74 L196 20" transform="translate(-2 -3)" stroke="#EAC978" stroke-width="3" opacity="0.92"/>
+    <path d="M12 15 L52 113 L92 15 M120 15 L120 113 M196 15 L196 113 M120 20 L158 74 L196 20" transform="translate(10 12)" stroke="#54101D" stroke-width="20"/>
+    <path d="M12 15 L52 113 L92 15 M120 15 L120 113 M196 15 L196 113 M120 20 L158 74 L196 20" stroke="url(#vmFace)" stroke-width="20"/>
+    <path d="M12 15 L52 113 L92 15 M120 15 L120 113 M196 15 L196 113 M120 20 L158 74 L196 20" transform="translate(-2 -3)" stroke="#EAC978" stroke-width="3" opacity="0.92"/>
   </g>
 </svg>

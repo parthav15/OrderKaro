@@ -26,9 +26,9 @@
     <ellipse cx="194" cy="166" rx="106" ry="66" fill="url(#lckSpec)" transform="rotate(-26 194 166)"/>
     <circle cx="256" cy="246" r="122" fill="none" stroke="url(#lckRim)" stroke-width="7" opacity="0.9"/>
     <g fill="none" stroke-linecap="round" stroke-linejoin="round" transform="translate(157 187) scale(0.95)">
-      <path d="M12 15 L52 95 L92 15 M120 15 L120 113 M196 15 L196 113 M120 20 L158 74 L196 20" transform="translate(6 8)" stroke="#6E4E14" stroke-width="17.5"/>
-      <path d="M12 15 L52 95 L92 15 M120 15 L120 113 M196 15 L196 113 M120 20 L158 74 L196 20" stroke="url(#lckVM)" stroke-width="17.5"/>
-      <path d="M12 15 L52 95 L92 15 M120 15 L120 113 M196 15 L196 113 M120 20 L158 74 L196 20" transform="translate(-2 -3)" stroke="#FCEFC2" stroke-width="3.5"/>
+      <path d="M12 15 L52 113 L92 15 M120 15 L120 113 M196 15 L196 113 M120 20 L158 74 L196 20" transform="translate(6 8)" stroke="#6E4E14" stroke-width="17.5"/>
+      <path d="M12 15 L52 113 L92 15 M120 15 L120 113 M196 15 L196 113 M120 20 L158 74 L196 20" stroke="url(#lckVM)" stroke-width="17.5"/>
+      <path d="M12 15 L52 113 L92 15 M120 15 L120 113 M196 15 L196 113 M120 20 L158 74 L196 20" transform="translate(-2 -3)" stroke="#FCEFC2" stroke-width="3.5"/>
     </g>
   </g>
   <text x="290" y="150" font-family="'Playfair Display', Georgia, serif" font-size="90" letter-spacing="0.5"><tspan font-style="italic" fill="#A31D33">Vision</tspan><tspan fill="#1A1512"> Menu</tspan></text>
