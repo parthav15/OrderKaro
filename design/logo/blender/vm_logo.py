@@ -128,7 +128,7 @@ area("Key", (-2.6, -2.6, 3.0), 380, 4.0, (1.0, 0.93, 0.80))
 area("Fill", (3.0, -1.6, 0.7), 110, 3.6, (0.86, 0.84, 1.0))
 area("RimGold", (1.8, 2.6, 1.7), 430, 2.4, (1.0, 0.76, 0.38))
 
-if MODE != "icon" and not GOLD:
+if MODE != "icon" and not WM:
     bpy.ops.mesh.primitive_plane_add(size=16, location=(0, 0, -0.64))
     ground = bpy.context.active_object
     ground.is_shadow_catcher = True

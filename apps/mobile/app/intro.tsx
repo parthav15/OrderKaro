@@ -2,6 +2,7 @@ import { memo, useEffect, useRef, useState } from "react"
 import { View, ScrollView, Pressable, Image, useWindowDimensions } from "react-native"
 import { useRouter } from "expo-router"
 import { MotiView } from "moti"
+import { Easing } from "react-native-reanimated"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import * as Haptics from "expo-haptics"
 import { markIntroShown } from "@/lib/intro-session"
@@ -180,7 +181,7 @@ export default function Intro() {
         <MotiView
           from={{ translateY: centerShift, scale: BIG }}
           animate={{ translateY: phase >= 1 ? 0 : centerShift, scale: phase >= 1 ? 1 : BIG }}
-          transition={{ type: "spring", damping: 18, stiffness: 90 }}
+          transition={{ type: "timing", duration: 640, easing: Easing.out(Easing.cubic) }}
         >
           <View style={{ width: WORDMARK_W, height: WORDMARK_H }}>
             <RevealMark />
