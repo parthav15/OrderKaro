@@ -102,16 +102,10 @@ export default function Entry() {
           from={{ opacity: 0, translateY: -10 }}
           animate={{ opacity: 1, translateY: 0 }}
           transition={{ type: "timing", duration: 600 }}
-          className="flex-row items-center gap-2 pt-2"
+          className="items-center pt-2"
         >
-          <MotiView
-            from={{ opacity: 0.35 }}
-            animate={{ opacity: 1 }}
-            transition={{ loop: true, type: "timing", duration: 1400 }}
-            className="w-1.5 h-1.5 rounded-full bg-accent"
-          />
-          <Text className="text-accent tracking-[5px] text-[11px] font-sans-bold">
-            VISION MENU
+          <Text variant="heading" style={{ fontSize: 44, lineHeight: 48, color: "#D9B24A" }}>
+            VM
           </Text>
         </MotiView>
 

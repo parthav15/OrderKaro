@@ -4,6 +4,7 @@ import { useRouter } from "expo-router"
 import { MotiView } from "moti"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import * as SecureStore from "expo-secure-store"
+import * as Haptics from "expo-haptics"
 import { Sparkles, ScanLine, UtensilsCrossed, ArrowRight } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
@@ -49,9 +50,11 @@ export default function Intro() {
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase(1), 980)
+    const tH = setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light), 1520)
     const t2 = setTimeout(() => setPhase(2), 1680)
     return () => {
       clearTimeout(t1)
+      clearTimeout(tH)
       clearTimeout(t2)
     }
   }, [])
@@ -86,37 +89,42 @@ export default function Intro() {
           const active = i === index
           const revealed = i !== 0 || shown
           const Icon = s.Icon
+          const step = (delay: number) => ({
+            from: { opacity: 0, translateY: 24 },
+            animate: { opacity: revealed ? 1 : 0, translateY: revealed ? 0 : 24 },
+            transition: { delay, type: "timing" as const, duration: 500 },
+          })
           return (
             <View key={s.key} style={{ width }} className="flex-1 justify-center px-8">
               <MotiView
-                animate={{
-                  opacity: revealed ? (active ? 1 : 0.25) : 0,
-                  translateY: revealed ? 0 : 28,
-                  scale: active ? 1 : 0.96,
-                }}
-                transition={{ type: "timing", duration: 520 }}
+                animate={{ opacity: active ? 1 : 0.25, scale: active ? 1 : 0.96 }}
+                transition={{ type: "timing", duration: 400 }}
               >
-                <View className="w-20 h-20 rounded-[26px] bg-surface border border-line items-center justify-center mb-9">
-                  <MotiView
-                    from={{ opacity: 0.4, scale: 0.9 }}
-                    animate={{ opacity: active ? 1 : 0.4, scale: active ? 1 : 0.9 }}
-                    transition={{ type: "spring", damping: 14, stiffness: 160 }}
-                  >
+                <MotiView {...step(0)}>
+                  <View className="w-20 h-20 rounded-[26px] bg-surface border border-line items-center justify-center mb-9">
                     <Icon size={34} color={colors.accent} />
-                  </MotiView>
-                </View>
-                <Text className="text-accent tracking-[4px] text-xs font-sans-bold mb-3">
-                  {s.kicker}
-                </Text>
-                <Text variant="display" className="text-[52px] leading-[1.03]">
-                  {s.line1}
-                </Text>
-                <Text variant="display" className="text-[52px] leading-[1.03] text-primary mb-5">
-                  {s.line2}
-                </Text>
-                <Text variant="muted" className="text-base leading-relaxed pr-6">
-                  {s.body}
-                </Text>
+                  </View>
+                </MotiView>
+                <MotiView {...step(80)}>
+                  <Text className="text-accent tracking-[4px] text-xs font-sans-bold mb-3">
+                    {s.kicker}
+                  </Text>
+                </MotiView>
+                <MotiView {...step(150)}>
+                  <Text variant="display" className="text-[52px] leading-[1.03]">
+                    {s.line1}
+                  </Text>
+                </MotiView>
+                <MotiView {...step(210)}>
+                  <Text variant="display" className="text-[52px] leading-[1.03] text-primary mb-5">
+                    {s.line2}
+                  </Text>
+                </MotiView>
+                <MotiView {...step(280)}>
+                  <Text variant="muted" className="text-base leading-relaxed pr-6">
+                    {s.body}
+                  </Text>
+                </MotiView>
               </MotiView>
             </View>
           )
