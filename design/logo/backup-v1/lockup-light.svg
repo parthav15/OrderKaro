@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 140" role="img" aria-label="Vision Menu logo lockup on light canvas">
+  <title>Vision Menu — lockup (light canvas)</title>
+  <rect width="1120" height="140" fill="#F6F1EA"/>
+  <g transform="translate(13.55,7.31) scale(0.9796)" fill="none" stroke="#A31D33" stroke-width="17.5" stroke-linecap="butt" stroke-linejoin="miter">
+    <path d="M 12 15 L 52 95 L 92 15"/>
+    <path d="M 120 15 L 120 113"/>
+    <path d="M 196 15 L 196 113"/>
+    <path d="M 120 20 L 158 74 L 196 20"/>
+  </g>
+  <text x="256" y="118" font-family="'Inter','Helvetica Neue',Helvetica,Arial,sans-serif" font-weight="700" font-size="128" letter-spacing="-3"><tspan fill="#1A1512">Vision</tspan><tspan fill="#A31D33"> Menu</tspan></text>
+</svg>

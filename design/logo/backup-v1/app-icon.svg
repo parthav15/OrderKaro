@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Vision Menu app icon">
+  <title>Vision Menu — app icon</title>
+  <defs>
+    <radialGradient id="vmTile" cx="50%" cy="36%" r="78%">
+      <stop offset="0" stop-color="#BE2540"/>
+      <stop offset="0.55" stop-color="#A31D33"/>
+      <stop offset="1" stop-color="#8E1A2D"/>
+    </radialGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#vmTile)"/>
+  <rect x="64" y="64" width="896" height="896" rx="176" fill="none" stroke="#D9B24A" stroke-width="4" opacity="0.55"/>
+  <g transform="translate(201.2,323.6) scale(3.0)" fill="none" stroke="#FFF7F3" stroke-width="17.5" stroke-linecap="butt" stroke-linejoin="miter">
+    <path d="M 12 15 L 52 95 L 92 15"/>
+    <path d="M 120 15 L 120 113"/>
+    <path d="M 196 15 L 196 113"/>
+    <path d="M 120 20 L 158 74 L 196 20"/>
+  </g>
+</svg>

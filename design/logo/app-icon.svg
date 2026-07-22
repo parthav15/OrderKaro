@@ -1,0 +1,40 @@
+<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Vision Menu app icon">
+  <title>Vision Menu — app icon</title>
+  <defs>
+    <linearGradient id="icnTile" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0%" stop-color="#8E1A2D"/>
+      <stop offset="100%" stop-color="#360D16"/>
+    </linearGradient>
+    <radialGradient id="icnGlow" cx="50%" cy="40%" r="62%">
+      <stop offset="0%" stop-color="#B92238" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#B92238" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="icnDome" cx="38%" cy="30%" r="82%">
+      <stop offset="0%" stop-color="#CB374F"/>
+      <stop offset="42%" stop-color="#A31D33"/>
+      <stop offset="100%" stop-color="#6C1524"/>
+    </radialGradient>
+    <linearGradient id="icnRim" x1="0.2" y1="0" x2="0.4" y2="1">
+      <stop offset="0%" stop-color="#EDCE77"/>
+      <stop offset="45%" stop-color="#D9B24A"/>
+      <stop offset="100%" stop-color="#976F1D"/>
+    </linearGradient>
+    <radialGradient id="icnPupil" cx="40%" cy="33%" r="74%">
+      <stop offset="0%" stop-color="#F8E099"/>
+      <stop offset="55%" stop-color="#D9B24A"/>
+      <stop offset="100%" stop-color="#A9822B"/>
+    </radialGradient>
+    <radialGradient id="icnSpec" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFF7F3" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#FFF7F3" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="228" fill="url(#icnTile)"/>
+  <rect width="1024" height="1024" rx="228" fill="url(#icnGlow)"/>
+  <circle cx="512" cy="504" r="300" fill="url(#icnRim)"/>
+  <circle cx="512" cy="504" r="272" fill="url(#icnDome)"/>
+  <circle cx="512" cy="504" r="150" fill="none" stroke="url(#icnRim)" stroke-width="14"/>
+  <circle cx="512" cy="504" r="120" fill="url(#icnPupil)"/>
+  <path d="M 464 452 L 512 566 L 560 452" fill="none" stroke="#5E1220" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+  <ellipse cx="420" cy="384" rx="158" ry="99" fill="url(#icnSpec)" transform="rotate(-26 420 384)"/>
+</svg>

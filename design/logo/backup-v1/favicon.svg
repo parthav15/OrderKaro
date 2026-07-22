@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Vision Menu favicon">
+  <title>Vision Menu — favicon</title>
+  <rect width="128" height="128" rx="28" fill="#A31D33"/>
+  <g transform="translate(9.7,31.1) scale(0.524)" fill="none" stroke="#FFF7F3" stroke-width="17.5" stroke-linecap="butt" stroke-linejoin="miter">
+    <path d="M 12 15 L 52 95 L 92 15"/>
+    <path d="M 120 15 L 120 113"/>
+    <path d="M 196 15 L 196 113"/>
+    <path d="M 120 20 L 158 74 L 196 20"/>
+  </g>
+</svg>

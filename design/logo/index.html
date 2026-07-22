@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Vision Menu — Logo Concepts (3D)</title>
+<style>
+  :root { font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  body { margin: 0; background: #0d0b0a; color: #F6EFE7; }
+  header { padding: 48px 40px 24px; }
+  h1 { font-family: Georgia, "Times New Roman", serif; font-size: 34px; margin: 0 0 6px; }
+  h1 em { color: #D9B24A; font-style: italic; }
+  p.sub { color: #A89C90; margin: 0; font-size: 14px; letter-spacing: 3px; text-transform: uppercase; }
+  .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+  @media (max-width: 820px) { .panels { grid-template-columns: 1fr; } }
+  .panel { padding: 40px; }
+  .dark { background: #141110; }
+  .light { background: #F6F1EA; color: #1A1512; }
+  .label { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; opacity: 0.6; margin: 0 0 28px; }
+  .row { display: flex; align-items: center; gap: 34px; flex-wrap: wrap; margin-bottom: 44px; }
+  .name { width: 100%; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; opacity: 0.55; margin-bottom: 6px; }
+  .rec { color: #D9B24A; }
+  img.mark { display: block; }
+  .icon { border-radius: 44px; box-shadow: 0 24px 60px -20px rgba(0,0,0,0.6); }
+  .lockup { width: 420px; max-width: 100%; }
+  footer { padding: 32px 40px 64px; color: #A89C90; font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Vision <em>Menu</em> — logo concepts</h1>
+  <p class="sub">3D direction · Bordeaux Noir</p>
+</header>
+
+<div class="panels">
+  <section class="panel dark">
+    <p class="label">On dark canvas</p>
+
+    <div class="row"><span class="name rec">1 · The Lens (recommended)</span>
+      <img class="mark" src="./mark.svg" width="168" height="168"/>
+      <img class="mark" src="./mark.svg" width="72" height="72"/>
+      <img class="mark" src="./mark.svg" width="36" height="36"/>
+    </div>
+
+    <div class="row"><span class="name">2 · Extruded V</span>
+      <img class="mark" src="./mark-v-3d.svg" width="168" height="168"/>
+      <img class="mark" src="./mark-v-3d.svg" width="72" height="72"/>
+      <img class="mark" src="./mark-v-3d.svg" width="36" height="36"/>
+    </div>
+
+    <div class="row"><span class="name">3 · Cloche</span>
+      <img class="mark" src="./mark-cloche.svg" width="168" height="168"/>
+      <img class="mark" src="./mark-cloche.svg" width="72" height="72"/>
+      <img class="mark" src="./mark-cloche.svg" width="36" height="36"/>
+    </div>
+
+    <div class="row"><span class="name">App icon</span>
+      <img class="mark icon" src="./app-icon.svg" width="200" height="200"/>
+      <img class="mark icon" src="./app-icon.svg" width="96" height="96"/>
+    </div>
+  </section>
+
+  <section class="panel light">
+    <p class="label">On light canvas</p>
+
+    <div class="row"><span class="name rec">1 · The Lens (recommended)</span>
+      <img class="mark" src="./mark.svg" width="168" height="168"/>
+      <img class="mark" src="./mark.svg" width="72" height="72"/>
+      <img class="mark" src="./mark.svg" width="36" height="36"/>
+    </div>
+
+    <div class="row"><span class="name">2 · Extruded V</span>
+      <img class="mark" src="./mark-v-3d.svg" width="168" height="168"/>
+      <img class="mark" src="./mark-v-3d.svg" width="72" height="72"/>
+      <img class="mark" src="./mark-v-3d.svg" width="36" height="36"/>
+    </div>
+
+    <div class="row"><span class="name">3 · Cloche</span>
+      <img class="mark" src="./mark-cloche.svg" width="168" height="168"/>
+      <img class="mark" src="./mark-cloche.svg" width="72" height="72"/>
+      <img class="mark" src="./mark-cloche.svg" width="36" height="36"/>
+    </div>
+
+    <div class="row"><span class="name">Lockup</span>
+      <img class="lockup" src="./lockup.svg"/>
+    </div>
+  </section>
+</div>
+
+<footer>Open any .svg directly to inspect. Backup of the previous set is in <code>backup-v1/</code>.</footer>
+</body>
+</html>
