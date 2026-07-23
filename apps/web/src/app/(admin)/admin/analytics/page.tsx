@@ -503,7 +503,7 @@ export default function AnalyticsPage() {
         >
           <div>
             <h2 className="text-xl font-bold text-brand-black">Menu Views</h2>
-            <p className="text-sm text-neutral-400">How students are browsing your menu</p>
+            <p className="text-sm text-neutral-400">How customers are browsing your menu</p>
           </div>
           {!menuViewsUpsell && (
             <div className="flex items-center gap-1 bg-neutral-100 rounded-xl p-1">
@@ -664,7 +664,7 @@ export default function AnalyticsPage() {
                 <Card>
                   <CardHeader>
                     <h2 className="text-lg font-bold text-brand-black">Most Viewed Items</h2>
-                    <p className="text-sm text-neutral-400">Menu items students look at the most</p>
+                    <p className="text-sm text-neutral-400">Menu items customers look at the most</p>
                   </CardHeader>
                   <CardContent>
                     {menuViewsLoading && (

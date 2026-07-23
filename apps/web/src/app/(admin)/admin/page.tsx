@@ -467,7 +467,7 @@ export default function AdminDashboard() {
 
             <div>
               <label className="text-sm font-bold text-[#0A0A0A] block mb-2.5">
-                Amount Received from Student
+                Amount Received from Customer
               </label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 font-bold text-lg">
@@ -499,7 +499,7 @@ export default function AdminDashboard() {
                   <span className="font-bold text-[#0A0A0A]">
                     {formatPrice(changeAmount)}
                   </span>{" "}
-                  will be added to the student&apos;s wallet
+                  will be added to the customer&apos;s wallet
                 </p>
               </motion.div>
             )}

@@ -29,7 +29,7 @@ export function EmptyState({ onAdd, onBulkAdd }: EmptyStateProps) {
           </h2>
           <p className="text-neutral-500 max-w-md leading-relaxed">
             A table is the unit of presence in your restaurant. Each one gets a
-            unique QR that students scan to order. Add one — or seed twenty in
+            unique QR that customers scan to order. Add one — or seed twenty in
             a single tap.
           </p>
           <div className="flex flex-wrap gap-3 pt-2">

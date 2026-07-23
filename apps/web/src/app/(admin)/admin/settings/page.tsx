@@ -27,6 +27,13 @@ import { BRAND_COLOR_PRESETS, DEFAULT_BRAND_COLOR, readableTextColor } from "@/l
 
 const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/
 
+function resolveMenuBase() {
+  const configured = process.env.NEXT_PUBLIC_APP_URL
+  if (configured) return configured.replace(/\/$/, "")
+  if (typeof window !== "undefined") return window.location.origin
+  return ""
+}
+
 export default function SettingsPage() {
   const queryClient = useQueryClient()
   const [restaurantId, setRestaurantId] = useState<string>("")
@@ -233,7 +240,7 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-brand-black">Menu URL Slug</h2>
-                  <p className="text-sm text-neutral-400">The URL path students use to access your menu</p>
+                  <p className="text-sm text-neutral-400">The URL path customers use to access your menu</p>
                 </div>
               </div>
             </CardHeader>
@@ -261,12 +268,12 @@ export default function SettingsPage() {
                 >
                   <Link2 className="w-4 h-4 text-neutral-400 shrink-0" />
                   <p className="text-sm text-neutral-600 truncate flex-1">
-                    order-karo-frontend.vercel.app/<strong>{form.slug}</strong>/menu
+                    {resolveMenuBase().replace(/^https?:\/\//, "")}/<strong>{form.slug}</strong>/menu
                   </p>
                   <button
                     type="button"
                     onClick={() => {
-                      navigator.clipboard.writeText(`https://order-karo-frontend.vercel.app/${form.slug}/menu`)
+                      navigator.clipboard.writeText(`${resolveMenuBase()}/${form.slug}/menu`)
                       toast.success("URL copied!")
                     }}
                     className="p-1.5 rounded-lg hover:bg-neutral-200 transition-colors shrink-0"

@@ -1,46 +1,32 @@
-"use client"
-
 import "./globals.css"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { useState, useEffect } from "react"
-import { Toaster } from "sonner"
-import { PwaInstallBanner } from "@/components/consumer/pwa-install-banner"
-import { registerServiceWorker } from "@/lib/pwa"
+import type { Metadata } from "next"
+import { Providers } from "./providers"
+
+export const metadata: Metadata = {
+  title: {
+    default: "Vision Menu",
+    template: "Vision Menu — %s",
+  },
+  applicationName: "Vision Menu",
+  description: "Premium restaurant ordering, reimagined",
+  appleWebApp: {
+    title: "Vision Menu",
+    capable: true,
+    statusBarStyle: "default",
+  },
+}
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: { staleTime: 30_000, retry: 1 },
-        },
-      })
-  )
-
-  useEffect(() => {
-    if (process.env.NODE_ENV === "production") {
-      registerServiceWorker()
-      return
-    }
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .getRegistrations()
-        .then((regs) => regs.forEach((r) => r.unregister()))
-    }
-  }, [])
-
   return (
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         <meta name="theme-color" content="#141110" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Vision Menu" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
         <link rel="icon" href="/icon-192.png" sizes="192x192" type="image/png" />
@@ -53,20 +39,7 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <QueryClientProvider client={queryClient}>
-          {children}
-          <PwaInstallBanner />
-          <Toaster
-            position="top-center"
-            toastOptions={{
-              style: {
-                background: "#0A0A0A",
-                color: "#FFFFFF",
-                border: "none",
-              },
-            }}
-          />
-        </QueryClientProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   )
