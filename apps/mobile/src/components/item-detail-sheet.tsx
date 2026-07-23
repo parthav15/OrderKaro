@@ -136,7 +136,7 @@ export function ItemDetailSheet({
                     className="flex-row items-center gap-2 self-start rounded-full border border-accent/40 px-4 py-2 mb-6"
                   >
                     <Box size={16} color={colors.accent} />
-                    <Text className="text-accent font-sans-semibold text-sm">View in 3D / AR</Text>
+                    <Text className="text-accent font-sans-semibold text-sm">View in 3D</Text>
                   </Pressable>
                 ) : null}
 

@@ -1,7 +1,7 @@
-import { View, Pressable, Linking, Platform } from "react-native"
+import { View, Pressable } from "react-native"
 import { WebView } from "react-native-webview"
 import { MotiView } from "moti"
-import { X, Scan } from "lucide-react-native"
+import { X } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { useTheme } from "@/theme/theme-provider"
 
@@ -14,31 +14,15 @@ function previewHtml(modelUrl: string, posterUrl: string | null, bg: string) {
 </body></html>`
 }
 
-function launchAr(glbUrl: string, usdzUrl: string | null | undefined, title: string) {
-  if (Platform.OS === "android") {
-    const query = `file=${encodeURIComponent(glbUrl)}&mode=ar_preferred&title=${encodeURIComponent(title)}&resizable=false`
-    const intent = `intent://arvr.google.com/scene-viewer/1.0?${query}#Intent;scheme=https;package=com.google.ar.core;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(glbUrl)};end;`
-    Linking.openURL(intent).catch(() => {})
-    return
-  }
-  if (usdzUrl) Linking.openURL(usdzUrl).catch(() => {})
-}
-
-export function ArViewer({
-  modelUrl,
-  usdzUrl,
-  posterUrl,
-  itemName,
-  onClose,
-}: {
+export function ArViewer(props: {
   modelUrl: string
   usdzUrl?: string | null
   posterUrl: string | null
   itemName: string
   onClose: () => void
 }) {
+  const { modelUrl, posterUrl, itemName, onClose } = props
   const { colors } = useTheme()
-  const canLaunchAr = Platform.OS === "android" || !!usdzUrl
 
   return (
     <MotiView
@@ -64,28 +48,9 @@ export function ArViewer({
         allowsInlineMediaPlayback
         originWhitelist={["*"]}
       />
-      <View className="absolute bottom-0 left-0 right-0 items-center pb-12 pt-6">
-        {canLaunchAr ? (
-          <>
-            <Pressable
-              onPress={() => launchAr(modelUrl, usdzUrl, itemName)}
-              className="flex-row items-center gap-2.5 rounded-full bg-primary px-8 py-4"
-            >
-              <Scan size={20} color={colors.onPrimary} />
-              <Text className="font-sans-bold text-base" style={{ color: colors.onPrimary }}>
-                View on your table
-              </Text>
-            </Pressable>
-            <Text variant="muted" className="text-xs mt-3">
-              Point your camera at a flat surface
-            </Text>
-          </>
-        ) : (
-          <Text variant="muted" className="text-center text-xs px-8">
-            Drag to preview · open on your phone to place it on your table
-          </Text>
-        )}
-      </View>
+      <Text variant="muted" className="absolute bottom-10 left-0 right-0 text-center text-xs px-8">
+        Drag to rotate to preview in 3D
+      </Text>
     </MotiView>
   )
 }
