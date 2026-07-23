@@ -120,7 +120,7 @@ export function ArViewer({
             >
               <button
                 slot="ar-button"
-                style={{ backgroundColor: "#A31D33" }}
+                style={{ backgroundColor: "rgb(var(--brand-red))" }}
                 className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-full px-6 py-3.5 text-white font-bold text-sm shadow-xl"
               >
                 <Scan className="w-4 h-4" />

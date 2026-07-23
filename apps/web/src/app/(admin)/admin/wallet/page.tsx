@@ -80,15 +80,15 @@ function StatCard({ stat, index }: { stat: AnalyticsStat; index: number }) {
         <CardContent className="py-6">
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
+              <p className="text-xs font-bold text-muted uppercase tracking-wider">
                 {stat.label}
               </p>
-              <p className={`text-3xl font-extrabold mt-2 ${stat.highlight ? "text-brand-red" : "text-brand-black"}`}>
+              <p className={`text-3xl font-extrabold mt-2 ${stat.highlight ? "text-brand-red" : "text-ink"}`}>
                 {stat.value}
               </p>
-              <p className="text-sm text-neutral-400 mt-1">{stat.subtext}</p>
+              <p className="text-sm text-muted mt-1">{stat.subtext}</p>
             </div>
-            <div className={`p-3 rounded-2xl ${stat.highlight ? "bg-brand-red/10 text-brand-red" : "bg-neutral-100 text-neutral-500"}`}>
+            <div className={`p-3 rounded-2xl ${stat.highlight ? "bg-brand-red/10 text-brand-red" : "bg-surface-elevated text-muted"}`}>
               {stat.icon}
             </div>
           </div>
@@ -236,16 +236,16 @@ export default function WalletManagement() {
             <div className="w-10 h-10 rounded-xl bg-brand-red/10 flex items-center justify-center">
               <Wallet className="w-5 h-5 text-brand-red" />
             </div>
-            <h1 className="text-3xl font-extrabold text-brand-black">Wallet Management</h1>
+            <h1 className="text-3xl font-extrabold text-ink">Wallet Management</h1>
           </div>
-          <p className="text-neutral-500">Approve recharge requests and manage customer balances</p>
+          <p className="text-muted">Approve recharge requests and manage customer balances</p>
         </div>
         <div className="flex items-center gap-3">
           {restaurants && restaurants.length > 1 && (
             <select
               value={restaurantId}
               onChange={(e) => setRestaurantId(e.target.value)}
-              className="px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
+              className="px-4 py-3 rounded-xl border border-line text-sm focus:outline-none focus:border-brand-red"
             >
               {restaurants.map((c: any) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
@@ -264,13 +264,13 @@ export default function WalletManagement() {
         ))}
       </div>
 
-      <div className="flex gap-1 mb-6 border-b border-neutral-100">
+      <div className="flex gap-1 mb-6 border-b border-line">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`relative px-5 py-3 text-sm font-bold transition-colors ${
-              activeTab === tab.id ? "text-brand-black" : "text-neutral-400 hover:text-neutral-600"
+              activeTab === tab.id ? "text-ink" : "text-muted hover:text-muted"
             }`}
           >
             <span className="flex items-center gap-2">
@@ -284,7 +284,7 @@ export default function WalletManagement() {
             {activeTab === tab.id && (
               <motion.div
                 layoutId="wallet-tab-indicator"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-black rounded-full"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-ink rounded-full"
               />
             )}
           </button>
@@ -301,10 +301,10 @@ export default function WalletManagement() {
             transition={{ duration: 0.15 }}
           >
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-bold text-brand-black">Recent Transactions</h2>
+              <h2 className="text-xl font-bold text-ink">Recent Transactions</h2>
               <button
                 onClick={() => queryClient.invalidateQueries({ queryKey: ["wallet-activity"] })}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-neutral-100 transition-colors text-sm font-semibold text-neutral-600"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-surface-elevated transition-colors text-sm font-semibold text-muted"
               >
                 <RefreshCw className="w-4 h-4" /> Refresh
               </button>
@@ -313,16 +313,16 @@ export default function WalletManagement() {
             {activityLoading && (
               <div className="space-y-3">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="h-20 rounded-xl bg-neutral-100 animate-pulse" />
+                  <div key={i} className="h-20 rounded-xl bg-surface-elevated animate-pulse" />
                 ))}
               </div>
             )}
 
             {!activityLoading && (!activityData || activityData.length === 0) && (
-              <div className="text-center py-20 border-2 border-dashed border-neutral-200 rounded-2xl">
-                <TrendingUp className="w-14 h-14 text-neutral-200 mx-auto mb-4" />
-                <h3 className="text-lg font-bold text-brand-black mb-1">No transactions yet</h3>
-                <p className="text-neutral-400 text-sm">Wallet activity will appear here</p>
+              <div className="text-center py-20 border-2 border-dashed border-line rounded-2xl">
+                <TrendingUp className="w-14 h-14 text-muted/30 mx-auto mb-4" />
+                <h3 className="text-lg font-bold text-ink mb-1">No transactions yet</h3>
+                <p className="text-muted text-sm">Wallet activity will appear here</p>
               </div>
             )}
 
@@ -338,22 +338,22 @@ export default function WalletManagement() {
                     <Card>
                       <CardContent className="flex items-center justify-between py-4">
                         <div className="flex items-center gap-4">
-                          <div className={`p-3 rounded-xl flex-shrink-0 ${tx.type === "CREDIT" ? "bg-neutral-100 text-brand-black" : "bg-red-50 text-brand-red"}`}>
+                          <div className={`p-3 rounded-xl flex-shrink-0 ${tx.type === "CREDIT" ? "bg-surface-elevated text-ink" : "bg-primary/10 text-brand-red"}`}>
                             {tx.type === "CREDIT" ? <ArrowDownLeft className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
                           </div>
                           <div>
-                            <p className="font-bold text-brand-black">{tx.consumer?.name}</p>
-                            <p className="text-sm text-neutral-400">{tx.consumer?.phone}</p>
+                            <p className="font-bold text-ink">{tx.consumer?.name}</p>
+                            <p className="text-sm text-muted">{tx.consumer?.phone}</p>
                             {tx.description && (
-                              <p className="text-sm text-neutral-400 truncate max-w-xs">{tx.description}</p>
+                              <p className="text-sm text-muted truncate max-w-xs">{tx.description}</p>
                             )}
                           </div>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p className={`text-lg font-extrabold ${tx.type === "CREDIT" ? "text-brand-black" : "text-brand-red"}`}>
+                          <p className={`text-lg font-extrabold ${tx.type === "CREDIT" ? "text-ink" : "text-brand-red"}`}>
                             {tx.type === "CREDIT" ? "+" : "-"}{formatPrice(tx.amount)}
                           </p>
-                          <p className="text-xs text-neutral-400 mt-0.5">
+                          <p className="text-xs text-muted mt-0.5">
                             {new Date(tx.createdAt).toLocaleString("en-IN", {
                               day: "numeric",
                               month: "short",
@@ -380,7 +380,7 @@ export default function WalletManagement() {
             transition={{ duration: 0.15 }}
           >
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-bold text-brand-black">
+              <h2 className="text-xl font-bold text-ink">
                 Pending Recharge Requests
                 {requests && requests.length > 0 && (
                   <span className="ml-2 inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-red text-white text-sm font-bold">
@@ -390,7 +390,7 @@ export default function WalletManagement() {
               </h2>
               <button
                 onClick={() => refetchRequests()}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-neutral-100 transition-colors text-sm font-semibold text-neutral-600"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-surface-elevated transition-colors text-sm font-semibold text-muted"
               >
                 <RefreshCw className="w-4 h-4" /> Refresh
               </button>
@@ -399,16 +399,16 @@ export default function WalletManagement() {
             {requestsLoading && (
               <div className="space-y-3">
                 {[1, 2].map((i) => (
-                  <div key={i} className="h-32 rounded-xl bg-neutral-100 animate-pulse" />
+                  <div key={i} className="h-32 rounded-xl bg-surface-elevated animate-pulse" />
                 ))}
               </div>
             )}
 
             {!requestsLoading && (!requests || requests.length === 0) && (
-              <div className="text-center py-20 border-2 border-dashed border-neutral-200 rounded-2xl">
-                <CheckCircle2 className="w-14 h-14 text-neutral-200 mx-auto mb-4" />
-                <h3 className="text-lg font-bold text-brand-black mb-1">All caught up!</h3>
-                <p className="text-neutral-400 text-sm">No pending recharge requests</p>
+              <div className="text-center py-20 border-2 border-dashed border-line rounded-2xl">
+                <CheckCircle2 className="w-14 h-14 text-muted/30 mx-auto mb-4" />
+                <h3 className="text-lg font-bold text-ink mb-1">All caught up!</h3>
+                <p className="text-muted text-sm">No pending recharge requests</p>
               </div>
             )}
 
@@ -427,19 +427,19 @@ export default function WalletManagement() {
                         <CardContent className="py-5">
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
-                              <p className="text-lg font-extrabold text-brand-black">{req.wallet?.consumer?.name}</p>
-                              <p className="text-sm text-neutral-500">{req.wallet?.consumer?.phone}</p>
+                              <p className="text-lg font-extrabold text-ink">{req.wallet?.consumer?.name}</p>
+                              <p className="text-sm text-muted">{req.wallet?.consumer?.phone}</p>
                               <div className="mt-2">
-                                <span className="text-neutral-500 text-sm">Requested Amount: </span>
-                                <span className="text-xl font-extrabold text-brand-black">{formatPrice(req.amount)}</span>
+                                <span className="text-muted text-sm">Requested Amount: </span>
+                                <span className="text-xl font-extrabold text-ink">{formatPrice(req.amount)}</span>
                               </div>
                               {req.reference && (
-                                <p className="text-sm text-neutral-400 mt-1">Reference: {req.reference}</p>
+                                <p className="text-sm text-muted mt-1">Reference: {req.reference}</p>
                               )}
                               {req.description && (
-                                <p className="text-sm text-neutral-400">{req.description}</p>
+                                <p className="text-sm text-muted">{req.description}</p>
                               )}
-                              <p className="text-xs text-neutral-400 mt-2">
+                              <p className="text-xs text-muted mt-2">
                                 Requested on{" "}
                                 {new Date(req.createdAt).toLocaleString("en-IN", {
                                   day: "numeric",
@@ -461,7 +461,7 @@ export default function WalletManagement() {
                               <Button
                                 size="lg"
                                 variant="outline"
-                                className="border-brand-red/40 text-brand-red hover:bg-red-50"
+                                className="border-brand-red/40 text-brand-red hover:bg-primary/10"
                                 loading={handleRequest.isPending}
                                 onClick={() => handleRequest.mutate({ reqId: req.id, status: "REJECTED", note: "Rejected by admin" })}
                               >
@@ -488,15 +488,15 @@ export default function WalletManagement() {
             transition={{ duration: 0.15 }}
           >
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-bold text-brand-black">All Customers</h2>
+              <h2 className="text-xl font-bold text-ink">All Customers</h2>
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
                 <input
                   type="text"
                   placeholder="Search by name or phone..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-11 pr-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red w-72"
+                  className="pl-11 pr-4 py-3 rounded-xl border border-line text-sm focus:outline-none focus:border-brand-red w-72"
                 />
               </div>
             </div>
@@ -504,16 +504,16 @@ export default function WalletManagement() {
             {consumersLoading && (
               <div className="space-y-3">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-20 rounded-xl bg-neutral-100 animate-pulse" />
+                  <div key={i} className="h-20 rounded-xl bg-surface-elevated animate-pulse" />
                 ))}
               </div>
             )}
 
             {!consumersLoading && (!filteredConsumers || filteredConsumers.length === 0) && (
-              <div className="text-center py-20 border-2 border-dashed border-neutral-200 rounded-2xl">
-                <Users className="w-14 h-14 text-neutral-200 mx-auto mb-4" />
-                <h3 className="text-lg font-bold text-brand-black mb-1">No customers found</h3>
-                <p className="text-neutral-400 text-sm">
+              <div className="text-center py-20 border-2 border-dashed border-line rounded-2xl">
+                <Users className="w-14 h-14 text-muted/30 mx-auto mb-4" />
+                <h3 className="text-lg font-bold text-ink mb-1">No customers found</h3>
+                <p className="text-muted text-sm">
                   {search ? "Try a different search term" : "Customers will appear here once they register"}
                 </p>
               </div>
@@ -530,20 +530,20 @@ export default function WalletManagement() {
                   <Card>
                     <CardContent className="flex items-center justify-between py-4">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-neutral-100 flex items-center justify-center flex-shrink-0">
-                          <span className="text-base font-bold text-neutral-600">
+                        <div className="w-12 h-12 rounded-2xl bg-surface-elevated flex items-center justify-center flex-shrink-0">
+                          <span className="text-base font-bold text-muted">
                             {consumer.name.charAt(0).toUpperCase()}
                           </span>
                         </div>
                         <div>
-                          <p className="font-bold text-brand-black">{consumer.name}</p>
-                          <p className="text-sm text-neutral-500">{consumer.phone}</p>
+                          <p className="font-bold text-ink">{consumer.name}</p>
+                          <p className="text-sm text-muted">{consumer.phone}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-5">
                         <div className="text-right">
-                          <p className="text-xs text-neutral-400 mb-0.5">Wallet Balance</p>
-                          <p className="text-xl font-extrabold text-brand-black">
+                          <p className="text-xs text-muted mb-0.5">Wallet Balance</p>
+                          <p className="text-xl font-extrabold text-ink">
                             {formatPrice(consumer.wallet?.balance || 0)}
                           </p>
                         </div>
@@ -580,11 +580,11 @@ export default function WalletManagement() {
           className="space-y-5"
         >
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-brand-black">Select Customer</label>
+            <label className="block text-sm font-bold text-ink">Select Customer</label>
             <select
               value={creditForm.consumerId}
               onChange={(e) => setCreditForm({ ...creditForm, consumerId: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl border border-neutral-200 text-base focus:outline-none focus:border-brand-red"
+              className="w-full px-4 py-3 rounded-xl border border-line text-base focus:outline-none focus:border-brand-red"
               required
             >
               <option value="">Choose a customer...</option>
@@ -597,7 +597,7 @@ export default function WalletManagement() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-brand-black">Amount to Credit (₹)</label>
+            <label className="block text-sm font-bold text-ink">Amount to Credit (₹)</label>
             <input
               type="number"
               min="1"
@@ -605,17 +605,17 @@ export default function WalletManagement() {
               value={creditForm.amount}
               onChange={(e) => setCreditForm({ ...creditForm, amount: e.target.value })}
               required
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-brand-black">Reason <span className="font-normal text-neutral-400">(optional)</span></label>
+            <label className="block text-sm font-bold text-ink">Reason <span className="font-normal text-muted">(optional)</span></label>
             <input
               placeholder="e.g. Cash deposit at counter"
               value={creditForm.description}
               onChange={(e) => setCreditForm({ ...creditForm, description: e.target.value })}
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
             />
           </div>
 

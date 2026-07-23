@@ -70,7 +70,7 @@ export default function TrackOrderPage({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white p-6 space-y-6">
+      <div className="min-h-screen bg-canvas p-6 space-y-6">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-24 w-full" />
         <Skeleton className="h-40 w-full" />
@@ -81,15 +81,15 @@ export default function TrackOrderPage({
 
   if (error || !order) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-6">
+      <div className="min-h-screen bg-canvas flex items-center justify-center px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center"
         >
-          <ShoppingBag className="w-14 h-14 text-neutral-200 mx-auto mb-4" />
-          <h2 className="text-lg font-bold text-brand-black mb-2">Order not found</h2>
-          <p className="text-sm text-neutral-400">
+          <ShoppingBag className="w-14 h-14 text-muted mx-auto mb-4" />
+          <h2 className="text-lg font-bold text-ink mb-2">Order not found</h2>
+          <p className="text-sm text-muted">
             This tracking link may be invalid or expired.
           </p>
         </motion.div>
@@ -98,19 +98,19 @@ export default function TrackOrderPage({
   }
 
   return (
-    <div className="min-h-screen bg-white pb-10">
+    <div className="min-h-screen bg-canvas pb-10">
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white border-b border-neutral-100 px-5 py-5"
+        className="bg-surface border-b border-line px-5 py-5"
       >
-        <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+        <p className="text-xs font-semibold text-muted uppercase tracking-wider">
           {order.restaurant.name} · {orderDestinationLabel(order)}
         </p>
-        <h1 className="text-2xl font-extrabold text-brand-black mt-1">
+        <h1 className="text-2xl font-extrabold text-ink mt-1">
           Order #{order.orderNumber}
         </h1>
-        <p className="text-sm text-neutral-400 mt-0.5">
+        <p className="text-sm text-muted mt-0.5">
           Placed at {formatTime(order.placedAt)}
         </p>
       </motion.div>
@@ -124,19 +124,19 @@ export default function TrackOrderPage({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ type: "spring", stiffness: 300, damping: 24 }}
-              className="bg-brand-black rounded-2xl p-5 text-center"
+              className="bg-ink rounded-2xl p-5 text-center"
             >
               <motion.div
                 animate={{ scale: [1, 1.15, 1] }}
                 transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
                 className="inline-flex"
               >
-                <Bell className="w-10 h-10 text-white mx-auto" />
+                <Bell className="w-10 h-10 text-canvas mx-auto" />
               </motion.div>
-              <h2 className="text-lg font-extrabold text-white mt-3">
+              <h2 className="text-lg font-extrabold text-canvas mt-3">
                 Your order is ready!
               </h2>
-              <p className="text-sm text-neutral-400 mt-1">
+              <p className="text-sm text-canvas/60 mt-1">
                 Pick up at the counter now
               </p>
             </motion.div>
@@ -147,13 +147,13 @@ export default function TrackOrderPage({
               key="pickedup-banner"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-brand-black rounded-2xl p-5 text-center"
+              className="bg-ink rounded-2xl p-5 text-center"
             >
-              <CheckCircle className="w-10 h-10 text-white mx-auto" />
-              <h2 className="text-lg font-extrabold text-white mt-3">
+              <CheckCircle className="w-10 h-10 text-canvas mx-auto" />
+              <h2 className="text-lg font-extrabold text-canvas mt-3">
                 Enjoy your meal!
               </h2>
-              <p className="text-sm text-neutral-400 mt-1">Order picked up</p>
+              <p className="text-sm text-canvas/60 mt-1">Order picked up</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -162,11 +162,11 @@ export default function TrackOrderPage({
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="rounded-2xl border border-neutral-100 p-5"
+          className="rounded-2xl border border-line p-5"
         >
-          <h2 className="text-sm font-bold text-brand-black mb-5">Order Status</h2>
+          <h2 className="text-sm font-bold text-ink mb-5">Order Status</h2>
           <div className="relative">
-            <div className="absolute left-4 top-0 bottom-0 w-px bg-neutral-100" />
+            <div className="absolute left-4 top-0 bottom-0 w-px bg-line" />
             <div className="space-y-5">
               {STATUS_STEPS.map((step, idx) => {
                 const isCompleted = idx <= currentStepIndex
@@ -183,18 +183,18 @@ export default function TrackOrderPage({
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 z-10 transition-colors ${
                         isCompleted
-                          ? "bg-brand-black"
-                          : "bg-neutral-100"
+                          ? "bg-ink"
+                          : "bg-surface-elevated"
                       }`}
                     >
                       <Icon
-                        className={`w-4 h-4 ${isCompleted ? "text-white" : "text-neutral-400"}`}
+                        className={`w-4 h-4 ${isCompleted ? "text-canvas" : "text-muted"}`}
                       />
                     </div>
                     <div className="flex-1">
                       <p
                         className={`text-sm font-semibold ${
-                          isCompleted ? "text-brand-black" : "text-neutral-400"
+                          isCompleted ? "text-ink" : "text-muted"
                         }`}
                       >
                         {step.label}
@@ -227,18 +227,18 @@ export default function TrackOrderPage({
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="rounded-2xl border border-neutral-100 p-5"
+          className="rounded-2xl border border-line p-5"
         >
-          <h2 className="text-sm font-bold text-brand-black mb-4">Items Ordered</h2>
+          <h2 className="text-sm font-bold text-ink mb-4">Items Ordered</h2>
           <div className="space-y-3">
             {order.items.map((item, idx) => (
               <div key={item.id ?? idx} className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-brand-black">
+                  <p className="text-sm font-semibold text-ink">
                     {item.quantity}x {item.menuItem?.name ?? item.name}
                   </p>
                   {(item.selectedOptions ?? []).some((o) => o.optionName) && (
-                    <p className="text-xs text-neutral-400 mt-0.5">
+                    <p className="text-xs text-muted mt-0.5">
                       {(item.selectedOptions ?? [])
                         .map((o) => o.optionName)
                         .filter(Boolean)
@@ -246,7 +246,7 @@ export default function TrackOrderPage({
                     </p>
                   )}
                 </div>
-                <span className="text-sm font-semibold text-brand-black flex-shrink-0">
+                <span className="text-sm font-semibold text-ink flex-shrink-0">
                   {formatPrice(Number(item.unitPrice) * item.quantity)}
                 </span>
               </div>
@@ -254,17 +254,17 @@ export default function TrackOrderPage({
           </div>
 
           {order.specialInstructions && (
-            <div className="mt-4 pt-4 border-t border-neutral-100">
-              <p className="text-xs text-neutral-400 font-medium uppercase tracking-wider mb-1">
+            <div className="mt-4 pt-4 border-t border-line">
+              <p className="text-xs text-muted font-medium uppercase tracking-wider mb-1">
                 Special Instructions
               </p>
-              <p className="text-sm text-neutral-600">{order.specialInstructions}</p>
+              <p className="text-sm text-muted">{order.specialInstructions}</p>
             </div>
           )}
 
-          <div className="mt-4 pt-4 border-t border-neutral-100 flex justify-between items-center">
-            <span className="text-sm font-bold text-brand-black">Total</span>
-            <span className="text-lg font-extrabold text-brand-black">
+          <div className="mt-4 pt-4 border-t border-line flex justify-between items-center">
+            <span className="text-sm font-bold text-ink">Total</span>
+            <span className="text-lg font-extrabold text-ink">
               {formatPrice(order.totalAmount)}
             </span>
           </div>
@@ -275,7 +275,7 @@ export default function TrackOrderPage({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="text-center text-xs text-neutral-400"
+            className="text-center text-xs text-muted"
           >
             Page auto-refreshes every 5 seconds
           </motion.p>

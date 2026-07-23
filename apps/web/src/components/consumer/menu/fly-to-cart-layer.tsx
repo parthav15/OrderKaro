@@ -54,7 +54,7 @@ export function FlyToCartLayer() {
                 ease: [0.22, 1, 0.36, 1],
               }}
               onAnimationComplete={() => remove(flight.id)}
-              className="absolute top-0 left-0 rounded-2xl overflow-hidden bg-brand-black/[0.04] flex items-center justify-center will-change-transform"
+              className="absolute top-0 left-0 rounded-2xl overflow-hidden bg-ink/[0.04] flex items-center justify-center will-change-transform"
               style={{ originX: 0.5, originY: 0.5 }}
             >
               {flight.src ? (
@@ -66,9 +66,9 @@ export function FlyToCartLayer() {
                   className="object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center bg-white">
+                <div className="w-full h-full flex flex-col items-center justify-center bg-surface">
                   <VegMarker isVeg={flight.isVeg} size="sm" />
-                  <span className="font-serif italic text-2xl text-brand-black/40 mt-1">
+                  <span className="font-serif italic text-2xl text-ink/40 mt-1">
                     {flight.label.charAt(0)}
                   </span>
                 </div>

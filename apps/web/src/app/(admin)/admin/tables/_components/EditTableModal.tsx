@@ -63,18 +63,18 @@ export function EditTableModal({ table, restaurantId, sections, onClose }: EditT
           className="space-y-5"
         >
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-brand-black">Label</label>
+            <label className="block text-sm font-bold text-ink">Label</label>
             <input
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               required
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20 transition-colors"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20 transition-colors"
             />
           </div>
 
           <div className="space-y-2 relative">
-            <label className="block text-sm font-bold text-brand-black">
-              Section <span className="font-normal text-neutral-400">(optional)</span>
+            <label className="block text-sm font-bold text-ink">
+              Section <span className="font-normal text-muted">(optional)</span>
             </label>
             <input
               value={section}
@@ -85,13 +85,13 @@ export function EditTableModal({ table, restaurantId, sections, onClose }: EditT
               onFocus={() => setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 120)}
               placeholder="e.g. Ground Floor"
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20 transition-colors"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20 transition-colors"
             />
             {showSuggestions && filteredSuggestions.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="absolute z-10 mt-1 w-full rounded-xl border border-neutral-200 bg-white shadow-lg overflow-hidden"
+                className="absolute z-10 mt-1 w-full rounded-xl border border-line bg-surface shadow-lg overflow-hidden"
               >
                 {filteredSuggestions.slice(0, 5).map((s) => (
                   <button
@@ -102,7 +102,7 @@ export function EditTableModal({ table, restaurantId, sections, onClose }: EditT
                       setSection(s)
                       setShowSuggestions(false)
                     }}
-                    className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-50 transition-colors"
+                    className="w-full px-4 py-2.5 text-left text-sm hover:bg-surface-elevated transition-colors"
                   >
                     {s}
                   </button>
@@ -111,10 +111,10 @@ export function EditTableModal({ table, restaurantId, sections, onClose }: EditT
             )}
           </div>
 
-          <div className="flex items-center justify-between p-4 rounded-xl bg-neutral-50 border border-neutral-100">
+          <div className="flex items-center justify-between p-4 rounded-xl bg-surface-elevated border border-line">
             <div>
-              <p className="text-sm font-bold text-brand-black">Active</p>
-              <p className="text-xs text-neutral-500 mt-0.5">
+              <p className="text-sm font-bold text-ink">Active</p>
+              <p className="text-xs text-muted mt-0.5">
                 Inactive tables are hidden from QR scans.
               </p>
             </div>

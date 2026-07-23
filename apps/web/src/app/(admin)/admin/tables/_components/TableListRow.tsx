@@ -69,7 +69,7 @@ export function TableListRow({
       exit={{ opacity: 0 }}
       className={
         "group grid grid-cols-[24px_60px_1fr_140px_120px_140px_180px] items-center gap-4 px-4 py-3 rounded-xl transition-colors " +
-        (selected ? "bg-brand-red/5" : "hover:bg-neutral-50")
+        (selected ? "bg-brand-red/5" : "hover:bg-surface-elevated")
       }
     >
       <button
@@ -80,7 +80,7 @@ export function TableListRow({
           "w-5 h-5 rounded-md border flex items-center justify-center transition-colors " +
           (selected
             ? "bg-brand-red border-brand-red"
-            : "bg-white border-neutral-300 hover:border-brand-red")
+            : "bg-surface border-line hover:border-brand-red")
         }
       >
         {selected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
@@ -116,7 +116,7 @@ export function TableListRow({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="w-full px-2 py-1 -mx-2 rounded-lg border border-brand-red/40 bg-white text-base font-bold text-brand-black focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+              className="w-full px-2 py-1 -mx-2 rounded-lg border border-brand-red/40 bg-surface text-base font-bold text-ink focus:outline-none focus:ring-2 focus:ring-brand-red/20"
             />
           ) : (
             <motion.button
@@ -126,36 +126,36 @@ export function TableListRow({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="text-left text-base font-bold text-brand-black truncate hover:text-brand-red transition-colors"
+              className="text-left text-base font-bold text-ink truncate hover:text-brand-red transition-colors"
               title="Double-click to rename"
             >
               {table.label}
             </motion.button>
           )}
         </AnimatePresence>
-        <div className="text-xs text-neutral-500 mt-0.5">
+        <div className="text-xs text-muted mt-0.5">
           {table.section || "Unassigned"} · {relativeAge(table.createdAt)}
         </div>
       </div>
 
       <div className="flex items-center gap-2">
         <StatusDot active={isLive} />
-        <span className="text-sm font-semibold text-neutral-700 tabular-nums">
+        <span className="text-sm font-semibold text-muted tabular-nums">
           {isLive ? `${liveCount} active` : "Idle"}
         </span>
       </div>
 
-      <span className="text-sm tabular-nums text-neutral-700">
-        <span className="font-bold text-brand-black">{table.todayOrderCount}</span>{" "}
-        <span className="text-neutral-400">today</span>
+      <span className="text-sm tabular-nums text-muted">
+        <span className="font-bold text-ink">{table.todayOrderCount}</span>{" "}
+        <span className="text-muted">today</span>
       </span>
 
       <span
         className={
           "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.18em] font-bold w-fit " +
           (table.isActive
-            ? "bg-neutral-100 text-neutral-600"
-            : "bg-neutral-100 text-neutral-400 line-through")
+            ? "bg-surface-elevated text-muted"
+            : "bg-surface-elevated text-muted line-through")
         }
       >
         {table.isActive ? "Live" : "Inactive"}
@@ -167,7 +167,7 @@ export function TableListRow({
           onClick={() => onDownload(table)}
           disabled={isDownloading}
           aria-label="Download QR"
-          className="w-9 h-9 rounded-xl border border-neutral-200 inline-flex items-center justify-center text-brand-black hover:border-neutral-300 hover:bg-neutral-50 transition-colors disabled:opacity-50"
+          className="w-9 h-9 rounded-xl border border-line inline-flex items-center justify-center text-ink hover:border-line hover:bg-surface-elevated transition-colors disabled:opacity-50"
         >
           {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
         </motion.button>
@@ -175,7 +175,7 @@ export function TableListRow({
           whileTap={{ scale: 0.92 }}
           onClick={() => onView(table)}
           aria-label="View QR"
-          className="w-9 h-9 rounded-xl border border-neutral-200 inline-flex items-center justify-center text-brand-black hover:border-neutral-300 hover:bg-neutral-50 transition-colors"
+          className="w-9 h-9 rounded-xl border border-line inline-flex items-center justify-center text-ink hover:border-line hover:bg-surface-elevated transition-colors"
         >
           <Eye className="w-4 h-4" />
         </motion.button>
@@ -183,7 +183,7 @@ export function TableListRow({
           whileTap={{ scale: 0.92 }}
           onClick={() => onEdit(table)}
           aria-label="Edit"
-          className="w-9 h-9 rounded-xl border border-neutral-200 inline-flex items-center justify-center text-brand-black hover:border-neutral-300 hover:bg-neutral-50 transition-colors"
+          className="w-9 h-9 rounded-xl border border-line inline-flex items-center justify-center text-ink hover:border-line hover:bg-surface-elevated transition-colors"
         >
           <Pencil className="w-4 h-4" />
         </motion.button>

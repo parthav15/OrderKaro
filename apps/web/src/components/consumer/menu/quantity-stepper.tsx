@@ -15,13 +15,13 @@ interface QuantityStepperProps {
 
 const variants = {
   compact: {
-    wrapper: "h-9 px-1 gap-1 rounded-full bg-brand-black text-white",
+    wrapper: "h-9 px-1 gap-1 rounded-full bg-ink text-canvas",
     button: "w-7 h-7",
     value: "text-sm font-bold min-w-[18px]",
     icon: 14,
   },
   comfortable: {
-    wrapper: "h-12 px-1.5 gap-1 rounded-full bg-brand-black text-white",
+    wrapper: "h-12 px-1.5 gap-1 rounded-full bg-ink text-canvas",
     button: "w-9 h-9",
     value: "text-base font-bold min-w-[24px]",
     icon: 18,

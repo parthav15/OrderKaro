@@ -50,11 +50,11 @@ interface OrdersResponse {
 }
 
 const statusColors: Record<string, string> = {
-  PLACED: "bg-neutral-100 text-brand-black",
-  ACCEPTED: "bg-neutral-100 text-brand-black",
-  PREPARING: "bg-brand-black text-white",
-  READY: "bg-brand-black text-white",
-  PICKED_UP: "bg-neutral-100 text-neutral-500",
+  PLACED: "bg-surface-elevated text-ink",
+  ACCEPTED: "bg-surface-elevated text-ink",
+  PREPARING: "bg-ink text-canvas",
+  READY: "bg-ink text-canvas",
+  PICKED_UP: "bg-surface-elevated text-muted",
   CANCELLED: "bg-brand-red/10 text-brand-red",
 }
 
@@ -170,9 +170,9 @@ export default function OrderHistory() {
             <div className="w-10 h-10 rounded-xl bg-brand-red/10 flex items-center justify-center">
               <ClipboardList className="w-5 h-5 text-brand-red" />
             </div>
-            <h1 className="text-3xl font-extrabold text-brand-black">Order History</h1>
+            <h1 className="text-3xl font-extrabold text-ink">Order History</h1>
           </div>
-          <p className="text-neutral-500">
+          <p className="text-muted">
             {ordersData?.pagination?.total
               ? `${ordersData.pagination.total} total orders found`
               : "Browse and manage all restaurant orders"}
@@ -183,7 +183,7 @@ export default function OrderHistory() {
             <select
               value={restaurantId || ""}
               onChange={(e) => { setRestaurantId(e.target.value); setPage(1) }}
-              className="px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
+              className="px-4 py-3 rounded-xl border border-line text-sm focus:outline-none focus:border-brand-red"
             >
               {restaurants.map((c: any) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
@@ -218,11 +218,11 @@ export default function OrderHistory() {
               <CardContent className="py-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                   <div className="space-y-2">
-                    <label className="block text-sm font-bold text-brand-black">Order Status</label>
+                    <label className="block text-sm font-bold text-ink">Order Status</label>
                     <select
                       value={statusFilter}
                       onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
-                      className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm focus:outline-none focus:border-brand-red"
+                      className="w-full rounded-xl border border-line px-4 py-3 text-sm focus:outline-none focus:border-brand-red"
                     >
                       <option value="">All statuses</option>
                       {ALL_STATUSES.map((s) => (
@@ -232,11 +232,11 @@ export default function OrderHistory() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="block text-sm font-bold text-brand-black">Payment Method</label>
+                    <label className="block text-sm font-bold text-ink">Payment Method</label>
                     <select
                       value={paymentFilter}
                       onChange={(e) => { setPaymentFilter(e.target.value); setPage(1) }}
-                      className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm focus:outline-none focus:border-brand-red"
+                      className="w-full rounded-xl border border-line px-4 py-3 text-sm focus:outline-none focus:border-brand-red"
                     >
                       <option value="">All methods</option>
                       {PAYMENT_METHODS.map((m) => (
@@ -246,22 +246,22 @@ export default function OrderHistory() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="block text-sm font-bold text-brand-black">From Date</label>
+                    <label className="block text-sm font-bold text-ink">From Date</label>
                     <input
                       type="date"
                       value={dateFrom}
                       onChange={(e) => { setDateFrom(e.target.value); setPage(1) }}
-                      className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm focus:outline-none focus:border-brand-red"
+                      className="w-full rounded-xl border border-line px-4 py-3 text-sm focus:outline-none focus:border-brand-red"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="block text-sm font-bold text-brand-black">To Date</label>
+                    <label className="block text-sm font-bold text-ink">To Date</label>
                     <input
                       type="date"
                       value={dateTo}
                       onChange={(e) => { setDateTo(e.target.value); setPage(1) }}
-                      className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm focus:outline-none focus:border-brand-red"
+                      className="w-full rounded-xl border border-line px-4 py-3 text-sm focus:outline-none focus:border-brand-red"
                     />
                   </div>
                 </div>
@@ -284,7 +284,7 @@ export default function OrderHistory() {
       {isLoading && (
         <div className="space-y-3">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-28 rounded-xl bg-neutral-100 animate-pulse" />
+            <div key={i} className="h-28 rounded-xl bg-surface-elevated animate-pulse" />
           ))}
         </div>
       )}
@@ -293,11 +293,11 @@ export default function OrderHistory() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center py-24 border-2 border-dashed border-neutral-200 rounded-2xl"
+          className="text-center py-24 border-2 border-dashed border-line rounded-2xl"
         >
-          <Search className="w-16 h-16 text-neutral-200 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-brand-black mb-2">No orders found</h3>
-          <p className="text-neutral-400">
+          <Search className="w-16 h-16 text-muted/30 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-ink mb-2">No orders found</h3>
+          <p className="text-muted">
             {hasActiveFilters ? "Try adjusting your filters to see more orders" : "Orders will appear here once customers place them"}
           </p>
           {hasActiveFilters && (
@@ -327,27 +327,27 @@ export default function OrderHistory() {
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-3 flex-wrap">
-                            <h3 className="text-xl font-extrabold text-brand-black">
+                            <h3 className="text-xl font-extrabold text-ink">
                               Order #{order.orderNumber}
                             </h3>
                             <span
                               className={`px-3 py-1 rounded-full text-sm font-bold ${
-                                statusColors[order.status] || "bg-neutral-100 text-neutral-700"
+                                statusColors[order.status] || "bg-surface-elevated text-muted"
                               }`}
                             >
                               {statusLabels[order.status] || order.status}
                             </span>
                           </div>
-                          <p className="text-sm text-neutral-500 mt-1">
+                          <p className="text-sm text-muted mt-1">
                             {orderDestinationLabel(order)} · {formatTime(order.placedAt)}
                           </p>
-                          <p className="text-sm text-neutral-600 mt-1.5 truncate">
+                          <p className="text-sm text-muted mt-1.5 truncate">
                             {order.items.slice(0, 3).map((i) => `${i.quantity}× ${i.menuItem.name}`).join(", ")}
                             {order.items.length > 3 && ` +${order.items.length - 3} more`}
                           </p>
                         </div>
                         <div className="text-right flex-shrink-0 ml-6">
-                          <p className="text-2xl font-extrabold text-brand-black">
+                          <p className="text-2xl font-extrabold text-ink">
                             {formatPrice(order.totalAmount)}
                           </p>
                           <div className="flex gap-1.5 mt-1.5 justify-end flex-wrap">
@@ -379,7 +379,7 @@ export default function OrderHistory() {
               >
                 <ChevronLeft className="w-5 h-5" /> Previous Page
               </Button>
-              <span className="text-sm font-semibold text-neutral-600 px-2">
+              <span className="text-sm font-semibold text-muted px-2">
                 Page {ordersData.pagination.page} of {ordersData.pagination.totalPages}
               </span>
               <Button
@@ -405,7 +405,7 @@ export default function OrderHistory() {
             <div className="flex items-center gap-2 flex-wrap">
               <span
                 className={`px-3 py-1.5 rounded-full text-sm font-bold ${
-                  statusColors[selectedOrder.status] || "bg-neutral-100 text-neutral-700"
+                  statusColors[selectedOrder.status] || "bg-surface-elevated text-muted"
                 }`}
               >
                 {statusLabels[selectedOrder.status] || selectedOrder.status}
@@ -416,40 +416,40 @@ export default function OrderHistory() {
               </Badge>
             </div>
 
-            <div className="bg-neutral-50 rounded-xl p-4 space-y-1.5 text-sm">
-              <p className="text-neutral-600"><span className="font-semibold text-brand-black">Destination:</span> {orderDestinationLabel(selectedOrder)}</p>
-              <p className="text-neutral-600"><span className="font-semibold text-brand-black">Placed at:</span> {formatTime(selectedOrder.placedAt)}</p>
+            <div className="bg-surface-elevated rounded-xl p-4 space-y-1.5 text-sm">
+              <p className="text-muted"><span className="font-semibold text-ink">Destination:</span> {orderDestinationLabel(selectedOrder)}</p>
+              <p className="text-muted"><span className="font-semibold text-ink">Placed at:</span> {formatTime(selectedOrder.placedAt)}</p>
             </div>
 
             {selectedOrder.specialInstructions && (
-              <div className="bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3">
-                <p className="text-sm font-bold text-brand-black">Special Instructions</p>
-                <p className="text-sm text-neutral-600 mt-0.5">{selectedOrder.specialInstructions}</p>
+              <div className="bg-surface-elevated border border-line rounded-xl px-4 py-3">
+                <p className="text-sm font-bold text-ink">Special Instructions</p>
+                <p className="text-sm text-muted mt-0.5">{selectedOrder.specialInstructions}</p>
               </div>
             )}
 
-            <div className="border-t border-neutral-100 pt-4 space-y-3">
-              <p className="text-sm font-bold text-neutral-500 uppercase tracking-wide">Order Items</p>
+            <div className="border-t border-line pt-4 space-y-3">
+              <p className="text-sm font-bold text-muted uppercase tracking-wide">Order Items</p>
               {selectedOrder.items.map((item) => (
                 <div key={item.id} className="flex justify-between">
                   <div>
-                    <p className="font-semibold text-brand-black">
+                    <p className="font-semibold text-ink">
                       {item.quantity}× {item.menuItem.name}
                     </p>
                     {item.selectedOptions?.map((opt) => (
-                      <p key={opt.customizationName} className="text-xs text-neutral-400 mt-0.5">
+                      <p key={opt.customizationName} className="text-xs text-muted mt-0.5">
                         {opt.customizationName}: {opt.optionNames.join(", ")}
                       </p>
                     ))}
                   </div>
-                  <span className="font-bold text-brand-black">{formatPrice(item.totalPrice)}</span>
+                  <span className="font-bold text-ink">{formatPrice(item.totalPrice)}</span>
                 </div>
               ))}
             </div>
 
-            <div className="flex justify-between pt-3 border-t border-neutral-100">
-              <span className="text-lg font-bold text-brand-black">Total</span>
-              <span className="text-2xl font-extrabold text-brand-black">
+            <div className="flex justify-between pt-3 border-t border-line">
+              <span className="text-lg font-bold text-ink">Total</span>
+              <span className="text-2xl font-extrabold text-ink">
                 {formatPrice(selectedOrder.totalAmount)}
               </span>
             </div>
@@ -484,7 +484,7 @@ export default function OrderHistory() {
                       <span className="text-sm font-bold text-brand-red">Cancel Order</span>
                     </div>
                     <Button
-                      className="w-full border-brand-red text-brand-red hover:bg-red-50"
+                      className="w-full border-brand-red text-brand-red hover:bg-primary/10"
                       variant="outline"
                       loading={updateStatusMutation.isPending}
                       onClick={() =>
@@ -534,20 +534,20 @@ export default function OrderHistory() {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-5"
             >
-              <div className="bg-neutral-50 rounded-xl p-5">
-                <p className="text-sm text-neutral-500 mb-1">Order Total</p>
-                <p className="text-3xl font-extrabold text-brand-black">{formatPrice(orderAmt)}</p>
+              <div className="bg-surface-elevated rounded-xl p-5">
+                <p className="text-sm text-muted mb-1">Order Total</p>
+                <p className="text-3xl font-extrabold text-ink">{formatPrice(orderAmt)}</p>
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-bold text-brand-black">Amount Received from Customer</label>
+                <label className="block text-sm font-bold text-ink">Amount Received from Customer</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 font-bold text-lg">₹</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted font-bold text-lg">₹</span>
                   <input
                     type="number"
                     value={amountReceived}
                     onChange={(e) => setAmountReceived(e.target.value)}
-                    className="w-full pl-10 pr-4 py-4 rounded-xl border border-neutral-200 text-2xl font-extrabold text-brand-black focus:outline-none focus:border-brand-red"
+                    className="w-full pl-10 pr-4 py-4 rounded-xl border border-line text-2xl font-extrabold text-ink focus:outline-none focus:border-brand-red"
                     min={orderAmt}
                     autoFocus
                   />
@@ -558,14 +558,14 @@ export default function OrderHistory() {
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
-                  className="bg-red-50 border border-brand-red/20 rounded-xl p-4"
+                  className="bg-primary/10 border border-brand-red/20 rounded-xl p-4"
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <Wallet className="w-4 h-4 text-brand-red" />
                     <span className="text-sm font-bold text-brand-red">Wallet Credit</span>
                   </div>
-                  <p className="text-sm text-neutral-600">
-                    <span className="font-bold text-brand-black">{formatPrice(change)}</span> change will be added to the customer's wallet
+                  <p className="text-sm text-muted">
+                    <span className="font-bold text-ink">{formatPrice(change)}</span> change will be added to the customer's wallet
                   </p>
                 </motion.div>
               )}
@@ -604,25 +604,25 @@ export default function OrderHistory() {
             animate={{ opacity: 1, scale: 1 }}
             className="text-center space-y-5"
           >
-            <div className="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center mx-auto">
+            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
               <Banknote className="w-10 h-10 text-brand-red" />
             </div>
             <div>
-              <h3 className="text-2xl font-extrabold text-brand-black">Payment Collected</h3>
-              <p className="text-neutral-500 mt-1">Order #{cashResult.orderNumber}</p>
+              <h3 className="text-2xl font-extrabold text-ink">Payment Collected</h3>
+              <p className="text-muted mt-1">Order #{cashResult.orderNumber}</p>
             </div>
-            <div className="bg-neutral-50 rounded-xl p-5 space-y-3 text-left">
+            <div className="bg-surface-elevated rounded-xl p-5 space-y-3 text-left">
               <div className="flex justify-between">
-                <span className="text-neutral-500">Order Amount</span>
-                <span className="font-bold text-brand-black">{formatPrice(cashResult.orderAmount)}</span>
+                <span className="text-muted">Order Amount</span>
+                <span className="font-bold text-ink">{formatPrice(cashResult.orderAmount)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-neutral-500">Amount Received</span>
-                <span className="font-bold text-brand-black">{formatPrice(cashResult.amountReceived)}</span>
+                <span className="text-muted">Amount Received</span>
+                <span className="font-bold text-ink">{formatPrice(cashResult.amountReceived)}</span>
               </div>
               {cashResult.changeAmount > 0 && (
-                <div className="border-t border-neutral-200 pt-3 flex justify-between">
-                  <span className="text-neutral-500">Change Added to Wallet</span>
+                <div className="border-t border-line pt-3 flex justify-between">
+                  <span className="text-muted">Change Added to Wallet</span>
                   <span className="font-bold text-brand-red">{formatPrice(cashResult.changeAmount)}</span>
                 </div>
               )}

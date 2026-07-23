@@ -28,7 +28,7 @@ export function KpiChips({ total, active, liveNow }: KpiChipsProps) {
           className={
             chip.accent
               ? "flex items-center gap-2 px-4 py-2 rounded-full border border-brand-red/30 bg-brand-red/5 text-brand-red"
-              : "flex items-center gap-2 px-4 py-2 rounded-full border border-neutral-200 bg-white text-brand-black"
+              : "flex items-center gap-2 px-4 py-2 rounded-full border border-line bg-surface text-ink"
           }
         >
           <span className="relative flex items-center justify-center">
@@ -37,7 +37,7 @@ export function KpiChips({ total, active, liveNow }: KpiChipsProps) {
               <span className="absolute inset-0 -m-1 rounded-full bg-brand-red/20 animate-ping" />
             )}
           </span>
-          <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-neutral-400">
+          <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-muted">
             {chip.label}
           </span>
           <AnimatedNumber
@@ -45,7 +45,7 @@ export function KpiChips({ total, active, liveNow }: KpiChipsProps) {
             className={
               chip.accent
                 ? "text-base font-extrabold text-brand-red"
-                : "text-base font-extrabold text-brand-black"
+                : "text-base font-extrabold text-ink"
             }
           />
         </motion.div>

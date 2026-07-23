@@ -164,11 +164,11 @@ export function TableMapView({
               className="absolute inset-0 flex items-center justify-center pointer-events-none"
             >
               <div className="text-center space-y-2">
-                <div className="w-14 h-14 mx-auto rounded-2xl bg-white border border-neutral-200 flex items-center justify-center">
-                  <LayoutGrid className="w-6 h-6 text-neutral-300" />
+                <div className="w-14 h-14 mx-auto rounded-2xl bg-surface border border-line flex items-center justify-center">
+                  <LayoutGrid className="w-6 h-6 text-muted" />
                 </div>
-                <p className="text-sm font-bold text-brand-black">No tables in this floor</p>
-                <p className="text-xs text-neutral-500">Add tables, then drag them onto the map.</p>
+                <p className="text-sm font-bold text-ink">No tables in this floor</p>
+                <p className="text-xs text-muted">Add tables, then drag them onto the map.</p>
               </div>
             </motion.div>
           )}
@@ -180,7 +180,7 @@ export function TableMapView({
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-brand-black/90 text-white text-xs font-bold flex items-center gap-2 pointer-events-none"
+              className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-ink/90 text-canvas text-xs font-bold flex items-center gap-2 pointer-events-none"
             >
               <Move className="w-3.5 h-3.5" />
               {state.mapMode === "edit"

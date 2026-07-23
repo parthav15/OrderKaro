@@ -26,7 +26,7 @@ export function CanvasGrid({ x, y, scale }: CanvasGridProps) {
       className="absolute inset-0 pointer-events-none"
       style={{
         backgroundImage:
-          "radial-gradient(circle at 1px 1px, rgba(10,10,10,0.18) 1px, transparent 0)",
+          "radial-gradient(circle at 1px 1px, rgba(var(--ink) / 0.18) 1px, transparent 0)",
         backgroundSize,
         backgroundPosition,
         opacity,

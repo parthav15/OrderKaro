@@ -142,14 +142,15 @@ export function PaymentModal({ open, session, title, onSuccess, onClose }: Payme
             animate={reducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
             exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.94, y: 16 }}
             transition={{ type: "spring", damping: 26, stiffness: 320 }}
-            className="relative w-full max-w-[420px] bg-white rounded-2xl shadow-2xl overflow-hidden"
+            className="relative w-full max-w-[420px] bg-surface rounded-2xl shadow-2xl overflow-hidden"
           >
-            <button
+            <motion.button
+              whileTap={{ scale: 0.9 }}
               onClick={onClose}
-              className="absolute top-4 right-4 z-10 p-1.5 rounded-full text-neutral-400 hover:text-brand-black hover:bg-neutral-100 transition-colors"
+              className="absolute top-4 right-4 z-10 p-1.5 rounded-full text-muted hover:text-ink hover:bg-surface-elevated transition-colors"
             >
               <X className="w-4 h-4" />
-            </button>
+            </motion.button>
 
             <AnimatePresence mode="wait">
               {stage === "paying" && (
@@ -161,14 +162,14 @@ export function PaymentModal({ open, session, title, onSuccess, onClose }: Payme
                   transition={{ duration: 0.18 }}
                   className="px-8 pt-10 pb-8"
                 >
-                  <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400 mb-1">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-muted mb-1">
                     {title ?? "Complete payment"}
                   </p>
                   <div className="flex items-baseline gap-1 mb-8">
-                    <span className="text-4xl font-extrabold text-brand-black tracking-tight">
+                    <span className="text-4xl font-extrabold text-ink tracking-tight">
                       {amountLabel}
                     </span>
-                    <span className="text-sm text-neutral-400">{session.currency}</span>
+                    <span className="text-sm text-muted">{session.currency}</span>
                   </div>
 
                   {(session.provider === "PAYPUR" || session.provider === "CASHFREE") && (
@@ -178,14 +179,14 @@ export function PaymentModal({ open, session, title, onSuccess, onClose }: Payme
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ delay: 0.1, type: "spring", damping: 20, stiffness: 260 }}
-                          className="relative w-[168px] h-[168px] rounded-2xl bg-white border border-neutral-100 shadow-sm flex items-center justify-center overflow-hidden"
+                          className="relative w-[168px] h-[168px] rounded-2xl bg-white border border-line shadow-sm flex items-center justify-center overflow-hidden"
                         >
                           {qrDataUrl ? (
                             <img src={qrDataUrl} alt="Scan to pay" className="w-full h-full object-contain" />
                           ) : qrFailed && session.qrUrl ? (
                             <img src={session.qrUrl} alt="Scan to pay" className="w-full h-full object-contain" />
                           ) : (
-                            <div className="w-10 h-10 border-2 border-neutral-200 border-t-brand-red rounded-full animate-spin" />
+                            <div className="w-10 h-10 border-2 border-line border-t-brand-red rounded-full animate-spin" />
                           )}
                           {!reducedMotion && (
                             <motion.div
@@ -197,25 +198,26 @@ export function PaymentModal({ open, session, title, onSuccess, onClose }: Payme
                           )}
                         </motion.div>
                       </div>
-                      <p className="text-center text-sm text-neutral-500 mb-6">
+                      <p className="text-center text-sm text-muted mb-6">
                         Scan with any UPI app
                       </p>
 
                       {isMobile && (
                         <>
                           <div className="flex items-center gap-3 mb-6">
-                            <div className="h-px flex-1 bg-neutral-100" />
-                            <span className="text-[11px] font-semibold uppercase tracking-widest text-neutral-300">or</span>
-                            <div className="h-px flex-1 bg-neutral-100" />
+                            <div className="h-px flex-1 bg-line" />
+                            <span className="text-[11px] font-semibold uppercase tracking-widest text-muted">or</span>
+                            <div className="h-px flex-1 bg-line" />
                           </div>
 
-                          <button
+                          <motion.button
+                            whileTap={{ scale: 0.98 }}
                             onClick={handlePayWithUpi}
-                            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-brand-red text-white font-semibold text-sm hover:bg-red-700 active:scale-[0.98] transition-all"
+                            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-brand-red text-white font-semibold text-sm hover:bg-primary-hover transition-all"
                           >
                             <Smartphone className="w-4 h-4" />
                             Pay with UPI app
-                          </button>
+                          </motion.button>
                         </>
                       )}
                     </>
@@ -223,24 +225,25 @@ export function PaymentModal({ open, session, title, onSuccess, onClose }: Payme
 
                   {session.provider === "STRIPE" && (
                     <>
-                      <div className="flex items-start gap-2.5 mb-6 p-4 rounded-xl bg-neutral-50">
+                      <div className="flex items-start gap-2.5 mb-6 p-4 rounded-xl bg-surface-elevated">
                         <ShieldCheck className="w-4 h-4 text-brand-red shrink-0 mt-0.5" />
-                        <p className="text-sm text-neutral-500 leading-relaxed">
+                        <p className="text-sm text-muted leading-relaxed">
                           You&apos;ll complete payment on Stripe&apos;s secure page.
                         </p>
                       </div>
 
-                      <button
+                      <motion.button
+                        whileTap={{ scale: 0.98 }}
                         onClick={handleContinueToStripe}
-                        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-brand-red text-white font-semibold text-sm hover:bg-red-700 active:scale-[0.98] transition-all mb-3"
+                        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-brand-red text-white font-semibold text-sm hover:bg-primary-hover transition-all mb-3"
                       >
                         <ExternalLink className="w-4 h-4" />
                         Continue to payment
-                      </button>
+                      </motion.button>
 
                       <button
                         onClick={handleContinueToStripe}
-                        className="w-full text-center text-xs font-medium text-neutral-400 hover:text-brand-black transition-colors"
+                        className="w-full text-center text-xs font-medium text-muted hover:text-ink transition-colors"
                       >
                         Reopen payment page
                       </button>
@@ -254,7 +257,7 @@ export function PaymentModal({ open, session, title, onSuccess, onClose }: Payme
                       )}
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-red" />
                     </span>
-                    <span className="text-xs font-medium text-neutral-400">
+                    <span className="text-xs font-medium text-muted">
                       {polling ? "Waiting for payment…" : "Preparing…"}
                     </span>
                   </div>
@@ -281,7 +284,7 @@ export function PaymentModal({ open, session, title, onSuccess, onClose }: Payme
                         cx="20"
                         cy="20"
                         r="18"
-                        stroke="#DC2626"
+                        stroke="rgb(var(--brand-red))"
                         strokeWidth="2"
                         fill="none"
                         initial={{ pathLength: 0 }}
@@ -290,7 +293,7 @@ export function PaymentModal({ open, session, title, onSuccess, onClose }: Payme
                       />
                       <motion.path
                         d="M12 20.5L17 25.5L28 14.5"
-                        stroke="#DC2626"
+                        stroke="rgb(var(--brand-red))"
                         strokeWidth="2.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -305,7 +308,7 @@ export function PaymentModal({ open, session, title, onSuccess, onClose }: Payme
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="text-lg font-bold text-brand-black"
+                    className="text-lg font-bold text-ink"
                   >
                     Payment successful
                   </motion.p>
@@ -313,7 +316,7 @@ export function PaymentModal({ open, session, title, onSuccess, onClose }: Payme
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
-                    className="text-sm text-neutral-400 mt-1"
+                    className="text-sm text-muted mt-1"
                   >
                     {amountLabel} received
                   </motion.p>
@@ -329,26 +332,33 @@ export function PaymentModal({ open, session, title, onSuccess, onClose }: Payme
                   transition={{ duration: 0.18 }}
                   className="px-8 py-14 flex flex-col items-center"
                 >
-                  <div className="w-20 h-20 rounded-full bg-neutral-100 flex items-center justify-center mb-6">
-                    <X className="w-9 h-9 text-neutral-400" />
-                  </div>
-                  <p className="text-lg font-bold text-brand-black mb-1">Payment failed</p>
-                  <p className="text-sm text-neutral-400 mb-7 text-center">
+                  <motion.div
+                    initial={{ scale: 0.6, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", damping: 14, stiffness: 260 }}
+                    className="w-20 h-20 rounded-full bg-surface-elevated flex items-center justify-center mb-6"
+                  >
+                    <X className="w-9 h-9 text-muted" />
+                  </motion.div>
+                  <p className="text-lg font-bold text-ink mb-1">Payment failed</p>
+                  <p className="text-sm text-muted mb-7 text-center">
                     The payment did not go through. You can try again.
                   </p>
                   <div className="flex gap-3 w-full">
-                    <button
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
                       onClick={onClose}
-                      className="flex-1 py-3 rounded-xl border border-neutral-200 text-sm font-semibold text-brand-black hover:bg-neutral-50 transition-colors"
+                      className="flex-1 py-3 rounded-xl border border-line text-sm font-semibold text-ink hover:bg-surface-elevated transition-colors"
                     >
                       Close
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
                       onClick={onClose}
-                      className="flex-1 py-3 rounded-xl bg-brand-red text-white text-sm font-semibold hover:bg-red-700 transition-colors"
+                      className="flex-1 py-3 rounded-xl bg-brand-red text-white text-sm font-semibold hover:bg-primary-hover transition-colors"
                     >
                       Try again
-                    </button>
+                    </motion.button>
                   </div>
                 </motion.div>
               )}

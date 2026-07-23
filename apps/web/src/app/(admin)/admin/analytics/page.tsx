@@ -157,7 +157,7 @@ export default function AnalyticsPage() {
       value: summary?.totalOrders ?? 0,
       sub: `${summary?.todayOrders ?? 0} orders today`,
       icon: ShoppingBag,
-      iconBg: "bg-red-50",
+      iconBg: "bg-primary/10",
       iconColor: "text-brand-red",
     },
     {
@@ -165,24 +165,24 @@ export default function AnalyticsPage() {
       value: formatPrice(summary?.totalRevenue ?? 0),
       sub: `${formatPrice(summary?.todayRevenue ?? 0)} today`,
       icon: DollarSign,
-      iconBg: "bg-neutral-100",
-      iconColor: "text-brand-black",
+      iconBg: "bg-surface-elevated",
+      iconColor: "text-ink",
     },
     {
       label: "Avg Prep Time",
       value: `${summary?.avgPrepTimeMinutes ?? 0} min`,
       sub: "Average across all orders",
       icon: Clock,
-      iconBg: "bg-neutral-100",
-      iconColor: "text-brand-black",
+      iconBg: "bg-surface-elevated",
+      iconColor: "text-ink",
     },
     {
       label: "Active Orders Now",
       value: summary?.activeOrders ?? 0,
       sub: "Currently in the kitchen",
       icon: TrendingUp,
-      iconBg: "bg-neutral-100",
-      iconColor: "text-brand-black",
+      iconBg: "bg-surface-elevated",
+      iconColor: "text-ink",
     },
   ]
 
@@ -201,16 +201,16 @@ export default function AnalyticsPage() {
             <div className="w-10 h-10 rounded-xl bg-brand-red/10 flex items-center justify-center">
               <BarChart3 className="w-5 h-5 text-brand-red" />
             </div>
-            <h1 className="text-3xl font-extrabold text-brand-black">Analytics</h1>
+            <h1 className="text-3xl font-extrabold text-ink">Analytics</h1>
           </div>
-          <p className="text-neutral-500">Performance overview for your restaurant</p>
+          <p className="text-muted">Performance overview for your restaurant</p>
         </div>
 
         {restaurants && restaurants.length > 1 && (
           <select
             value={restaurantId || ""}
             onChange={(e) => setRestaurantId(e.target.value)}
-            className="px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
+            className="px-4 py-3 rounded-xl border border-line text-sm focus:outline-none focus:border-brand-red"
           >
             {restaurants.map((c: any) => (
               <option key={c.id} value={c.id}>{c.name}</option>
@@ -236,11 +236,11 @@ export default function AnalyticsPage() {
                       <Icon className={`w-7 h-7 ${card.iconColor}`} />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-neutral-500">{card.label}</p>
-                      <p className="text-3xl font-extrabold text-brand-black leading-tight mt-0.5">
+                      <p className="text-sm font-medium text-muted">{card.label}</p>
+                      <p className="text-3xl font-extrabold text-ink leading-tight mt-0.5">
                         {card.value}
                       </p>
-                      <p className="text-xs text-neutral-400 mt-0.5">{card.sub}</p>
+                      <p className="text-xs text-muted mt-0.5">{card.sub}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -258,8 +258,8 @@ export default function AnalyticsPage() {
         >
           <Card>
             <CardHeader>
-              <h2 className="text-lg font-bold text-brand-black">Revenue — Last 7 Days</h2>
-              <p className="text-sm text-neutral-400">Daily earnings breakdown</p>
+              <h2 className="text-lg font-bold text-ink">Revenue — Last 7 Days</h2>
+              <p className="text-sm text-muted">Daily earnings breakdown</p>
             </CardHeader>
             <CardContent>
               {!revenueData && (
@@ -269,8 +269,8 @@ export default function AnalyticsPage() {
               )}
               {revenueData && revenueData.length === 0 && (
                 <div className="h-48 flex flex-col items-center justify-center">
-                  <BarChart3 className="w-12 h-12 text-neutral-200 mb-3" />
-                  <p className="text-neutral-400 text-sm font-medium">No revenue data yet</p>
+                  <BarChart3 className="w-12 h-12 text-muted/30 mb-3" />
+                  <p className="text-muted text-sm font-medium">No revenue data yet</p>
                 </div>
               )}
               {revenueData && revenueData.length > 0 && (
@@ -285,7 +285,7 @@ export default function AnalyticsPage() {
                         transition={{ delay: idx * 0.05 }}
                         className="flex-1 flex flex-col items-center justify-end gap-1"
                       >
-                        <span className="text-xs font-bold text-neutral-600 truncate w-full text-center">
+                        <span className="text-xs font-bold text-muted truncate w-full text-center">
                           {formatPrice(day.revenue)}
                         </span>
                         <motion.div
@@ -295,7 +295,7 @@ export default function AnalyticsPage() {
                           style={{ height: `${Math.max(heightPct, 4)}%`, transformOrigin: "bottom" }}
                           className="w-full bg-brand-red rounded-t-lg"
                         />
-                        <span className="text-xs text-neutral-400 text-center leading-tight">
+                        <span className="text-xs text-muted text-center leading-tight">
                           {formatDayLabel(day.date)}
                         </span>
                       </motion.div>
@@ -314,8 +314,8 @@ export default function AnalyticsPage() {
         >
           <Card>
             <CardHeader>
-              <h2 className="text-lg font-bold text-brand-black">Most Popular Items</h2>
-              <p className="text-sm text-neutral-400">Best selling items by order count</p>
+              <h2 className="text-lg font-bold text-ink">Most Popular Items</h2>
+              <p className="text-sm text-muted">Best selling items by order count</p>
             </CardHeader>
             <CardContent>
               {!popularItems && (
@@ -325,8 +325,8 @@ export default function AnalyticsPage() {
               )}
               {popularItems && popularItems.length === 0 && (
                 <div className="h-48 flex flex-col items-center justify-center">
-                  <ShoppingBag className="w-12 h-12 text-neutral-200 mb-3" />
-                  <p className="text-neutral-400 text-sm font-medium">No orders yet</p>
+                  <ShoppingBag className="w-12 h-12 text-muted/30 mb-3" />
+                  <p className="text-muted text-sm font-medium">No orders yet</p>
                 </div>
               )}
               {popularItems && popularItems.length > 0 && (
@@ -342,18 +342,18 @@ export default function AnalyticsPage() {
                       >
                         <div className="flex items-center justify-between mb-1.5">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-extrabold text-neutral-300 w-5">
+                            <span className="text-sm font-extrabold text-muted w-5">
                               {idx + 1}
                             </span>
-                            <span className="text-sm font-bold text-brand-black truncate max-w-[160px]">
+                            <span className="text-sm font-bold text-ink truncate max-w-[160px]">
                               {item.name}
                             </span>
                           </div>
-                          <span className="text-sm font-semibold text-neutral-500">
+                          <span className="text-sm font-semibold text-muted">
                             {item.totalOrders} orders
                           </span>
                         </div>
-                        <div className="h-2.5 bg-neutral-100 rounded-full overflow-hidden">
+                        <div className="h-2.5 bg-surface-elevated rounded-full overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${widthPct}%` }}
@@ -379,8 +379,8 @@ export default function AnalyticsPage() {
         >
           <Card>
             <CardHeader>
-              <h2 className="text-lg font-bold text-brand-black">Peak Hours</h2>
-              <p className="text-sm text-neutral-400">Busiest hours of the day — darker means more orders</p>
+              <h2 className="text-lg font-bold text-ink">Peak Hours</h2>
+              <p className="text-sm text-muted">Busiest hours of the day — darker means more orders</p>
             </CardHeader>
             <CardContent>
               {!peakHours && (
@@ -390,8 +390,8 @@ export default function AnalyticsPage() {
               )}
               {peakHours && peakHours.length === 0 && (
                 <div className="h-40 flex flex-col items-center justify-center">
-                  <Clock className="w-12 h-12 text-neutral-200 mb-3" />
-                  <p className="text-neutral-400 text-sm font-medium">No data yet</p>
+                  <Clock className="w-12 h-12 text-muted/30 mb-3" />
+                  <p className="text-muted text-sm font-medium">No data yet</p>
                 </div>
               )}
               {peakHours && peakHours.length > 0 && (
@@ -414,14 +414,14 @@ export default function AnalyticsPage() {
                           className="aspect-square rounded-xl flex items-center justify-center cursor-default"
                           style={{ backgroundColor: `rgba(220, 38, 38, ${opacity})` }}
                         >
-                          <span className={`text-xs font-bold ${isBusy ? "text-brand-red" : "text-neutral-400"}`}>
+                          <span className={`text-xs font-bold ${isBusy ? "text-brand-red" : "text-muted"}`}>
                             {hour}
                           </span>
                         </motion.div>
                       )
                     })}
                   </div>
-                  <p className="text-xs text-neutral-400 mt-3 text-center">
+                  <p className="text-xs text-muted mt-3 text-center">
                     Numbers = hour (0–23). Hover over a cell to see order count.
                   </p>
                 </>
@@ -437,8 +437,8 @@ export default function AnalyticsPage() {
         >
           <Card>
             <CardHeader>
-              <h2 className="text-lg font-bold text-brand-black">Revenue by Category</h2>
-              <p className="text-sm text-neutral-400">Which categories earn the most</p>
+              <h2 className="text-lg font-bold text-ink">Revenue by Category</h2>
+              <p className="text-sm text-muted">Which categories earn the most</p>
             </CardHeader>
             <CardContent>
               {!categoryRevenue && (
@@ -448,8 +448,8 @@ export default function AnalyticsPage() {
               )}
               {categoryRevenue && categoryRevenue.length === 0 && (
                 <div className="h-40 flex flex-col items-center justify-center">
-                  <BarChart3 className="w-12 h-12 text-neutral-200 mb-3" />
-                  <p className="text-neutral-400 text-sm font-medium">No data yet</p>
+                  <BarChart3 className="w-12 h-12 text-muted/30 mb-3" />
+                  <p className="text-muted text-sm font-medium">No data yet</p>
                 </div>
               )}
               {categoryRevenue && categoryRevenue.length > 0 && (
@@ -464,24 +464,24 @@ export default function AnalyticsPage() {
                         transition={{ delay: idx * 0.06 }}
                       >
                         <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-sm font-bold text-brand-black truncate max-w-[180px]">
+                          <span className="text-sm font-bold text-ink truncate max-w-[180px]">
                             {cat.categoryName}
                           </span>
                           <div className="text-right">
-                            <span className="text-sm font-extrabold text-brand-black">
+                            <span className="text-sm font-extrabold text-ink">
                               {formatPrice(cat.revenue)}
                             </span>
-                            <span className="text-xs text-neutral-400 ml-2">
+                            <span className="text-xs text-muted ml-2">
                               {cat.orders} orders
                             </span>
                           </div>
                         </div>
-                        <div className="h-3 bg-neutral-100 rounded-full overflow-hidden">
+                        <div className="h-3 bg-surface-elevated rounded-full overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${widthPct}%` }}
                             transition={{ delay: idx * 0.06, type: "spring", stiffness: 150 }}
-                            className="h-full bg-brand-black rounded-full"
+                            className="h-full bg-ink rounded-full"
                           />
                         </div>
                       </motion.div>
@@ -502,19 +502,19 @@ export default function AnalyticsPage() {
           className="flex items-center justify-between mb-4"
         >
           <div>
-            <h2 className="text-xl font-bold text-brand-black">Menu Views</h2>
-            <p className="text-sm text-neutral-400">How customers are browsing your menu</p>
+            <h2 className="text-xl font-bold text-ink">Menu Views</h2>
+            <p className="text-sm text-muted">How customers are browsing your menu</p>
           </div>
           {!menuViewsUpsell && (
-            <div className="flex items-center gap-1 bg-neutral-100 rounded-xl p-1">
+            <div className="flex items-center gap-1 bg-surface-elevated rounded-xl p-1">
               {([7, 30] as const).map((d) => (
                 <button
                   key={d}
                   onClick={() => setMenuViewsDays(d)}
                   className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
                     menuViewsDays === d
-                      ? "bg-white text-brand-black shadow-sm"
-                      : "text-neutral-500 hover:text-brand-black"
+                      ? "bg-surface text-ink shadow-sm"
+                      : "text-muted hover:text-ink"
                   }`}
                 >
                   {d}d
@@ -532,13 +532,13 @@ export default function AnalyticsPage() {
           >
             <Card>
               <CardContent className="py-12 flex flex-col items-center text-center">
-                <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center mb-4">
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
                   <Eye className="w-7 h-7 text-brand-red" />
                 </div>
-                <p className="text-neutral-600 font-medium max-w-md mb-5">{menuViewsUpsellMessage}</p>
+                <p className="text-muted font-medium max-w-md mb-5">{menuViewsUpsellMessage}</p>
                 <Link
                   href="/admin/billing"
-                  className="px-6 py-3 rounded-xl bg-brand-red text-white text-sm font-bold hover:bg-red-700 transition-colors"
+                  className="px-6 py-3 rounded-xl bg-brand-red text-white text-sm font-bold hover:bg-primary-hover transition-colors"
                 >
                   View plans
                 </Link>
@@ -579,15 +579,15 @@ export default function AnalyticsPage() {
                     <Card>
                       <CardContent className="py-6">
                         <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center flex-shrink-0">
+                          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
                             <Icon className="w-7 h-7 text-brand-red" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-neutral-500">{card.label}</p>
-                            <p className="text-3xl font-extrabold text-brand-black leading-tight mt-0.5">
+                            <p className="text-sm font-medium text-muted">{card.label}</p>
+                            <p className="text-3xl font-extrabold text-ink leading-tight mt-0.5">
                               {card.value}
                             </p>
-                            <p className="text-xs text-neutral-400 mt-0.5">{card.sub}</p>
+                            <p className="text-xs text-muted mt-0.5">{card.sub}</p>
                           </div>
                         </div>
                       </CardContent>
@@ -605,10 +605,10 @@ export default function AnalyticsPage() {
               >
                 <Card>
                   <CardHeader>
-                    <h2 className="text-lg font-bold text-brand-black">
+                    <h2 className="text-lg font-bold text-ink">
                       Menu Views — Last {menuViewsDays} Days
                     </h2>
-                    <p className="text-sm text-neutral-400">Daily views breakdown</p>
+                    <p className="text-sm text-muted">Daily views breakdown</p>
                   </CardHeader>
                   <CardContent>
                     {menuViewsLoading && (
@@ -618,8 +618,8 @@ export default function AnalyticsPage() {
                     )}
                     {!menuViewsLoading && menuViews && menuViews.timeline.length === 0 && (
                       <div className="h-48 flex flex-col items-center justify-center">
-                        <Eye className="w-12 h-12 text-neutral-200 mb-3" />
-                        <p className="text-neutral-400 text-sm font-medium">No menu views recorded yet</p>
+                        <Eye className="w-12 h-12 text-muted/30 mb-3" />
+                        <p className="text-muted text-sm font-medium">No menu views recorded yet</p>
                       </div>
                     )}
                     {!menuViewsLoading && menuViews && menuViews.timeline.length > 0 && (
@@ -634,7 +634,7 @@ export default function AnalyticsPage() {
                               transition={{ delay: idx * 0.05 }}
                               className="flex-1 flex flex-col items-center justify-end gap-1 min-w-[28px]"
                             >
-                              <span className="text-xs font-bold text-neutral-600 truncate w-full text-center">
+                              <span className="text-xs font-bold text-muted truncate w-full text-center">
                                 {day.views}
                               </span>
                               <motion.div
@@ -644,7 +644,7 @@ export default function AnalyticsPage() {
                                 style={{ height: `${Math.max(heightPct, 4)}%`, transformOrigin: "bottom" }}
                                 className="w-full bg-brand-red rounded-t-lg"
                               />
-                              <span className="text-xs text-neutral-400 text-center leading-tight">
+                              <span className="text-xs text-muted text-center leading-tight">
                                 {formatDayLabel(day.date)}
                               </span>
                             </motion.div>
@@ -663,8 +663,8 @@ export default function AnalyticsPage() {
               >
                 <Card>
                   <CardHeader>
-                    <h2 className="text-lg font-bold text-brand-black">Most Viewed Items</h2>
-                    <p className="text-sm text-neutral-400">Menu items customers look at the most</p>
+                    <h2 className="text-lg font-bold text-ink">Most Viewed Items</h2>
+                    <p className="text-sm text-muted">Menu items customers look at the most</p>
                   </CardHeader>
                   <CardContent>
                     {menuViewsLoading && (
@@ -674,8 +674,8 @@ export default function AnalyticsPage() {
                     )}
                     {!menuViewsLoading && menuViews && menuViews.topItems.length === 0 && (
                       <div className="h-48 flex flex-col items-center justify-center">
-                        <Eye className="w-12 h-12 text-neutral-200 mb-3" />
-                        <p className="text-neutral-400 text-sm font-medium">No menu views recorded yet</p>
+                        <Eye className="w-12 h-12 text-muted/30 mb-3" />
+                        <p className="text-muted text-sm font-medium">No menu views recorded yet</p>
                       </div>
                     )}
                     {!menuViewsLoading && menuViews && menuViews.topItems.length > 0 && (
@@ -691,7 +691,7 @@ export default function AnalyticsPage() {
                             >
                               <div className="flex items-center justify-between mb-1.5">
                                 <div className="flex items-center gap-2 min-w-0">
-                                  <span className="text-sm font-extrabold text-neutral-300 w-5 flex-shrink-0">
+                                  <span className="text-sm font-extrabold text-muted w-5 flex-shrink-0">
                                     {idx + 1}
                                   </span>
                                   {item.imageUrl && (
@@ -701,15 +701,15 @@ export default function AnalyticsPage() {
                                       className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
                                     />
                                   )}
-                                  <span className="text-sm font-bold text-brand-black truncate max-w-[160px]">
+                                  <span className="text-sm font-bold text-ink truncate max-w-[160px]">
                                     {item.name}
                                   </span>
                                 </div>
-                                <span className="text-sm font-semibold text-neutral-500 flex-shrink-0">
+                                <span className="text-sm font-semibold text-muted flex-shrink-0">
                                   {item.views} views
                                 </span>
                               </div>
-                              <div className="h-2.5 bg-neutral-100 rounded-full overflow-hidden">
+                              <div className="h-2.5 bg-surface-elevated rounded-full overflow-hidden">
                                 <motion.div
                                   initial={{ width: 0 }}
                                   animate={{ width: `${widthPct}%` }}

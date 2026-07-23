@@ -234,13 +234,18 @@ export default function CartPage({ params }: { params: { slug: string } }) {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4">
+      <div className="min-h-screen bg-canvas flex flex-col items-center justify-center px-4">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-          <div className="w-20 h-20 rounded-full bg-neutral-100 flex items-center justify-center mx-auto mb-4">
-            <ShoppingCart className="w-10 h-10 text-neutral-300" />
-          </div>
-          <h2 className="text-xl font-bold text-brand-black mb-2">Your cart is empty</h2>
-          <p className="text-neutral-500 mb-6">Add some items to get started</p>
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.1, type: "spring", stiffness: 260, damping: 20 }}
+            className="w-20 h-20 rounded-full bg-surface-elevated flex items-center justify-center mx-auto mb-4"
+          >
+            <ShoppingCart className="w-10 h-10 text-muted" />
+          </motion.div>
+          <h2 className="text-xl font-bold text-ink mb-2">Your cart is empty</h2>
+          <p className="text-muted mb-6">Add some items to get started</p>
           <Button onClick={() => router.push(`/${params.slug}/menu`)} variant="outline">
             Browse Menu
           </Button>
@@ -252,14 +257,19 @@ export default function CartPage({ params }: { params: { slug: string } }) {
   return (
     <StorefrontTheme
       primaryColor={storefront?.primaryColor}
-      className="min-h-screen bg-white pb-32"
+      className="min-h-screen bg-canvas pb-32"
     >
-      <div className="sticky top-0 z-30 bg-white border-b border-neutral-100 px-4 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="p-1">
+      <motion.div
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        className="sticky top-0 z-30 bg-surface border-b border-line px-4 py-4 flex items-center gap-3"
+      >
+        <motion.button whileTap={{ scale: 0.9 }} onClick={() => router.back()} className="p-1">
           <ArrowLeft className="w-5 h-5" />
-        </button>
+        </motion.button>
         <h1 className="text-lg font-bold">Your Cart</h1>
-      </div>
+      </motion.div>
 
       <div className="px-4 py-4 space-y-3">
         {items.map((item, index) => (
@@ -268,21 +278,21 @@ export default function CartPage({ params }: { params: { slug: string } }) {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="flex gap-3 p-3 rounded-xl border border-neutral-100"
+            className="flex gap-3 p-3 rounded-xl border border-line"
           >
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className={`w-3 h-3 border-2 rounded-sm flex items-center justify-center ${
-                  item.isVeg ? "border-brand-black" : "border-brand-red"
+                  item.isVeg ? "border-ink" : "border-brand-red"
                 }`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${
-                    item.isVeg ? "bg-brand-black" : "bg-brand-red"
+                    item.isVeg ? "bg-ink" : "bg-brand-red"
                   }`} />
                 </span>
                 <h3 className="font-semibold text-sm truncate">{item.name}</h3>
               </div>
               {item.selectedOptions.length > 0 && (
-                <p className="text-xs text-neutral-500 mt-1">
+                <p className="text-xs text-muted mt-1">
                   {item.selectedOptions.map((o) => o.optionNames.join(", ")).join(" · ")}
                 </p>
               )}
@@ -293,30 +303,45 @@ export default function CartPage({ params }: { params: { slug: string } }) {
               </p>
             </div>
             <div className="flex flex-col items-end gap-2">
-              <button onClick={() => removeItem(index)} className="text-neutral-400 hover:text-brand-red">
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => removeItem(index)}
+                className="text-muted hover:text-brand-red transition-colors"
+              >
                 <Trash2 className="w-4 h-4" />
-              </button>
-              <div className="flex items-center border border-neutral-200 rounded-lg">
-                <button
+              </motion.button>
+              <div className="flex items-center border border-line rounded-lg">
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
                   onClick={() => item.quantity > 1 ? updateQuantity(index, item.quantity - 1) : removeItem(index)}
                   className="px-2 py-1"
                 >
                   <Minus className="w-3 h-3" />
-                </button>
+                </motion.button>
                 <span className="px-2 text-sm font-semibold">{item.quantity}</span>
-                <button onClick={() => updateQuantity(index, item.quantity + 1)} className="px-2 py-1">
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => updateQuantity(index, item.quantity + 1)}
+                  className="px-2 py-1"
+                >
                   <Plus className="w-3 h-3" />
-                </button>
+                </motion.button>
               </div>
             </div>
           </motion.div>
         ))}
       </div>
 
-      <div className="px-4 space-y-3">
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-10% 0px" }}
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        className="px-4 space-y-3"
+      >
         <h3 className="font-semibold text-sm">Fulfillment</h3>
         {fixedTable ? (
-          <div className="flex items-center gap-2 p-3 rounded-xl border border-neutral-200 text-sm font-medium">
+          <div className="flex items-center gap-2 p-3 rounded-xl border border-line text-sm font-medium">
             <Utensils className="w-5 h-5 text-brand-red" />
             Dine-in{tableLabel ? ` · ${tableLabel}` : ""}
           </div>
@@ -324,25 +349,26 @@ export default function CartPage({ params }: { params: { slug: string } }) {
           <>
             <div className="flex gap-2">
               {FULFILLMENT_OPTIONS.map((m) => (
-                <button
+                <motion.button
                   key={m.value}
+                  whileTap={{ scale: 0.96 }}
                   onClick={() => setOrderType(m.value)}
                   className={`flex-1 flex flex-col items-center gap-1 p-3 rounded-xl border text-xs font-semibold transition-colors ${
                     orderType === m.value
-                      ? "border-brand-red bg-red-50 text-brand-red"
-                      : "border-neutral-200 text-brand-black"
+                      ? "border-brand-red bg-primary/10 text-brand-red"
+                      : "border-line text-ink"
                   }`}
                 >
                   <m.icon className="w-5 h-5" />
                   {m.label}
-                </button>
+                </motion.button>
               ))}
             </div>
             {orderType === "DINE_IN" && (
               <select
                 value={pickedTableId}
                 onChange={(e) => setPickedTableId(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-neutral-200 text-sm bg-white focus:outline-none focus:border-brand-red"
+                className="w-full px-4 py-3 rounded-xl border border-line text-sm bg-surface focus:outline-none focus:border-brand-red"
               >
                 <option value="">Select your table</option>
                 {tables.map((t) => (
@@ -359,7 +385,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
                   onChange={(e) => setDeliveryLocation(e.target.value)}
                   placeholder="Where should we deliver? (room / desk / hostel)"
                   maxLength={200}
-                  className="w-full px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
+                  className="w-full px-4 py-3 rounded-xl border border-line text-sm bg-surface focus:outline-none focus:border-brand-red"
                 />
 
                 {deliveryZoneActive && (
@@ -372,7 +398,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
                       className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-sm font-bold transition-colors disabled:opacity-60 ${
                         coords
                           ? "border-brand-red text-brand-red"
-                          : "border-neutral-200 text-brand-black hover:border-brand-red"
+                          : "border-line text-ink hover:border-brand-red"
                       }`}
                     >
                       <MapPin className="w-4 h-4" />
@@ -382,7 +408,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
                           ? "Location captured — tap to update"
                           : "Use my current location"}
                     </motion.button>
-                    <p className="text-xs text-neutral-500">
+                    <p className="text-xs text-muted">
                       {storefront?.name ?? "This restaurant"} delivers within{" "}
                       {storefront?.deliveryRadiusKm} km
                       {Number(storefront?.deliveryFee ?? 0) > 0
@@ -398,7 +424,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
             )}
           </>
         )}
-      </div>
+      </motion.div>
 
       <div className="px-4 py-4">
         <textarea
@@ -406,56 +432,65 @@ export default function CartPage({ params }: { params: { slug: string } }) {
           value={specialInstructions}
           onChange={(e) => setSpecialInstructions(e.target.value)}
           rows={2}
-          className="w-full px-4 py-3 rounded-xl border border-neutral-200 text-sm resize-none focus:outline-none focus:border-brand-red"
+          className="w-full px-4 py-3 rounded-xl border border-line text-sm bg-surface resize-none focus:outline-none focus:border-brand-red"
         />
       </div>
 
-      <div className="px-4 space-y-3">
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-10% 0px" }}
+        transition={{ duration: 0.45, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+        className="px-4 space-y-3"
+      >
         <h3 className="font-semibold text-sm">Payment Method</h3>
         <div className="flex gap-3">
-          <button
+          <motion.button
+            whileTap={{ scale: 0.96 }}
             onClick={() => setPaymentMethod("CASH")}
             className={`flex-1 flex items-center gap-2 p-3 rounded-xl border text-sm font-medium transition-colors ${
-              paymentMethod === "CASH" ? "border-brand-red bg-red-50 text-brand-red" : "border-neutral-200"
+              paymentMethod === "CASH" ? "border-brand-red bg-primary/10 text-brand-red" : "border-line"
             }`}
           >
             <Banknote className="w-5 h-5" />
             Cash
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.96 }}
             onClick={() => setPaymentMethod("WALLET")}
             className={`flex-1 flex items-center gap-2 p-3 rounded-xl border text-sm font-medium transition-colors ${
-              paymentMethod === "WALLET" ? "border-brand-red bg-red-50 text-brand-red" : "border-neutral-200"
+              paymentMethod === "WALLET" ? "border-brand-red bg-primary/10 text-brand-red" : "border-line"
             }`}
           >
             <Wallet className="w-5 h-5" />
             Wallet
-          </button>
+          </motion.button>
           {onlinePaymentAvailable && (
-            <button
+            <motion.button
+              whileTap={{ scale: 0.96 }}
               onClick={() => setPaymentMethod("ONLINE")}
               className={`flex-1 flex items-center gap-2 p-3 rounded-xl border text-sm font-medium transition-colors ${
                 paymentMethod === "ONLINE"
-                  ? "border-brand-red bg-red-50 text-brand-red"
-                  : "border-neutral-200"
+                  ? "border-brand-red bg-primary/10 text-brand-red"
+                  : "border-line"
               }`}
             >
               <Smartphone className="w-5 h-5" />
               Pay online
-            </button>
+            </motion.button>
           )}
         </div>
         {paymentMethod === "ONLINE" && (
-          <p className="text-xs text-neutral-500 px-1">
+          <p className="text-xs text-muted px-1">
             You will be taken to a secure payment page. Your order reaches the kitchen once the
             payment is confirmed.
           </p>
         )}
         {paymentMethod === "WALLET" && (
           <div className="flex items-center justify-between text-sm px-1">
-            <span className="text-neutral-500">
+            <span className="text-muted">
               Wallet balance:{" "}
-              <span className="font-semibold text-brand-black">
+              <span className="font-semibold text-ink">
                 {walletBalance === null ? "…" : formatPrice(walletBalance)}
               </span>
             </span>
@@ -464,32 +499,33 @@ export default function CartPage({ params }: { params: { slug: string } }) {
             )}
           </div>
         )}
-      </div>
+      </motion.div>
 
       <motion.div
         initial={{ y: 100 }}
         animate={{ y: 0 }}
-        className="fixed bottom-0 inset-x-0 p-4 bg-white border-t border-neutral-100"
+        transition={{ type: "spring", stiffness: 300, damping: 32 }}
+        className="fixed bottom-0 inset-x-0 p-4 bg-surface border-t border-line"
       >
         {deliveryFeeAmount > 0 && (
           <div className="flex justify-between items-center mb-1.5">
-            <span className="text-xs text-neutral-500">Items</span>
-            <span className="text-xs font-semibold text-neutral-600">
+            <span className="text-xs text-muted">Items</span>
+            <span className="text-xs font-semibold text-muted">
               {formatPrice(itemsTotal)}
             </span>
           </div>
         )}
         {deliveryFeeAmount > 0 && (
           <div className="flex justify-between items-center mb-2">
-            <span className="text-xs text-neutral-500">Delivery fee</span>
-            <span className="text-xs font-semibold text-neutral-600">
+            <span className="text-xs text-muted">Delivery fee</span>
+            <span className="text-xs font-semibold text-muted">
               {formatPrice(deliveryFeeAmount)}
             </span>
           </div>
         )}
         <div className="flex justify-between items-center mb-3">
-          <span className="text-sm text-neutral-500">Total</span>
-          <span className="text-xl font-extrabold text-brand-black">{formatPrice(total)}</span>
+          <span className="text-sm text-muted">Total</span>
+          <span className="text-xl font-extrabold text-ink">{formatPrice(total)}</span>
         </div>
         {walletInsufficient ? (
           <Button className="w-full" size="lg" loading={recharging} onClick={handleTopUp}>

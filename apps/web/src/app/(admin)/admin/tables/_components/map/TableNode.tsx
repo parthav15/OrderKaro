@@ -119,12 +119,12 @@ export function TableNode({
 
       <div
         className={
-          "relative w-full h-full rounded-2xl bg-white p-3 select-none transition-colors " +
+          "relative w-full h-full rounded-2xl bg-surface p-3 select-none transition-colors " +
           (selected
-            ? "ring-2 ring-brand-red border border-transparent shadow-[0_8px_24px_-12px_rgba(220,38,38,0.45)]"
+            ? "ring-2 ring-brand-red border border-transparent shadow-[0_8px_24px_-12px_rgba(var(--brand-red)/0.45)]"
             : hovered
             ? "border border-brand-red/40 shadow-[0_8px_20px_-12px_rgba(0,0,0,0.18)]"
-            : "border border-neutral-200 shadow-[0_2px_8px_-4px_rgba(0,0,0,0.08)]")
+            : "border border-line shadow-[0_2px_8px_-4px_rgba(0,0,0,0.08)]")
         }
       >
         {!table.isActive && (
@@ -133,7 +133,7 @@ export function TableNode({
             className="absolute inset-0 rounded-2xl pointer-events-none opacity-40"
             style={{
               backgroundImage:
-                "repeating-linear-gradient(135deg, transparent 0 7px, rgba(10,10,10,0.05) 7px 8px)",
+                "repeating-linear-gradient(135deg, transparent 0 7px, rgba(var(--ink) / 0.05) 7px 8px)",
             }}
           />
         )}
@@ -141,11 +141,11 @@ export function TableNode({
         <div className="flex items-start gap-2.5">
           <TableCardQrThumb restaurantId={restaurantId} tableId={table.id} size={56} hovered={hovered} />
           <div className="flex-1 min-w-0">
-            <h4 className="text-sm font-extrabold text-brand-black leading-tight truncate">
+            <h4 className="text-sm font-extrabold text-ink leading-tight truncate">
               {table.label}
             </h4>
             {table.section && (
-              <p className="text-[9px] uppercase tracking-[0.18em] font-bold text-neutral-400 mt-0.5 truncate">
+              <p className="text-[9px] uppercase tracking-[0.18em] font-bold text-muted mt-0.5 truncate">
                 {table.section}
               </p>
             )}
@@ -159,20 +159,20 @@ export function TableNode({
                 className={
                   isLive
                     ? "w-2 h-2 rounded-full bg-brand-red"
-                    : "w-2 h-2 rounded-full bg-neutral-300"
+                    : "w-2 h-2 rounded-full bg-muted"
                 }
               />
               {isLive && (
                 <span className="absolute inset-0 rounded-full bg-brand-red animate-ping opacity-60" />
               )}
             </span>
-            <span className="text-[10px] font-bold tabular-nums text-neutral-600">
+            <span className="text-[10px] font-bold tabular-nums text-muted">
               {isLive ? `${liveCount} active` : "Idle"}
             </span>
           </div>
           {table.todayOrderCount > 0 && (
-            <span className="text-[10px] tabular-nums text-neutral-500">
-              <span className="font-bold text-brand-black">{table.todayOrderCount}</span> today
+            <span className="text-[10px] tabular-nums text-muted">
+              <span className="font-bold text-ink">{table.todayOrderCount}</span> today
             </span>
           )}
         </div>

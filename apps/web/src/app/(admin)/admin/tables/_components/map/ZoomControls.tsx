@@ -25,7 +25,7 @@ export function ZoomControls({ scale, onZoomIn, onZoomOut, onFit, onReset }: Zoo
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="absolute bottom-4 right-4 flex items-center gap-1 p-1 rounded-2xl bg-white/95 backdrop-blur-md border border-neutral-200 shadow-lg"
+      className="absolute bottom-4 right-4 flex items-center gap-1 p-1 rounded-2xl bg-surface/95 backdrop-blur-md border border-line shadow-lg"
     >
       <ZoomBtn onClick={onZoomOut} ariaLabel="Zoom out">
         <Minus className="w-3.5 h-3.5" />
@@ -33,14 +33,14 @@ export function ZoomControls({ scale, onZoomIn, onZoomOut, onFit, onReset }: Zoo
       <button
         type="button"
         onClick={onReset}
-        className="px-2.5 py-1.5 rounded-xl text-xs font-bold tabular-nums text-brand-black hover:bg-neutral-100 transition-colors min-w-[52px]"
+        className="px-2.5 py-1.5 rounded-xl text-xs font-bold tabular-nums text-ink hover:bg-surface-elevated transition-colors min-w-[52px]"
       >
         {percent}%
       </button>
       <ZoomBtn onClick={onZoomIn} ariaLabel="Zoom in">
         <Plus className="w-3.5 h-3.5" />
       </ZoomBtn>
-      <span className="w-px h-5 bg-neutral-200 mx-0.5" />
+      <span className="w-px h-5 bg-line mx-0.5" />
       <ZoomBtn onClick={onFit} ariaLabel="Fit to content">
         <Maximize2 className="w-3.5 h-3.5" />
       </ZoomBtn>
@@ -65,7 +65,7 @@ function ZoomBtn({
       whileTap={{ scale: 0.9 }}
       onClick={onClick}
       aria-label={ariaLabel}
-      className="w-8 h-8 inline-flex items-center justify-center rounded-xl text-brand-black hover:bg-neutral-100 transition-colors"
+      className="w-8 h-8 inline-flex items-center justify-center rounded-xl text-ink hover:bg-surface-elevated transition-colors"
     >
       {children}
     </motion.button>

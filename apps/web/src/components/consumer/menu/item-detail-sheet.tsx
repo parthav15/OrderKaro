@@ -122,14 +122,14 @@ export function ItemDetailSheet({
             onDragEnd={(_, info) => {
               if (info.offset.y > 140 || info.velocity.y > 600) onClose()
             }}
-            className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-[28px] shadow-[0_-20px_60px_-12px_rgba(0,0,0,0.25)] max-h-[92vh] flex flex-col"
+            className="fixed inset-x-0 bottom-0 z-50 bg-surface rounded-t-[28px] shadow-[0_-20px_60px_-12px_rgba(0,0,0,0.25)] max-h-[92vh] flex flex-col"
           >
             <div className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing">
-              <div className="w-10 h-1 bg-brand-black/15 rounded-full" />
+              <div className="w-10 h-1 bg-ink/15 rounded-full" />
             </div>
 
             <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden">
-              <div className="relative h-[260px] sm:h-[300px] overflow-hidden bg-brand-black/[0.04]">
+              <div className="relative h-[260px] sm:h-[300px] overflow-hidden bg-ink/[0.04]">
                 {item.imageUrl ? (
                   <motion.div
                     style={{ y: heroY, scale: heroScale }}
@@ -147,7 +147,7 @@ export function ItemDetailSheet({
                   </motion.div>
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="font-serif italic text-9xl text-brand-black/10">
+                    <span className="font-serif italic text-9xl text-ink/10">
                       {item.name.charAt(0)}
                     </span>
                   </div>
@@ -177,39 +177,39 @@ export function ItemDetailSheet({
 
               <div className="px-6 pt-7 pb-44">
                 {number && (
-                  <p className="font-mono text-[11px] tracking-[0.18em] text-brand-black/40 mb-2">
+                  <p className="font-mono text-[11px] tracking-[0.18em] text-ink/40 mb-2">
                     {String(number).padStart(2, "0")}
                   </p>
                 )}
 
                 <div className="flex items-start gap-3">
                   <VegMarker isVeg={item.isVeg} size="md" className="mt-1.5" />
-                  <h2 className="font-heading text-3xl sm:text-[34px] font-extrabold tracking-tight leading-[1.05] text-brand-black flex-1">
+                  <h2 className="font-heading text-3xl sm:text-[34px] font-extrabold tracking-tight leading-[1.05] text-ink flex-1">
                     {item.name}
                   </h2>
                 </div>
 
                 {item.description && (
-                  <p className="font-serif italic text-lg leading-snug text-brand-black/65 mt-3">
+                  <p className="font-serif italic text-lg leading-snug text-ink/65 mt-3">
                     {item.description}
                   </p>
                 )}
 
                 <div className="flex items-baseline gap-3 mt-5">
-                  <span className="font-heading text-2xl font-extrabold tabular-nums text-brand-black">
+                  <span className="font-heading text-2xl font-extrabold tabular-nums text-ink">
                     {formatPrice(item.price)}
                   </span>
                   {item.tags.slice(0, 2).map((tag) => (
                     <span
                       key={tag}
-                      className="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-black/55 border border-brand-black/15 rounded-full px-2 py-[3px]"
+                      className="text-[10px] font-bold uppercase tracking-[0.18em] text-ink/55 border border-ink/15 rounded-full px-2 py-[3px]"
                     >
                       {tag}
                     </span>
                   ))}
                 </div>
 
-                <div className="mt-7 h-px bg-brand-black/10" />
+                <div className="mt-7 h-px bg-ink/10" />
 
                 {item.customizations.map((cust, idx) => {
                   const selected = selectedOptions[cust.id] ?? []
@@ -224,11 +224,11 @@ export function ItemDetailSheet({
                     >
                       <div className="flex items-baseline justify-between gap-3 mb-3">
                         <div>
-                          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-brand-black/45">
+                          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink/45">
                             {isMulti ? "Choose any" : "Choose one"}
                             {cust.isRequired && <span className="text-brand-red ml-1.5">required</span>}
                           </p>
-                          <h3 className="font-heading text-xl font-extrabold text-brand-black mt-1">
+                          <h3 className="font-heading text-xl font-extrabold text-ink mt-1">
                             {cust.name}
                           </h3>
                         </div>
@@ -244,8 +244,8 @@ export function ItemDetailSheet({
                                 type="button"
                                 onClick={() => toggleOption(cust.id, opt.id, cust.type)}
                                 className={cn(
-                                  "w-full flex items-center justify-between py-3.5 px-1 group transition-colors border-b border-brand-black/[0.06] last:border-b-0",
-                                  isSelected ? "text-brand-black" : "text-brand-black/75 hover:text-brand-black"
+                                  "w-full flex items-center justify-between py-3.5 px-1 group transition-colors border-b border-ink/[0.06] last:border-b-0",
+                                  isSelected ? "text-ink" : "text-ink/75 hover:text-ink"
                                 )}
                               >
                                 <div className="flex items-center gap-3.5">
@@ -254,8 +254,8 @@ export function ItemDetailSheet({
                                       "w-5 h-5 flex items-center justify-center transition-colors flex-shrink-0",
                                       isMulti ? "rounded-md" : "rounded-full",
                                       isSelected
-                                        ? "bg-brand-black text-white"
-                                        : "border border-brand-black/25 group-hover:border-brand-black/55"
+                                        ? "bg-ink text-canvas"
+                                        : "border border-ink/25 group-hover:border-ink/55"
                                     )}
                                   >
                                     <AnimatePresence>
@@ -284,7 +284,7 @@ export function ItemDetailSheet({
                                   <span
                                     className={cn(
                                       "text-sm tabular-nums transition-colors",
-                                      isSelected ? "font-bold text-brand-black" : "font-medium text-brand-black/55"
+                                      isSelected ? "font-bold text-ink" : "font-medium text-ink/55"
                                     )}
                                   >
                                     +{formatPrice(adjustment)}
@@ -306,10 +306,10 @@ export function ItemDetailSheet({
                   className="mt-9 flex items-center justify-between gap-4"
                 >
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-brand-black/45">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink/45">
                       Quantity
                     </p>
-                    <p className="font-heading text-xl font-extrabold text-brand-black mt-1">
+                    <p className="font-heading text-xl font-extrabold text-ink mt-1">
                       How many?
                     </p>
                   </div>
@@ -323,7 +323,7 @@ export function ItemDetailSheet({
               </div>
             </div>
 
-            <div className="absolute bottom-0 inset-x-0 bg-white border-t border-brand-black/[0.06] px-5 pt-3 pb-4">
+            <div className="absolute bottom-0 inset-x-0 bg-surface border-t border-ink/[0.06] px-5 pt-3 pb-4">
               <motion.button
                 type="button"
                 whileTap={{ scale: 0.98 }}
@@ -333,8 +333,8 @@ export function ItemDetailSheet({
                 className={cn(
                   "w-full h-14 rounded-2xl flex items-center justify-between px-5 transition-colors",
                   requiredMissing
-                    ? "bg-brand-black/10 text-brand-black/40 cursor-not-allowed"
-                    : "bg-brand-black text-white"
+                    ? "bg-ink/10 text-ink/40 cursor-not-allowed"
+                    : "bg-ink text-canvas"
                 )}
               >
                 <span className="text-[11px] font-bold uppercase tracking-[0.18em] opacity-75">

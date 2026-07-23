@@ -96,14 +96,14 @@ export function AddTableModal({ isOpen, restaurantId, sections, onClose }: AddTa
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Add tables" className="max-w-2xl">
       <div className="space-y-6">
-        <div className="flex items-center justify-between p-4 rounded-xl bg-neutral-50 border border-neutral-100">
+        <div className="flex items-center justify-between p-4 rounded-xl bg-surface-elevated border border-line">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-white border border-neutral-200 flex items-center justify-center">
-              <Layers className="w-4 h-4 text-neutral-600" />
+            <div className="w-9 h-9 rounded-xl bg-surface border border-line flex items-center justify-center">
+              <Layers className="w-4 h-4 text-muted" />
             </div>
             <div>
-              <p className="text-sm font-bold text-brand-black">Create multiple at once</p>
-              <p className="text-xs text-neutral-500 mt-0.5">
+              <p className="text-sm font-bold text-ink">Create multiple at once</p>
+              <p className="text-xs text-muted mt-0.5">
                 Generate a numbered range like Table 1 → Table 20.
               </p>
             </div>
@@ -130,14 +130,14 @@ export function AddTableModal({ isOpen, restaurantId, sections, onClose }: AddTa
                   className="space-y-4"
                 >
                   <div className="space-y-2">
-                    <label className="block text-sm font-bold text-brand-black">Label</label>
+                    <label className="block text-sm font-bold text-ink">Label</label>
                     <input
                       autoFocus
                       placeholder="e.g. Table 1, Corner Table"
                       value={label}
                       onChange={(e) => setLabel(e.target.value)}
                       required
-                      className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20 transition-colors"
+                      className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20 transition-colors"
                     />
                   </div>
 
@@ -162,33 +162,33 @@ export function AddTableModal({ isOpen, restaurantId, sections, onClose }: AddTa
                   className="space-y-4"
                 >
                   <div className="space-y-2">
-                    <label className="block text-sm font-bold text-brand-black">Label prefix</label>
+                    <label className="block text-sm font-bold text-ink">Label prefix</label>
                     <input
                       value={bulkPrefix}
                       onChange={(e) => setBulkPrefix(e.target.value)}
-                      className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20 transition-colors"
+                      className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20 transition-colors"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                      <label className="block text-sm font-bold text-brand-black">From</label>
+                      <label className="block text-sm font-bold text-ink">From</label>
                       <input
                         type="number"
                         min={1}
                         value={bulkFrom}
                         onChange={(e) => setBulkFrom(parseInt(e.target.value || "1"))}
-                        className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20 transition-colors"
+                        className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20 transition-colors"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-sm font-bold text-brand-black">To</label>
+                      <label className="block text-sm font-bold text-ink">To</label>
                       <input
                         type="number"
                         min={bulkFrom}
                         value={bulkTo}
                         onChange={(e) => setBulkTo(parseInt(e.target.value || `${bulkFrom}`))}
-                        className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20 transition-colors"
+                        className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20 transition-colors"
                       />
                     </div>
                   </div>
@@ -204,12 +204,12 @@ export function AddTableModal({ isOpen, restaurantId, sections, onClose }: AddTa
                   {bulkProgress.total > 0 && (
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="font-semibold text-brand-black">Creating tables…</span>
-                        <span className="tabular-nums text-neutral-500">
+                        <span className="font-semibold text-ink">Creating tables…</span>
+                        <span className="tabular-nums text-muted">
                           {bulkProgress.done} / {bulkProgress.total}
                         </span>
                       </div>
-                      <div className="h-1 bg-neutral-100 rounded-full overflow-hidden">
+                      <div className="h-1 bg-surface-elevated rounded-full overflow-hidden">
                         <motion.div
                           className="h-full bg-brand-red"
                           initial={{ width: 0 }}
@@ -265,8 +265,8 @@ function SectionField({
 }) {
   return (
     <div className="space-y-2 relative">
-      <label className="block text-sm font-bold text-brand-black">
-        Section <span className="font-normal text-neutral-400">(optional)</span>
+      <label className="block text-sm font-bold text-ink">
+        Section <span className="font-normal text-muted">(optional)</span>
       </label>
       <input
         value={section}
@@ -277,13 +277,13 @@ function SectionField({
         onFocus={() => setShow(true)}
         onBlur={() => setTimeout(() => setShow(false), 120)}
         placeholder="e.g. Ground Floor, Terrace"
-        className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20 transition-colors"
+        className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20 transition-colors"
       />
       {show && suggestions.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="absolute z-10 mt-1 w-full rounded-xl border border-neutral-200 bg-white shadow-lg overflow-hidden"
+          className="absolute z-10 mt-1 w-full rounded-xl border border-line bg-surface shadow-lg overflow-hidden"
         >
           {suggestions.slice(0, 5).map((s) => (
             <button
@@ -294,7 +294,7 @@ function SectionField({
                 setSection(s)
                 setShow(false)
               }}
-              className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-50 transition-colors"
+              className="w-full px-4 py-2.5 text-left text-sm hover:bg-surface-elevated transition-colors"
             >
               {s}
             </button>
@@ -320,8 +320,8 @@ function PreviewPanel({
 }) {
   const list = bulkMode ? previewItems : [label || "Table"]
   return (
-    <div className="rounded-2xl border border-dashed border-neutral-200 bg-neutral-50/40 p-4 space-y-3">
-      <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-neutral-400">
+    <div className="rounded-2xl border border-dashed border-line bg-surface-elevated/40 p-4 space-y-3">
+      <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-muted">
         Live preview
       </p>
       <div className="space-y-2">
@@ -331,15 +331,15 @@ function PreviewPanel({
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.04 }}
-            className="flex items-center gap-3 p-3 rounded-xl bg-white border border-neutral-100"
+            className="flex items-center gap-3 p-3 rounded-xl bg-surface border border-line"
           >
-            <div className="w-10 h-10 rounded-lg bg-neutral-50 flex items-center justify-center ring-1 ring-inset ring-neutral-100">
-              <QrCode className="w-4 h-4 text-neutral-400" />
+            <div className="w-10 h-10 rounded-lg bg-surface-elevated flex items-center justify-center ring-1 ring-inset ring-line">
+              <QrCode className="w-4 h-4 text-muted" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-brand-black truncate">{item}</p>
+              <p className="text-sm font-bold text-ink truncate">{item}</p>
               {section && (
-                <p className="text-[10px] uppercase tracking-[0.18em] text-neutral-400 mt-0.5 truncate">
+                <p className="text-[10px] uppercase tracking-[0.18em] text-muted mt-0.5 truncate">
                   {section}
                 </p>
               )}
@@ -348,7 +348,7 @@ function PreviewPanel({
         ))}
       </div>
       {bulkMode && count > 5 && (
-        <p className="text-xs text-neutral-400 text-center pt-1">
+        <p className="text-xs text-muted text-center pt-1">
           +{count - 5} more
         </p>
       )}

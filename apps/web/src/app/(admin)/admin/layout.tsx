@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { AdminTopNav } from "@/components/admin/top-nav"
 import { useAuthStore } from "@/stores/auth"
-import { Logo } from "@/components/ui/logo"
+import { BrandLoader } from "@/components/ui/brand-loader"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((s) => s.user)
@@ -27,15 +27,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [user, hydrated, router])
 
   if (!hydrated || !user || (user.role !== "OWNER" && user.role !== "MANAGER")) {
-    return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
-        <Logo size="xl" />
-      </div>
-    )
+    return <BrandLoader />
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-canvas">
       <AdminTopNav />
       <main className="pt-20 px-8 pb-8 max-w-[1400px] mx-auto">{children}</main>
     </div>

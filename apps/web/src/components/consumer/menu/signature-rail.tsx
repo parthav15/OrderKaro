@@ -32,14 +32,14 @@ export function SignatureRail({
     >
       <div className="px-5 mb-4 flex items-end justify-between gap-4">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-brand-black/45">
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink/45">
             Signature
           </p>
-          <h2 className="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight text-brand-black leading-tight mt-1.5">
+          <h2 className="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight text-ink leading-tight mt-1.5">
             Today&apos;s picks
           </h2>
         </div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-black/40 pb-1.5">
+        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-ink/40 pb-1.5">
           Swipe →
         </p>
       </div>

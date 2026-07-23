@@ -114,9 +114,9 @@ export default function StaffManagement() {
             <div className="w-10 h-10 rounded-xl bg-brand-red/10 flex items-center justify-center">
               <Users className="w-5 h-5 text-brand-red" />
             </div>
-            <h1 className="text-3xl font-extrabold text-brand-black">Staff Management</h1>
+            <h1 className="text-3xl font-extrabold text-ink">Staff Management</h1>
           </div>
-          <p className="text-neutral-500">Add and manage your kitchen and counter team members</p>
+          <p className="text-muted">Add and manage your kitchen and counter team members</p>
         </div>
         <Button size="lg" onClick={() => setShowModal(true)}>
           <Plus className="w-5 h-5" /> Add Staff Member
@@ -128,7 +128,7 @@ export default function StaffManagement() {
           <select
             value={restaurantId || ""}
             onChange={(e) => setRestaurantId(e.target.value)}
-            className="px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
+            className="px-4 py-3 rounded-xl border border-line text-sm focus:outline-none focus:border-brand-red"
           >
             {restaurants.map((c: any) => (
               <option key={c.id} value={c.id}>{c.name}</option>
@@ -140,7 +140,7 @@ export default function StaffManagement() {
       {isLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-44 rounded-xl bg-neutral-100 animate-pulse" />
+            <div key={i} className="h-44 rounded-xl bg-surface-elevated animate-pulse" />
           ))}
         </div>
       )}
@@ -149,11 +149,11 @@ export default function StaffManagement() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center py-24 border-2 border-dashed border-neutral-200 rounded-2xl"
+          className="text-center py-24 border-2 border-dashed border-line rounded-2xl"
         >
-          <Users className="w-16 h-16 text-neutral-200 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-brand-black mb-2">No staff members yet</h3>
-          <p className="text-neutral-400 mb-6">Add your first team member to give them access to the system</p>
+          <Users className="w-16 h-16 text-muted/30 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-ink mb-2">No staff members yet</h3>
+          <p className="text-muted mb-6">Add your first team member to give them access to the system</p>
           <Button size="lg" onClick={() => setShowModal(true)}>
             <Plus className="w-5 h-5" /> Add First Staff Member
           </Button>
@@ -189,33 +189,33 @@ export default function StaffManagement() {
                       </div>
                     </div>
 
-                    <h3 className="text-lg font-extrabold text-brand-black">{member.name}</h3>
+                    <h3 className="text-lg font-extrabold text-ink">{member.name}</h3>
                     <div className="flex items-center gap-2 mt-1">
-                      <Mail className="w-4 h-4 text-neutral-400 flex-shrink-0" />
-                      <p className="text-sm text-neutral-500 truncate">{member.email}</p>
+                      <Mail className="w-4 h-4 text-muted flex-shrink-0" />
+                      <p className="text-sm text-muted truncate">{member.email}</p>
                     </div>
                     {member.pin && (
                       <div className="flex items-center gap-2 mt-1">
-                        <ShieldCheck className="w-4 h-4 text-neutral-400" />
-                        <p className="text-sm text-neutral-400">PIN login enabled</p>
+                        <ShieldCheck className="w-4 h-4 text-muted" />
+                        <p className="text-sm text-muted">PIN login enabled</p>
                       </div>
                     )}
 
-                    <div className="flex items-center gap-2 mt-5 pt-4 border-t border-neutral-100">
+                    <div className="flex items-center gap-2 mt-5 pt-4 border-t border-line">
                       <button
                         onClick={() => toggleStaff.mutate(member.id)}
-                        className="flex items-center gap-2 text-sm font-semibold text-neutral-600 hover:text-brand-black transition-colors"
+                        className="flex items-center gap-2 text-sm font-semibold text-muted hover:text-ink transition-colors"
                       >
                         {member.isActive ? (
-                          <ToggleRight className="w-6 h-6 text-brand-black" />
+                          <ToggleRight className="w-6 h-6 text-ink" />
                         ) : (
-                          <ToggleLeft className="w-6 h-6 text-neutral-400" />
+                          <ToggleLeft className="w-6 h-6 text-muted" />
                         )}
                         {member.isActive ? "Deactivate" : "Activate"}
                       </button>
                       <button
                         onClick={() => setDeleteTarget(member)}
-                        className="ml-auto flex items-center gap-1.5 text-sm font-semibold text-brand-red hover:text-red-700 transition-colors"
+                        className="ml-auto flex items-center gap-1.5 text-sm font-semibold text-brand-red hover:text-primary-hover transition-colors"
                       >
                         <Trash2 className="w-4 h-4" /> Remove
                       </button>
@@ -235,11 +235,11 @@ export default function StaffManagement() {
       >
         {deleteTarget && (
           <div className="space-y-5">
-            <div className="flex items-start gap-4 p-4 bg-red-50 border border-brand-red/20 rounded-xl">
+            <div className="flex items-start gap-4 p-4 bg-primary/10 border border-brand-red/20 rounded-xl">
               <AlertTriangle className="w-6 h-6 text-brand-red flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold text-brand-black">Remove {deleteTarget.name}?</p>
-                <p className="text-sm text-neutral-600 mt-1">
+                <p className="font-bold text-ink">Remove {deleteTarget.name}?</p>
+                <p className="text-sm text-muted mt-1">
                   They will lose access to the system immediately. This action cannot be undone.
                 </p>
               </div>
@@ -269,42 +269,42 @@ export default function StaffManagement() {
       >
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-brand-black">Full Name</label>
+            <label className="block text-sm font-bold text-ink">Full Name</label>
             <input
               placeholder="e.g. Raju Sharma"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               required
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-brand-black">Email Address</label>
+            <label className="block text-sm font-bold text-ink">Email Address</label>
             <input
               type="email"
               placeholder="raju@yourrestaurant.com"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               required
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-brand-black">Password</label>
+            <label className="block text-sm font-bold text-ink">Password</label>
             <input
               type="password"
               placeholder="Set a secure password"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               required
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-brand-black">Role</label>
+            <label className="block text-sm font-bold text-ink">Role</label>
             <div className="space-y-2">
               {["MANAGER", "KITCHEN", "COUNTER"].map((role) => (
                 <button
@@ -313,12 +313,12 @@ export default function StaffManagement() {
                   onClick={() => setForm({ ...form, role })}
                   className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-colors ${
                     form.role === role
-                      ? "border-brand-black bg-brand-black text-white"
-                      : "border-neutral-200 bg-white text-brand-black hover:border-neutral-300"
+                      ? "border-ink bg-ink text-canvas"
+                      : "border-line bg-surface text-ink hover:border-primary/30"
                   }`}
                 >
                   <p className="font-bold text-sm">{roleLabel[role]}</p>
-                  <p className={`text-xs mt-0.5 ${form.role === role ? "text-neutral-300" : "text-neutral-400"}`}>
+                  <p className={`text-xs mt-0.5 ${form.role === role ? "text-canvas/70" : "text-muted"}`}>
                     {roleDescription[role]}
                   </p>
                 </button>
@@ -327,8 +327,8 @@ export default function StaffManagement() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-brand-black">
-              4-Digit PIN <span className="font-normal text-neutral-400">(optional, for quick login on shared devices)</span>
+            <label className="block text-sm font-bold text-ink">
+              4-Digit PIN <span className="font-normal text-muted">(optional, for quick login on shared devices)</span>
             </label>
             <input
               type="password"
@@ -336,7 +336,7 @@ export default function StaffManagement() {
               maxLength={4}
               value={form.pin}
               onChange={(e) => setForm({ ...form, pin: e.target.value })}
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
             />
           </div>
 

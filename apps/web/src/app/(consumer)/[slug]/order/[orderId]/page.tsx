@@ -186,7 +186,7 @@ export default function OrderTrackingPage({
 
   if (!resolvedRestaurantId && !displayOrder) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-canvas flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-2 border-brand-red border-t-transparent rounded-full" />
       </div>
     )
@@ -194,29 +194,39 @@ export default function OrderTrackingPage({
 
   if (!displayOrder) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-canvas flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-2 border-brand-red border-t-transparent rounded-full" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="sticky top-0 z-30 bg-white border-b border-neutral-100 px-4 py-4 flex items-center gap-3">
-        <button onClick={() => router.push(`/${params.slug}/menu`)} className="p-1">
+    <div className="min-h-screen bg-canvas">
+      <motion.div
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        className="sticky top-0 z-30 bg-surface border-b border-line px-4 py-4 flex items-center gap-3"
+      >
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => router.push(`/${params.slug}/menu`)}
+          className="p-1"
+        >
           <ArrowLeft className="w-5 h-5" />
-        </button>
+        </motion.button>
         <h1 className="text-lg font-bold">Order #{displayOrder.orderNumber}</h1>
         {isNotificationSupported() && notifPermission === "default" && (
-          <button
+          <motion.button
+            whileTap={{ scale: 0.9 }}
             onClick={handleNotificationRequest}
-            className="ml-auto p-1.5 rounded-xl bg-neutral-100 text-neutral-600 hover:bg-neutral-200 transition-colors"
+            className="ml-auto p-1.5 rounded-xl bg-surface-elevated text-muted hover:bg-line transition-colors"
             title="Enable order notifications"
           >
             <Bell className="w-4 h-4" />
-          </button>
+          </motion.button>
         )}
-      </div>
+      </motion.div>
 
       <AnimatePresence>
         {isOffline && (
@@ -227,9 +237,9 @@ export default function OrderTrackingPage({
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
             className="px-4 pt-3"
           >
-            <div className="flex items-center gap-2 bg-neutral-100 rounded-xl px-3 py-2.5">
-              <WifiOff className="w-4 h-4 text-neutral-500 shrink-0" />
-              <p className="text-xs text-neutral-600 font-medium">
+            <div className="flex items-center gap-2 bg-surface-elevated rounded-xl px-3 py-2.5">
+              <WifiOff className="w-4 h-4 text-muted shrink-0" />
+              <p className="text-xs text-muted font-medium">
                 Offline — last updated{" "}
                 {cachedAt ? getTimeSince(new Date(cachedAt)) : "recently"}
               </p>
@@ -249,14 +259,14 @@ export default function OrderTrackingPage({
             <motion.button
               whileTap={{ scale: 0.98 }}
               onClick={handleNotificationRequest}
-              className="w-full flex items-center gap-3 p-3 rounded-xl border border-dashed border-neutral-300 hover:border-brand-red hover:bg-red-50 transition-colors group"
+              className="w-full flex items-center gap-3 p-3 rounded-xl border border-dashed border-line hover:border-brand-red hover:bg-primary/10 transition-colors group"
             >
-              <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0 group-hover:bg-brand-red transition-colors">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-brand-red transition-colors">
                 <Bell className="w-4 h-4 text-brand-red group-hover:text-white transition-colors" />
               </div>
               <div className="text-left">
-                <p className="text-sm font-semibold text-brand-black">Get notified when ready</p>
-                <p className="text-xs text-neutral-500">Tap to enable order notifications</p>
+                <p className="text-sm font-semibold text-ink">Get notified when ready</p>
+                <p className="text-xs text-muted">Tap to enable order notifications</p>
               </div>
             </motion.button>
           </motion.div>
@@ -270,11 +280,11 @@ export default function OrderTrackingPage({
             animate={{ opacity: 1, scale: 1 }}
             className="text-center py-8"
           >
-            <div className="w-16 h-16 rounded-full bg-neutral-100 flex items-center justify-center mx-auto mb-4">
-              <Package className="w-8 h-8 text-neutral-400" />
+            <div className="w-16 h-16 rounded-full bg-surface-elevated flex items-center justify-center mx-auto mb-4">
+              <Package className="w-8 h-8 text-muted" />
             </div>
-            <h2 className="text-xl font-bold text-brand-black">Order Cancelled</h2>
-            <p className="text-sm text-neutral-500 mt-1">
+            <h2 className="text-xl font-bold text-ink">Order Cancelled</h2>
+            <p className="text-sm text-muted mt-1">
               {displayOrder.paymentMethod === "WALLET" && "Refund has been credited to your wallet"}
             </p>
           </motion.div>
@@ -282,26 +292,27 @@ export default function OrderTrackingPage({
           <>
             {currentStatus === "READY" && (
               <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-brand-black rounded-xl p-4 mb-6 text-center"
+                initial={{ opacity: 0, y: -10, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 24 }}
+                className="bg-ink rounded-xl p-4 mb-6 text-center"
               >
-                <p className="text-white font-bold text-lg">Your order is ready!</p>
-                <p className="text-neutral-400 text-sm">Please pick up at the counter</p>
-                <p className="text-white text-3xl font-extrabold mt-2">#{displayOrder.orderNumber}</p>
+                <p className="text-canvas font-bold text-lg">Your order is ready!</p>
+                <p className="text-canvas/60 text-sm">Please pick up at the counter</p>
+                <p className="text-canvas text-3xl font-extrabold mt-2">#{displayOrder.orderNumber}</p>
               </motion.div>
             )}
 
             <div className="flex items-center gap-2 mb-2">
-              <Package className="w-4 h-4 text-neutral-400" />
-              <span className="text-sm font-semibold text-brand-black">
+              <Package className="w-4 h-4 text-muted" />
+              <span className="text-sm font-semibold text-ink">
                 {orderDestinationLabel(displayOrder)}
               </span>
             </div>
 
             <div className="flex items-center gap-2 mb-6">
-              <Clock className="w-4 h-4 text-neutral-400" />
-              <span className="text-sm text-neutral-500">
+              <Clock className="w-4 h-4 text-muted" />
+              <span className="text-sm text-muted">
                 Placed {getTimeSince(displayOrder.placedAt)}
               </span>
               {displayOrder.estimatedReadyAt && currentStepIndex < 3 && (
@@ -318,7 +329,13 @@ export default function OrderTrackingPage({
                 const Icon = step.icon
 
                 return (
-                  <div key={step.key} className="flex gap-3">
+                  <motion.div
+                    key={step.key}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.08, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                    className="flex gap-3"
+                  >
                     <div className="flex flex-col items-center">
                       <motion.div
                         initial={isActive ? { scale: 0.8 } : {}}
@@ -327,32 +344,38 @@ export default function OrderTrackingPage({
                         className={`w-8 h-8 rounded-full flex items-center justify-center ${
                           isCompleted
                             ? "bg-brand-red text-white"
-                            : "bg-neutral-100 text-neutral-400"
+                            : "bg-surface-elevated text-muted"
                         }`}
                       >
                         <Icon className="w-4 h-4" />
                       </motion.div>
                       {idx < STATUS_STEPS.length - 1 && (
                         <div className={`w-0.5 h-8 ${
-                          idx < currentStepIndex ? "bg-brand-red" : "bg-neutral-200"
+                          idx < currentStepIndex ? "bg-brand-red" : "bg-line"
                         }`} />
                       )}
                     </div>
                     <div className="pb-6">
                       <p className={`text-sm font-semibold ${
-                        isCompleted ? "text-brand-black" : "text-neutral-400"
+                        isCompleted ? "text-ink" : "text-muted"
                       }`}>
                         {step.label}
                       </p>
                     </div>
-                  </div>
+                  </motion.div>
                 )
               })}
             </div>
           </>
         )}
 
-        <div className="border-t border-neutral-100 pt-4">
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-10% 0px" }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="border-t border-line pt-4"
+        >
           <h3 className="font-bold text-sm mb-3">Order Details</h3>
           <div className="space-y-2">
             {displayOrder.items.map((item: any) => (
@@ -363,7 +386,7 @@ export default function OrderTrackingPage({
                 <span className="font-medium">{formatPrice(item.totalPrice)}</span>
               </div>
             ))}
-            <div className="flex justify-between text-sm font-bold pt-2 border-t border-neutral-100">
+            <div className="flex justify-between text-sm font-bold pt-2 border-t border-line">
               <span>Total</span>
               <span>{formatPrice(displayOrder.totalAmount)}</span>
             </div>
@@ -375,7 +398,7 @@ export default function OrderTrackingPage({
               {displayOrder.paymentStatus}
             </Badge>
           </div>
-        </div>
+        </motion.div>
 
         {(currentStatus === "PLACED" || currentStatus === "ACCEPTED") && !isCancelled && !isOffline && (
           <div className="mt-6">

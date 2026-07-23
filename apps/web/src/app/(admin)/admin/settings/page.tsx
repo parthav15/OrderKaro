@@ -169,15 +169,15 @@ export default function SettingsPage() {
             <div className="w-10 h-10 rounded-xl bg-brand-red/10 flex items-center justify-center">
               <Settings className="w-5 h-5 text-brand-red" />
             </div>
-            <h1 className="text-3xl font-extrabold text-brand-black">Settings</h1>
+            <h1 className="text-3xl font-extrabold text-ink">Settings</h1>
           </div>
-          <p className="text-neutral-500">Update your restaurant's basic information and hours</p>
+          <p className="text-muted">Update your restaurant's basic information and hours</p>
         </div>
         {restaurants && restaurants.length > 1 && (
           <select
             value={restaurantId}
             onChange={(e) => setRestaurantId(e.target.value)}
-            className="px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
+            className="px-4 py-3 rounded-xl border border-line text-sm focus:outline-none focus:border-brand-red"
           >
             {restaurants.map((c: any) => (
               <option key={c.id} value={c.id}>{c.name}</option>
@@ -207,12 +207,12 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-neutral-100 flex items-center justify-center">
-                  <Store className="w-5 h-5 text-neutral-600" />
+                <div className="w-9 h-9 rounded-xl bg-surface-elevated flex items-center justify-center">
+                  <Store className="w-5 h-5 text-muted" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-brand-black">Restaurant Name</h2>
-                  <p className="text-sm text-neutral-400">The name shown to customers on the menu page</p>
+                  <h2 className="text-lg font-bold text-ink">Restaurant Name</h2>
+                  <p className="text-sm text-muted">The name shown to customers on the menu page</p>
                 </div>
               </div>
             </CardHeader>
@@ -221,7 +221,7 @@ export default function SettingsPage() {
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="e.g. Main Campus Cafeteria"
-                className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
               />
             </CardContent>
           </Card>
@@ -235,12 +235,12 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-neutral-100 flex items-center justify-center">
-                  <Link2 className="w-5 h-5 text-neutral-600" />
+                <div className="w-9 h-9 rounded-xl bg-surface-elevated flex items-center justify-center">
+                  <Link2 className="w-5 h-5 text-muted" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-brand-black">Menu URL Slug</h2>
-                  <p className="text-sm text-neutral-400">The URL path customers use to access your menu</p>
+                  <h2 className="text-lg font-bold text-ink">Menu URL Slug</h2>
+                  <p className="text-sm text-muted">The URL path customers use to access your menu</p>
                 </div>
               </div>
             </CardHeader>
@@ -258,16 +258,16 @@ export default function SettingsPage() {
                   })
                 }
                 placeholder="e.g. campus-cafe"
-                className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
               />
               {form.slug && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="flex items-center gap-2 p-3 bg-neutral-50 rounded-xl"
+                  className="flex items-center gap-2 p-3 bg-surface-elevated rounded-xl"
                 >
-                  <Link2 className="w-4 h-4 text-neutral-400 shrink-0" />
-                  <p className="text-sm text-neutral-600 truncate flex-1">
+                  <Link2 className="w-4 h-4 text-muted shrink-0" />
+                  <p className="text-sm text-muted truncate flex-1">
                     {resolveMenuBase().replace(/^https?:\/\//, "")}/<strong>{form.slug}</strong>/menu
                   </p>
                   <button
@@ -276,9 +276,9 @@ export default function SettingsPage() {
                       navigator.clipboard.writeText(`${resolveMenuBase()}/${form.slug}/menu`)
                       toast.success("URL copied!")
                     }}
-                    className="p-1.5 rounded-lg hover:bg-neutral-200 transition-colors shrink-0"
+                    className="p-1.5 rounded-lg hover:bg-line transition-colors shrink-0"
                   >
-                    <Copy className="w-4 h-4 text-neutral-500" />
+                    <Copy className="w-4 h-4 text-muted" />
                   </button>
                 </motion.div>
               )}
@@ -294,33 +294,33 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-neutral-100 flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-neutral-600" />
+                <div className="w-9 h-9 rounded-xl bg-surface-elevated flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-muted" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-brand-black">Operating Hours</h2>
-                  <p className="text-sm text-neutral-400">When your restaurant accepts orders</p>
+                  <h2 className="text-lg font-bold text-ink">Operating Hours</h2>
+                  <p className="text-sm text-muted">When your restaurant accepts orders</p>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="grid grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <label className="block text-sm font-bold text-brand-black">Opens At</label>
+                  <label className="block text-sm font-bold text-ink">Opens At</label>
                   <input
                     type="time"
                     value={form.openingTime}
                     onChange={(e) => setForm({ ...form, openingTime: e.target.value })}
-                    className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                    className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-bold text-brand-black">Closes At</label>
+                  <label className="block text-sm font-bold text-ink">Closes At</label>
                   <input
                     type="time"
                     value={form.closingTime}
                     onChange={(e) => setForm({ ...form, closingTime: e.target.value })}
-                    className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                    className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
                   />
                 </div>
               </div>
@@ -329,10 +329,10 @@ export default function SettingsPage() {
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="flex items-center gap-2 p-3 bg-neutral-50 rounded-xl"
+                  className="flex items-center gap-2 p-3 bg-surface-elevated rounded-xl"
                 >
-                  <Clock className="w-4 h-4 text-neutral-400" />
-                  <p className="text-sm text-neutral-600">
+                  <Clock className="w-4 h-4 text-muted" />
+                  <p className="text-sm text-muted">
                     Open from <strong>{form.openingTime}</strong> to <strong>{form.closingTime}</strong>
                   </p>
                 </motion.div>
@@ -349,12 +349,12 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-neutral-100 flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-neutral-600" />
+                <div className="w-9 h-9 rounded-xl bg-surface-elevated flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-muted" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-brand-black">Average Preparation Time</h2>
-                  <p className="text-sm text-neutral-400">Shown to customers as expected wait time</p>
+                  <h2 className="text-lg font-bold text-ink">Average Preparation Time</h2>
+                  <p className="text-sm text-muted">Shown to customers as expected wait time</p>
                 </div>
               </div>
             </CardHeader>
@@ -366,11 +366,11 @@ export default function SettingsPage() {
                   max="120"
                   value={String(form.avgPrepTime)}
                   onChange={(e) => setForm({ ...form, avgPrepTime: Number(e.target.value) })}
-                  className="w-32 rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                  className="w-32 rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
                 />
-                <span className="text-base font-semibold text-neutral-600">minutes</span>
+                <span className="text-base font-semibold text-muted">minutes</span>
               </div>
-              <p className="text-sm text-neutral-400">
+              <p className="text-sm text-muted">
                 Customers see: "Ready in approximately {form.avgPrepTime} minutes"
               </p>
             </CardContent>
@@ -407,18 +407,18 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-neutral-100 flex items-center justify-center">
-                  <Palette className="w-5 h-5 text-neutral-600" />
+                <div className="w-9 h-9 rounded-xl bg-surface-elevated flex items-center justify-center">
+                  <Palette className="w-5 h-5 text-muted" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-brand-black">Brand</h2>
-                  <p className="text-sm text-neutral-400">Customize the colour and theme shown to customers</p>
+                  <h2 className="text-lg font-bold text-ink">Brand</h2>
+                  <p className="text-sm text-muted">Customize the colour and theme shown to customers</p>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-3">
-                <label className="block text-sm font-bold text-brand-black">Primary Colour</label>
+                <label className="block text-sm font-bold text-ink">Primary Colour</label>
                 <div className="flex flex-wrap gap-3">
                   {BRAND_COLOR_PRESETS.map((color) => (
                     <button
@@ -429,8 +429,8 @@ export default function SettingsPage() {
                       className={cn(
                         "w-9 h-9 rounded-full border-2 transition-transform",
                         brandForm.primaryColor.toLowerCase() === color.toLowerCase()
-                          ? "border-brand-black scale-110"
-                          : "border-neutral-200 hover:scale-105"
+                          ? "border-ink scale-110"
+                          : "border-line hover:scale-105"
                       )}
                       style={{ backgroundColor: color }}
                     />
@@ -441,7 +441,7 @@ export default function SettingsPage() {
                     value={brandForm.primaryColor}
                     onChange={(e) => setBrandForm({ ...brandForm, primaryColor: e.target.value })}
                     placeholder="#DC2626"
-                    className="w-40 rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                    className="w-40 rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
                   />
                   <div
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-xl"
@@ -460,8 +460,8 @@ export default function SettingsPage() {
               </div>
 
               <div className="space-y-3">
-                <label className="block text-sm font-bold text-brand-black">Theme Mode</label>
-                <div className="inline-flex rounded-xl border border-neutral-300 p-1">
+                <label className="block text-sm font-bold text-ink">Theme Mode</label>
+                <div className="inline-flex rounded-xl border border-line p-1">
                   {(["LIGHT", "DARK"] as const).map((mode) => (
                     <button
                       key={mode}
@@ -470,8 +470,8 @@ export default function SettingsPage() {
                       className={cn(
                         "px-5 py-2 rounded-lg text-sm font-semibold transition-colors",
                         brandForm.themeMode === mode
-                          ? "bg-brand-black text-white"
-                          : "text-neutral-500 hover:text-brand-black"
+                          ? "bg-ink text-canvas"
+                          : "text-muted hover:text-ink"
                       )}
                     >
                       {mode === "LIGHT" ? "Light" : "Dark"}
@@ -484,10 +484,10 @@ export default function SettingsPage() {
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="flex items-center gap-2 p-3 bg-neutral-50 rounded-xl"
+                  className="flex items-center gap-2 p-3 bg-surface-elevated rounded-xl"
                 >
                   <ArrowUpCircle className="w-4 h-4 text-brand-red shrink-0" />
-                  <p className="text-sm text-neutral-600">
+                  <p className="text-sm text-muted">
                     Upgrade required to customize branding.{" "}
                     <Link href="/admin/billing" className="text-brand-red font-semibold hover:underline">
                       View plans
@@ -531,12 +531,12 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-neutral-100 flex items-center justify-center">
-                  <MapPin className="w-5 h-5 text-neutral-600" />
+                <div className="w-9 h-9 rounded-xl bg-surface-elevated flex items-center justify-center">
+                  <MapPin className="w-5 h-5 text-muted" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-brand-black">Delivery Zone</h2>
-                  <p className="text-sm text-neutral-400">Set where and how you deliver orders</p>
+                  <h2 className="text-lg font-bold text-ink">Delivery Zone</h2>
+                  <p className="text-sm text-muted">Set where and how you deliver orders</p>
                 </div>
               </div>
             </CardHeader>
@@ -546,35 +546,35 @@ export default function SettingsPage() {
                 onClick={() =>
                   setDeliveryForm({ ...deliveryForm, deliveryEnabled: !deliveryForm.deliveryEnabled })
                 }
-                className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-neutral-50 transition-colors text-sm font-semibold text-neutral-600"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-surface-elevated transition-colors text-sm font-semibold text-muted"
               >
                 {deliveryForm.deliveryEnabled ? (
-                  <ToggleRight className="w-6 h-6 text-brand-black" />
+                  <ToggleRight className="w-6 h-6 text-ink" />
                 ) : (
-                  <ToggleLeft className="w-6 h-6 text-neutral-400" />
+                  <ToggleLeft className="w-6 h-6 text-muted" />
                 )}
                 Delivery {deliveryForm.deliveryEnabled ? "Enabled" : "Disabled"}
               </button>
 
               <div className="grid grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <label className="block text-sm font-bold text-brand-black">Latitude</label>
+                  <label className="block text-sm font-bold text-ink">Latitude</label>
                   <input
                     type="number"
                     step="any"
                     value={deliveryForm.latitude}
                     onChange={(e) => setDeliveryForm({ ...deliveryForm, latitude: e.target.value })}
-                    className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                    className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-bold text-brand-black">Longitude</label>
+                  <label className="block text-sm font-bold text-ink">Longitude</label>
                   <input
                     type="number"
                     step="any"
                     value={deliveryForm.longitude}
                     onChange={(e) => setDeliveryForm({ ...deliveryForm, longitude: e.target.value })}
-                    className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                    className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
                   />
                 </div>
               </div>
@@ -582,14 +582,14 @@ export default function SettingsPage() {
               <button
                 type="button"
                 onClick={useCurrentLocation}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-300 text-sm font-semibold text-brand-black hover:bg-neutral-50 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-line text-sm font-semibold text-ink hover:bg-surface-elevated transition-colors"
               >
                 <Navigation className="w-4 h-4" /> Use my current location
               </button>
 
               <div className="grid grid-cols-3 gap-5">
                 <div className="space-y-2">
-                  <label className="block text-sm font-bold text-brand-black">Radius (km)</label>
+                  <label className="block text-sm font-bold text-ink">Radius (km)</label>
                   <input
                     type="number"
                     min="0.1"
@@ -599,29 +599,29 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       setDeliveryForm({ ...deliveryForm, deliveryRadiusKm: e.target.value })
                     }
-                    className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                    className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-bold text-brand-black">Delivery Fee</label>
+                  <label className="block text-sm font-bold text-ink">Delivery Fee</label>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
                     value={deliveryForm.deliveryFee}
                     onChange={(e) => setDeliveryForm({ ...deliveryForm, deliveryFee: e.target.value })}
-                    className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                    className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-bold text-brand-black">Min Order Value</label>
+                  <label className="block text-sm font-bold text-ink">Min Order Value</label>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
                     value={deliveryForm.minOrderValue}
                     onChange={(e) => setDeliveryForm({ ...deliveryForm, minOrderValue: e.target.value })}
-                    className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                    className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
                   />
                 </div>
               </div>
@@ -630,10 +630,10 @@ export default function SettingsPage() {
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="flex items-center gap-2 p-3 bg-neutral-50 rounded-xl"
+                  className="flex items-center gap-2 p-3 bg-surface-elevated rounded-xl"
                 >
                   <ArrowUpCircle className="w-4 h-4 text-brand-red shrink-0" />
-                  <p className="text-sm text-neutral-600">
+                  <p className="text-sm text-muted">
                     Upgrade required to set up a delivery zone.{" "}
                     <Link href="/admin/billing" className="text-brand-red font-semibold hover:underline">
                       View plans

@@ -73,7 +73,7 @@ export function HoldToConfirm({
       onContextMenu={(e) => e.preventDefault()}
       aria-label={ariaLabel}
       style={{ width: size, height: size }}
-      className="relative inline-flex items-center justify-center rounded-full border border-brand-red/20 text-brand-red hover:bg-red-50 transition-colors select-none"
+      className="relative inline-flex items-center justify-center rounded-full border border-brand-red/20 text-brand-red hover:bg-primary/10 transition-colors select-none"
     >
       <Trash2 className="w-4 h-4 relative z-10" />
       <svg
@@ -87,7 +87,7 @@ export function HoldToConfirm({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#DC2626"
+          stroke="rgb(var(--brand-red))"
           strokeOpacity={holding ? 0.9 : 0}
           strokeWidth={2}
           strokeLinecap="round"

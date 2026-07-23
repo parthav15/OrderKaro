@@ -18,7 +18,7 @@ export function AnnouncementMarquee({ announcements }: AnnouncementMarqueeProps)
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="bg-brand-black text-white overflow-hidden"
+      className="bg-ink text-canvas overflow-hidden"
     >
       {isMarquee ? (
         <div className="relative h-8 flex items-center mask-fade-x">

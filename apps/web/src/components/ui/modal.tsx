@@ -31,14 +31,14 @@ export function Modal({ isOpen, onClose, children, className, title }: ModalProp
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className={cn(
-                "w-full max-w-lg bg-white rounded-2xl shadow-xl max-h-[85vh] overflow-y-auto pointer-events-auto",
+                "w-full max-w-lg bg-surface rounded-2xl shadow-xl max-h-[85vh] overflow-y-auto pointer-events-auto",
                 className
               )}
             >
             {title && (
-              <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
-                <h2 className="text-lg font-bold text-brand-black">{title}</h2>
-                <button onClick={onClose} className="p-1 hover:bg-neutral-100 rounded-lg transition-colors">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-line">
+                <h2 className="text-lg font-bold text-ink">{title}</h2>
+                <button onClick={onClose} className="p-1 text-muted hover:bg-surface-elevated rounded-lg transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>

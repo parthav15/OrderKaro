@@ -59,7 +59,7 @@ export function ItemHeroCard({
     >
       <div
         ref={thumbRef}
-        className="relative w-full h-[300px] sm:h-[320px] rounded-3xl overflow-hidden bg-brand-black/[0.05]"
+        className="relative w-full h-[300px] sm:h-[320px] rounded-3xl overflow-hidden bg-ink/[0.05]"
       >
         {item.imageUrl ? (
           <motion.div
@@ -77,7 +77,7 @@ export function ItemHeroCard({
           </motion.div>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="font-serif italic text-7xl text-brand-black/15">
+            <span className="font-serif italic text-7xl text-ink/15">
               {item.name.charAt(0)}
             </span>
           </div>

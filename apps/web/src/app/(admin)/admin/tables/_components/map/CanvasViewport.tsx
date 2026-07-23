@@ -43,7 +43,7 @@ export function CanvasViewport({
         }
       }}
       data-canvas-background="true"
-      className="relative w-full h-full overflow-hidden bg-neutral-50 rounded-3xl border border-neutral-100"
+      className="relative w-full h-full overflow-hidden bg-surface-elevated rounded-3xl border border-line"
       style={{ touchAction: "none" }}
     >
       {background}

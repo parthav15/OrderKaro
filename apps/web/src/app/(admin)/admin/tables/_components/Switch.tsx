@@ -18,7 +18,7 @@ export function Switch({ checked, onCheckedChange, ariaLabel }: SwitchProps) {
       onClick={() => onCheckedChange(!checked)}
       className={
         "relative w-12 h-7 rounded-full transition-colors p-0.5 " +
-        (checked ? "bg-brand-red" : "bg-neutral-200")
+        (checked ? "bg-brand-red" : "bg-line")
       }
     >
       <motion.span

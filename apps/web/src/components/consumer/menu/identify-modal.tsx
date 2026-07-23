@@ -59,8 +59,8 @@ function FloatingField({
         autoFocus={autoFocus}
         autoComplete="off"
         className={cn(
-          "peer w-full h-14 px-4 pt-5 pb-1.5 rounded-2xl bg-white text-brand-black text-base font-medium transition-all",
-          "border border-brand-black/15 focus:border-brand-black focus:outline-none focus:ring-4 focus:ring-brand-black/[0.06]"
+          "peer w-full h-14 px-4 pt-5 pb-1.5 rounded-2xl bg-surface text-ink text-base font-medium transition-all",
+          "border border-ink/15 focus:border-ink focus:outline-none focus:ring-4 focus:ring-ink/[0.06]"
         )}
       />
       <label
@@ -68,8 +68,8 @@ function FloatingField({
         className={cn(
           "absolute left-4 pointer-events-none transition-all duration-200 ease-out font-medium",
           lifted
-            ? "top-1.5 text-[10px] uppercase tracking-[0.18em] text-brand-black/55 font-bold"
-            : "top-1/2 -translate-y-1/2 text-base text-brand-black/45"
+            ? "top-1.5 text-[10px] uppercase tracking-[0.18em] text-ink/55 font-bold"
+            : "top-1/2 -translate-y-1/2 text-base text-ink/45"
         )}
       >
         {label}
@@ -125,10 +125,10 @@ function CodeField({
             className={cn(
               "flex-1 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold font-heading transition-colors",
               filled
-                ? "bg-brand-black text-white border border-brand-black"
+                ? "bg-ink text-canvas border border-ink"
                 : active
-                ? "bg-white border-2 border-brand-black text-brand-black"
-                : "bg-white border border-brand-black/15 text-brand-black"
+                ? "bg-surface border-2 border-ink text-ink"
+                : "bg-surface border border-ink/15 text-ink"
             )}
           >
             {value[i] ?? ""}
@@ -233,7 +233,7 @@ export function IdentifyModal({ isOpen, restaurantName, onVerified }: IdentifyMo
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="relative z-10 w-full max-w-md"
           >
-            <div className="bg-white rounded-[28px] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.4)] p-7 sm:p-9">
+            <div className="bg-surface rounded-[28px] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.4)] p-7 sm:p-9">
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -241,13 +241,13 @@ export function IdentifyModal({ isOpen, restaurantName, onVerified }: IdentifyMo
                 className="flex flex-col items-center text-center"
               >
                 <Logo size="lg" />
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-brand-black/45 mt-5">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink/45 mt-5">
                   {step === "phone" ? "Welcome" : "Verify"}
                 </p>
-                <h2 className="font-heading text-2xl font-extrabold text-brand-black tracking-tight mt-1.5">
+                <h2 className="font-heading text-2xl font-extrabold text-ink tracking-tight mt-1.5">
                   {step === "phone" ? restaurantName ?? "to your table" : "Enter your code"}
                 </h2>
-                <p className="font-serif italic text-base text-brand-black/55 mt-2">
+                <p className="font-serif italic text-base text-ink/55 mt-2">
                   {step === "phone"
                     ? "Verify your number to get started."
                     : `Sent to +91 ${phone}`}
@@ -300,7 +300,7 @@ export function IdentifyModal({ isOpen, restaurantName, onVerified }: IdentifyMo
                       whileTap={{ scale: 0.98 }}
                       whileHover={{ y: -1 }}
                       disabled={loading}
-                      className="group w-full h-14 mt-2 rounded-2xl bg-brand-black text-white flex items-center justify-center gap-2 text-sm font-bold uppercase tracking-[0.18em] disabled:opacity-50 disabled:pointer-events-none transition-shadow hover:shadow-lg hover:shadow-brand-black/20"
+                      className="group w-full h-14 mt-2 rounded-2xl bg-ink text-canvas flex items-center justify-center gap-2 text-sm font-bold uppercase tracking-[0.18em] disabled:opacity-50 disabled:pointer-events-none transition-shadow hover:shadow-lg hover:shadow-ink/20"
                     >
                       {loading ? (
                         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
@@ -347,7 +347,7 @@ export function IdentifyModal({ isOpen, restaurantName, onVerified }: IdentifyMo
                       whileTap={{ scale: 0.98 }}
                       whileHover={{ y: -1 }}
                       disabled={loading}
-                      className="group w-full h-14 rounded-2xl bg-brand-black text-white flex items-center justify-center gap-2 text-sm font-bold uppercase tracking-[0.18em] disabled:opacity-50 disabled:pointer-events-none transition-shadow hover:shadow-lg hover:shadow-brand-black/20"
+                      className="group w-full h-14 rounded-2xl bg-ink text-canvas flex items-center justify-center gap-2 text-sm font-bold uppercase tracking-[0.18em] disabled:opacity-50 disabled:pointer-events-none transition-shadow hover:shadow-lg hover:shadow-ink/20"
                     >
                       {loading ? (
                         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
@@ -372,7 +372,7 @@ export function IdentifyModal({ isOpen, restaurantName, onVerified }: IdentifyMo
                           setCode("")
                           setError("")
                         }}
-                        className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-brand-black/55 hover:text-brand-black transition-colors"
+                        className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-ink/55 hover:text-ink transition-colors"
                       >
                         <ArrowLeft className="w-3.5 h-3.5" strokeWidth={2.4} />
                         Change number
@@ -381,7 +381,7 @@ export function IdentifyModal({ isOpen, restaurantName, onVerified }: IdentifyMo
                         type="button"
                         disabled={resendIn > 0 || loading}
                         onClick={sendCode}
-                        className="text-[12px] font-semibold text-brand-black/55 hover:text-brand-black transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                        className="text-[12px] font-semibold text-ink/55 hover:text-ink transition-colors disabled:opacity-40 disabled:pointer-events-none"
                       >
                         {resendIn > 0 ? `Resend in ${resendIn}s` : "Resend code"}
                       </button>
@@ -390,7 +390,7 @@ export function IdentifyModal({ isOpen, restaurantName, onVerified }: IdentifyMo
                 )}
               </AnimatePresence>
 
-              <p className="text-center text-[11px] text-brand-black/40 mt-7">
+              <p className="text-center text-[11px] text-ink/40 mt-7">
                 We&apos;ll text you a one-time code. Standard rates may apply.
               </p>
             </div>

@@ -46,10 +46,10 @@ function statusBadgeVariant(status: PaymentAccountStatus): "success" | "warning"
 function GuideStep({ index, children }: { index: number; children: React.ReactNode }) {
   return (
     <li className="flex items-start gap-3">
-      <span className="w-6 h-6 rounded-full bg-neutral-100 text-brand-black text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+      <span className="w-6 h-6 rounded-full bg-surface-elevated text-ink text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
         {index}
       </span>
-      <span className="text-sm text-neutral-600 leading-relaxed">{children}</span>
+      <span className="text-sm text-muted leading-relaxed">{children}</span>
     </li>
   )
 }
@@ -137,15 +137,15 @@ export default function PaymentsPage() {
             <div className="w-10 h-10 rounded-xl bg-brand-red/10 flex items-center justify-center">
               <CreditCard className="w-5 h-5 text-brand-red" />
             </div>
-            <h1 className="text-3xl font-extrabold text-brand-black">Payments</h1>
+            <h1 className="text-3xl font-extrabold text-ink">Payments</h1>
           </div>
-          <p className="text-neutral-500">Connect the account that receives your diners' money</p>
+          <p className="text-muted">Connect the account that receives your diners' money</p>
         </div>
         {restaurants && restaurants.length > 1 && (
           <select
             value={restaurantId}
             onChange={(e) => setRestaurantId(e.target.value)}
-            className="px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
+            className="px-4 py-3 rounded-xl border border-line text-sm focus:outline-none focus:border-brand-red"
           >
             {restaurants.map((c: any) => (
               <option key={c.id} value={c.id}>{c.name}</option>
@@ -157,7 +157,7 @@ export default function PaymentsPage() {
       {isLoading && (
         <div className="space-y-4">
           {[1, 2].map((i) => (
-            <div key={i} className="h-32 rounded-xl bg-neutral-100 animate-pulse" />
+            <div key={i} className="h-32 rounded-xl bg-surface-elevated animate-pulse" />
           ))}
         </div>
       )}
@@ -169,14 +169,14 @@ export default function PaymentsPage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-neutral-100 flex items-center justify-center">
-                      <KeyRound className="w-5 h-5 text-neutral-600" />
+                    <div className="w-9 h-9 rounded-xl bg-surface-elevated flex items-center justify-center">
+                      <KeyRound className="w-5 h-5 text-muted" />
                     </div>
                     <div>
-                      <h2 className="text-lg font-bold text-brand-black">
+                      <h2 className="text-lg font-bold text-ink">
                         {data.provider === "CASHFREE" ? "Cashfree" : "Stripe"}
                       </h2>
-                      <p className="text-sm text-neutral-400">
+                      <p className="text-sm text-muted">
                         Settles in {data.currency} · {data.country}
                       </p>
                     </div>
@@ -206,11 +206,11 @@ export default function PaymentsPage() {
 
                   {!showCredentialForm ? (
                     <div className="space-y-4">
-                      <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-100">
-                        <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">
+                      <div className="p-4 rounded-xl bg-surface-elevated border border-line">
+                        <p className="text-xs font-bold text-muted uppercase tracking-wider mb-1">
                           Connected key
                         </p>
-                        <p className="text-sm font-semibold text-brand-black font-mono">
+                        <p className="text-sm font-semibold text-ink font-mono">
                           {data.cashfreeKeyPreview}
                         </p>
                       </div>
@@ -237,7 +237,7 @@ export default function PaymentsPage() {
                               animate={{ opacity: 1, x: 0 }}
                               className="flex items-center gap-2"
                             >
-                              <span className="text-sm text-neutral-500">Are you sure?</span>
+                              <span className="text-sm text-muted">Are you sure?</span>
                               <Button
                                 type="button"
                                 variant="danger"
@@ -269,17 +269,17 @@ export default function PaymentsPage() {
                       className="space-y-4"
                     >
                       <div className="space-y-2">
-                        <label className="block text-sm font-bold text-brand-black">App ID</label>
+                        <label className="block text-sm font-bold text-ink">App ID</label>
                         <input
                           type="text"
                           value={appId}
                           onChange={(e) => setAppId(e.target.value)}
                           placeholder="x-client-id"
-                          className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                          className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="block text-sm font-bold text-brand-black">
+                        <label className="block text-sm font-bold text-ink">
                           Secret key
                         </label>
                         <input
@@ -287,7 +287,7 @@ export default function PaymentsPage() {
                           value={secretKey}
                           onChange={(e) => setSecretKey(e.target.value)}
                           placeholder="cfsk_…"
-                          className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                          className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
                         />
                       </div>
                       <div className="flex items-center gap-3">
@@ -315,9 +315,9 @@ export default function PaymentsPage() {
                     </form>
                   )}
 
-                  <div className="flex items-start gap-3 p-4 rounded-xl bg-neutral-50 border border-neutral-100">
-                    <Info className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
-                    <p className="text-sm text-neutral-500 leading-relaxed">
+                  <div className="flex items-start gap-3 p-4 rounded-xl bg-surface-elevated border border-line">
+                    <Info className="w-4 h-4 text-muted shrink-0 mt-0.5" />
+                    <p className="text-sm text-muted leading-relaxed">
                       PayPur does not offer webhooks or a refund API. Payment confirmation relies on
                       the diner returning to the app plus background reconciliation, and refunds must
                       be issued manually over UPI.
@@ -347,11 +347,11 @@ export default function PaymentsPage() {
 
                   {!showCredentialForm ? (
                     <div className="space-y-4">
-                      <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-100">
-                        <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">
+                      <div className="p-4 rounded-xl bg-surface-elevated border border-line">
+                        <p className="text-xs font-bold text-muted uppercase tracking-wider mb-1">
                           Connected key
                         </p>
-                        <p className="text-sm font-semibold text-brand-black font-mono">
+                        <p className="text-sm font-semibold text-ink font-mono">
                           {data.stripeKeyPreview}
                         </p>
                       </div>
@@ -378,7 +378,7 @@ export default function PaymentsPage() {
                               animate={{ opacity: 1, x: 0 }}
                               className="flex items-center gap-2"
                             >
-                              <span className="text-sm text-neutral-500">Are you sure?</span>
+                              <span className="text-sm text-muted">Are you sure?</span>
                               <Button
                                 type="button"
                                 variant="danger"
@@ -410,7 +410,7 @@ export default function PaymentsPage() {
                       className="space-y-4"
                     >
                       <div className="space-y-2">
-                        <label className="block text-sm font-bold text-brand-black">
+                        <label className="block text-sm font-bold text-ink">
                           Secret key
                         </label>
                         <input
@@ -418,7 +418,7 @@ export default function PaymentsPage() {
                           value={secretKey}
                           onChange={(e) => setSecretKey(e.target.value)}
                           placeholder="sk_live_..."
-                          className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                          className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
                         />
                         {secretKey && !stripeKeyValid && (
                           <p className="text-sm text-brand-red">
@@ -451,9 +451,9 @@ export default function PaymentsPage() {
                     </form>
                   )}
 
-                  <div className="flex items-start gap-3 p-4 rounded-xl bg-neutral-50 border border-neutral-100">
-                    <Info className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
-                    <p className="text-sm text-neutral-500 leading-relaxed">
+                  <div className="flex items-start gap-3 p-4 rounded-xl bg-surface-elevated border border-line">
+                    <Info className="w-4 h-4 text-muted shrink-0 mt-0.5" />
+                    <p className="text-sm text-muted leading-relaxed">
                       Your Stripe key is encrypted and never shown again. Diners pay your Stripe
                       account directly — Vision Menu never holds the money. Payment confirmation uses
                       the return redirect plus background reconciliation.
@@ -468,12 +468,12 @@ export default function PaymentsPage() {
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-neutral-100 flex items-center justify-center">
-                    <Banknote className="w-5 h-5 text-neutral-600" />
+                  <div className="w-9 h-9 rounded-xl bg-surface-elevated flex items-center justify-center">
+                    <Banknote className="w-5 h-5 text-muted" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-brand-black">Pending payments</h2>
-                    <p className="text-sm text-neutral-400">
+                    <h2 className="text-lg font-bold text-ink">Pending payments</h2>
+                    <p className="text-sm text-muted">
                       Catches payments where the diner closed the tab before returning
                     </p>
                   </div>

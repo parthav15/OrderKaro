@@ -321,7 +321,7 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
 
       <StorefrontTheme
         primaryColor={menuData?.restaurant?.primaryColor}
-        className="min-h-screen bg-white pb-32"
+        className="min-h-screen bg-canvas pb-32"
       >
         {isLoading ? (
           <MenuSkeleton />

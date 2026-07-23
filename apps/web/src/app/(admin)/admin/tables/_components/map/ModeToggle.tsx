@@ -14,7 +14,7 @@ interface ModeToggleProps {
 export function ModeToggle({ mode, onChange, snap, onSnapChange }: ModeToggleProps) {
   return (
     <div className="flex items-center gap-2">
-      <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/95 backdrop-blur-md border border-neutral-200 shadow-sm">
+      <div className="flex items-center gap-1 p-1 rounded-2xl bg-surface/95 backdrop-blur-md border border-line shadow-sm">
         <ToggleSegment
           active={mode === "operations"}
           onClick={() => onChange("operations")}
@@ -39,7 +39,7 @@ export function ModeToggle({ mode, onChange, snap, onSnapChange }: ModeTogglePro
             "px-3 py-2 rounded-2xl text-[11px] uppercase tracking-[0.18em] font-bold transition-colors " +
             (snap
               ? "bg-brand-red text-white"
-              : "bg-white border border-neutral-200 text-neutral-500 hover:text-brand-black")
+              : "bg-surface border border-line text-muted hover:text-ink")
           }
         >
           Snap
@@ -66,13 +66,13 @@ function ToggleSegment({
       onClick={onClick}
       className={
         "relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors " +
-        (active ? "text-white" : "text-neutral-500 hover:text-brand-black")
+        (active ? "text-canvas" : "text-muted hover:text-ink")
       }
     >
       {active && (
         <motion.span
           layoutId="mode-toggle-pill"
-          className="absolute inset-0 rounded-xl bg-brand-black"
+          className="absolute inset-0 rounded-xl bg-ink"
           transition={{ type: "spring", stiffness: 380, damping: 30 }}
         />
       )}

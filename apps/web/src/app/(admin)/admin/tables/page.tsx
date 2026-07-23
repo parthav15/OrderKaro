@@ -304,8 +304,8 @@ export default function TablesPage() {
           animate={{ opacity: 1 }}
           className="text-center py-20"
         >
-          <p className="text-sm font-bold text-brand-black mb-1">No tables match</p>
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm font-bold text-ink mb-1">No tables match</p>
+          <p className="text-sm text-muted">
             Try a different search term or section.
           </p>
         </motion.div>
@@ -357,8 +357,8 @@ export default function TablesPage() {
                     </AnimatePresence>
                   </motion.div>
                 ) : (
-                  <motion.div layout className="rounded-2xl border border-neutral-100 bg-white p-2">
-                    <div className="grid grid-cols-[24px_60px_1fr_140px_120px_140px_180px] items-center gap-4 px-4 py-2.5 text-[10px] uppercase tracking-[0.18em] font-bold text-neutral-400">
+                  <motion.div layout className="rounded-2xl border border-line bg-surface p-2">
+                    <div className="grid grid-cols-[24px_60px_1fr_140px_120px_140px_180px] items-center gap-4 px-4 py-2.5 text-[10px] uppercase tracking-[0.18em] font-bold text-muted">
                       <span />
                       <span>Code</span>
                       <span>Label</span>
@@ -428,13 +428,13 @@ export default function TablesPage() {
 
       <Modal isOpen={bulkDeleteOpen} onClose={() => setBulkDeleteOpen(false)} title="Delete tables">
         <div className="space-y-5">
-          <div className="flex items-start gap-4 p-4 bg-red-50 border border-brand-red/20 rounded-xl">
+          <div className="flex items-start gap-4 p-4 bg-primary/10 border border-brand-red/20 rounded-xl">
             <AlertTriangle className="w-6 h-6 text-brand-red flex-shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-brand-black">
+              <p className="font-bold text-ink">
                 Delete {selection.count} table{selection.count === 1 ? "" : "s"}?
               </p>
-              <p className="text-sm text-neutral-600 mt-1">
+              <p className="text-sm text-muted mt-1">
                 Their QR codes will stop working. Existing orders are unaffected.
               </p>
             </div>

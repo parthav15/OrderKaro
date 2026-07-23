@@ -40,7 +40,7 @@ export function UnplacedTray({
       transition={{ type: "spring", stiffness: 280, damping: 28 }}
       className="absolute bottom-4 left-4 right-4 z-20 max-w-3xl mx-auto"
     >
-      <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-neutral-200 shadow-lg">
+      <div className="rounded-2xl bg-surface/95 backdrop-blur-md border border-line shadow-lg">
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
@@ -50,17 +50,17 @@ export function UnplacedTray({
             <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-brand-red">
               Unplaced
             </span>
-            <span className="text-xs tabular-nums font-bold text-brand-black">
+            <span className="text-xs tabular-nums font-bold text-ink">
               {tables.length}
             </span>
-            <span className="text-[10px] text-neutral-400 font-medium hidden sm:inline">
+            <span className="text-[10px] text-muted font-medium hidden sm:inline">
               {draggable ? "Drag onto canvas to place" : "Switch to Edit mode to place"}
             </span>
           </div>
           {open ? (
-            <ChevronDown className="w-4 h-4 text-neutral-400" />
+            <ChevronDown className="w-4 h-4 text-muted" />
           ) : (
-            <ChevronUp className="w-4 h-4 text-neutral-400" />
+            <ChevronUp className="w-4 h-4 text-muted" />
           )}
         </button>
 
@@ -153,12 +153,12 @@ function UnplacedItem({
       }}
       className="shrink-0 w-[140px] cursor-grab active:cursor-grabbing"
     >
-      <div className="flex items-center gap-2 p-2 rounded-xl bg-white border border-neutral-200 hover:border-brand-red/40 transition-colors shadow-sm">
+      <div className="flex items-center gap-2 p-2 rounded-xl bg-surface border border-line hover:border-brand-red/40 transition-colors shadow-sm">
         <TableCardQrThumb restaurantId={restaurantId} tableId={table.id} size={40} />
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-bold text-brand-black truncate">{table.label}</p>
+          <p className="text-xs font-bold text-ink truncate">{table.label}</p>
           {table.section && (
-            <p className="text-[9px] uppercase tracking-[0.18em] text-neutral-400 truncate">
+            <p className="text-[9px] uppercase tracking-[0.18em] text-muted truncate">
               {table.section}
             </p>
           )}

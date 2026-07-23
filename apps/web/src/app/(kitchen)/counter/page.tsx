@@ -16,6 +16,7 @@ import { useAuthStore } from "@/stores/auth"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { orderDestinationLabel } from "@/lib/utils"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 
 interface ReadyOrder {
   id: string
@@ -91,23 +92,25 @@ export default function CounterDisplay() {
   }, [restaurantId, refetch])
 
   return (
-    <div className="min-h-screen bg-brand-black text-white flex flex-col">
-      <div className="sticky top-0 z-30 bg-neutral-950 border-b border-neutral-800 px-6 py-4 flex items-center justify-between">
+    <div className="min-h-screen bg-canvas text-ink flex flex-col">
+      <div className="sticky top-0 z-30 bg-surface border-b border-line px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <HandshakeIcon className="w-7 h-7 text-brand-red" />
+          <HandshakeIcon className="w-7 h-7 text-primary" />
           <div>
             <h1 className="text-2xl font-extrabold tracking-tight">
-              Counter <span className="text-brand-red">Display</span>
+              Counter <span className="text-primary">Display</span>
             </h1>
-            <p className="text-neutral-400 text-sm font-medium">Orders ready for pickup</p>
+            <p className="text-muted text-sm font-medium">Orders ready for pickup</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
+          <ThemeToggle />
+
           <div
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm ${
               connected || !realtimeEnabled
-                ? "bg-neutral-800 text-white"
-                : "bg-brand-red/20 text-brand-red"
+                ? "bg-surface-elevated text-ink"
+                : "bg-primary/20 text-primary"
             }`}
           >
             {connected || !realtimeEnabled ? (
@@ -124,7 +127,7 @@ export default function CounterDisplay() {
               logout()
               router.push("/login")
             }}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white font-bold text-sm transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-elevated hover:bg-line text-muted hover:text-ink font-bold text-sm transition-colors"
           >
             <LogOut className="w-5 h-5" />
             Log Out
@@ -142,9 +145,9 @@ export default function CounterDisplay() {
               exit={{ opacity: 0 }}
               className="flex flex-col items-center justify-center py-40 gap-6"
             >
-              <CheckCircle2 className="w-24 h-24 text-neutral-700" />
-              <p className="text-3xl font-extrabold text-neutral-500">All clear!</p>
-              <p className="text-xl text-neutral-600 font-medium">No orders to give right now</p>
+              <CheckCircle2 className="w-24 h-24 text-muted" />
+              <p className="text-3xl font-extrabold text-muted">All clear!</p>
+              <p className="text-xl text-muted font-medium">No orders to give right now</p>
             </motion.div>
           ) : (
             <motion.div
@@ -161,26 +164,27 @@ export default function CounterDisplay() {
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.7 }}
+                    whileHover={{ y: -3 }}
                     transition={{ type: "spring", stiffness: 300, damping: 22 }}
-                    className="bg-neutral-900 border-2 border-white rounded-3xl p-6 flex flex-col items-center text-center"
+                    className="bg-surface border-2 border-ink rounded-3xl p-6 flex flex-col items-center text-center shadow-sm"
                   >
                     <motion.span
                       animate={{ scale: [1, 1.04, 1] }}
                       transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
-                      className="text-7xl font-extrabold text-white leading-none mb-2"
+                      className="text-7xl font-extrabold text-ink leading-none mb-2"
                     >
                       #{order.orderNumber}
                     </motion.span>
 
-                    <span className="text-base font-bold text-neutral-400 uppercase tracking-wide mb-5">
+                    <span className="text-base font-bold text-muted uppercase tracking-wide mb-5">
                       {orderDestinationLabel(order)}
                     </span>
 
                     <div className="w-full space-y-2">
                       {order.items.map((item) => (
                         <div key={item.id} className="flex items-center gap-2 justify-center">
-                          <span className="text-lg font-extrabold text-brand-red">{item.quantity}×</span>
-                          <span className="text-base font-semibold text-neutral-300 truncate">
+                          <span className="text-lg font-extrabold text-primary">{item.quantity}×</span>
+                          <span className="text-base font-semibold text-muted truncate">
                             {item.menuItem.name}
                           </span>
                         </div>

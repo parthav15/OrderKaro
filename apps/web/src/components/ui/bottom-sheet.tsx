@@ -30,17 +30,17 @@ export function BottomSheet({ isOpen, onClose, children, className, title }: Bot
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
             className={cn(
-              "fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-3xl shadow-xl max-h-[85vh] overflow-y-auto",
+              "fixed inset-x-0 bottom-0 z-50 bg-surface rounded-t-3xl shadow-xl max-h-[85vh] overflow-y-auto",
               className
             )}
           >
             <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 bg-neutral-300 rounded-full" />
+              <div className="w-10 h-1 bg-line rounded-full" />
             </div>
             {title && (
               <div className="flex items-center justify-between px-6 py-3">
-                <h2 className="text-lg font-bold text-brand-black">{title}</h2>
-                <button onClick={onClose} className="p-1 hover:bg-neutral-100 rounded-lg transition-colors">
+                <h2 className="text-lg font-bold text-ink">{title}</h2>
+                <button onClick={onClose} className="p-1 text-muted hover:bg-surface-elevated rounded-lg transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>

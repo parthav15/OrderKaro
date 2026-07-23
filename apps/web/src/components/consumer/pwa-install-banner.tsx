@@ -80,14 +80,14 @@ export function PwaInstallBanner() {
           transition={{ type: "spring", stiffness: 300, damping: 28 }}
           className="fixed bottom-20 inset-x-4 z-50"
         >
-          <div className="bg-brand-black rounded-2xl p-4 flex items-center gap-3 shadow-xl">
+          <div className="bg-ink rounded-2xl p-4 flex items-center gap-3 shadow-xl">
             <div className="w-10 h-10 rounded-xl bg-brand-red flex items-center justify-center shrink-0">
               <Download className="w-5 h-5 text-white" />
             </div>
 
             <div className="flex-1 min-w-0">
-              <p className="text-white font-bold text-sm">Add to Home Screen</p>
-              <p className="text-neutral-400 text-xs mt-0.5">
+              <p className="text-canvas font-bold text-sm">Add to Home Screen</p>
+              <p className="text-canvas/60 text-xs mt-0.5">
                 Get quick access to your restaurant
               </p>
             </div>
@@ -101,12 +101,13 @@ export function PwaInstallBanner() {
               >
                 Install
               </Button>
-              <button
+              <motion.button
+                whileTap={{ scale: 0.9 }}
                 onClick={handleDismiss}
-                className="p-1 text-neutral-500 hover:text-neutral-300 transition-colors"
+                className="p-1 text-canvas/50 hover:text-canvas/80 transition-colors"
               >
                 <X className="w-4 h-4" />
-              </button>
+              </motion.button>
             </div>
           </div>
         </motion.div>

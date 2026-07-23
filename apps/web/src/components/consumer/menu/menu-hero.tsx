@@ -54,7 +54,7 @@ export function MenuHero({
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-        className="text-sm text-brand-black/55 font-medium"
+        className="text-sm text-ink/55 font-medium"
       >
         {greeting}
       </motion.p>
@@ -63,7 +63,7 @@ export function MenuHero({
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.14, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-        className="font-heading text-[44px] sm:text-5xl font-extrabold tracking-tight text-brand-black mt-1.5 leading-[0.96]"
+        className="font-heading text-[44px] sm:text-5xl font-extrabold tracking-tight text-ink mt-1.5 leading-[0.96]"
       >
         {restaurantName}
       </motion.h1>
@@ -72,21 +72,21 @@ export function MenuHero({
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.26, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="mt-3.5 flex items-center gap-2 text-sm text-brand-black/55 font-medium flex-wrap"
+        className="mt-3.5 flex items-center gap-2 text-sm text-ink/55 font-medium flex-wrap"
       >
         {meta.map((m, i) => (
           <span key={m.key} className="flex items-center gap-2">
-            {i > 0 && <span className="text-brand-black/25">·</span>}
+            {i > 0 && <span className="text-ink/25">·</span>}
             <span>{m.label}</span>
           </span>
         ))}
         {walletBalance !== null && (
           <>
-            {meta.length > 0 && <span className="text-brand-black/25">·</span>}
-            <span className="inline-flex items-center gap-1.5 text-brand-black/75">
+            {meta.length > 0 && <span className="text-ink/25">·</span>}
+            <span className="inline-flex items-center gap-1.5 text-ink/75">
               <Wallet className="w-3.5 h-3.5" strokeWidth={2.2} />
               <span className="font-semibold">{formatPrice(walletBalance)}</span>
-              <span className="text-brand-black/40">in wallet</span>
+              <span className="text-ink/40">in wallet</span>
             </span>
           </>
         )}

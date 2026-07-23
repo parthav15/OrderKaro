@@ -24,7 +24,7 @@ export function TableCardQrThumb({
       animate={{ scale: hovered ? 1.04 : 1 }}
       transition={{ type: "spring", stiffness: 300, damping: 24 }}
       style={{ width: size, height: size }}
-      className="relative rounded-xl overflow-hidden bg-neutral-50 ring-1 ring-inset ring-neutral-100 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] flex items-center justify-center"
+      className="relative rounded-xl overflow-hidden bg-surface-elevated ring-1 ring-inset ring-line shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] flex items-center justify-center"
     >
       {data?.qrDataUrl ? (
         <motion.img
@@ -39,9 +39,9 @@ export function TableCardQrThumb({
           className="w-full h-full object-cover p-1.5"
         />
       ) : isLoading ? (
-        <div className="w-full h-full bg-gradient-to-br from-neutral-100 via-neutral-50 to-neutral-100 animate-pulse" />
+        <div className="w-full h-full bg-gradient-to-br from-surface-elevated via-surface to-surface-elevated animate-pulse" />
       ) : (
-        <QrCode className="w-7 h-7 text-neutral-300" />
+        <QrCode className="w-7 h-7 text-muted" />
       )}
     </motion.div>
   )

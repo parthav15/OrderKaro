@@ -281,16 +281,16 @@ export default function MenuManagement() {
             <div className="w-10 h-10 rounded-xl bg-brand-red/10 flex items-center justify-center">
               <UtensilsCrossed className="w-5 h-5 text-brand-red" />
             </div>
-            <h1 className="text-3xl font-extrabold text-brand-black">Menu Management</h1>
+            <h1 className="text-3xl font-extrabold text-ink">Menu Management</h1>
           </div>
-          <p className="text-neutral-500 ml-13 pl-0.5">Add categories and menu items your customers will see</p>
+          <p className="text-muted ml-13 pl-0.5">Add categories and menu items your customers will see</p>
         </div>
         <div className="flex items-center gap-3">
           {restaurants && restaurants.length > 1 && (
             <select
               value={restaurantId}
               onChange={(e) => setRestaurantId(e.target.value)}
-              className="px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
+              className="px-4 py-3 rounded-xl border border-line text-sm focus:outline-none focus:border-brand-red"
             >
               {restaurants.map((c: any) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
@@ -322,7 +322,7 @@ export default function MenuManagement() {
       {isLoading && (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-20 rounded-xl bg-neutral-100 animate-pulse" />
+            <div key={i} className="h-20 rounded-xl bg-surface-elevated animate-pulse" />
           ))}
         </div>
       )}
@@ -331,11 +331,11 @@ export default function MenuManagement() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center py-24 border-2 border-dashed border-neutral-200 rounded-2xl"
+          className="text-center py-24 border-2 border-dashed border-line rounded-2xl"
         >
-          <UtensilsCrossed className="w-16 h-16 text-neutral-200 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-brand-black mb-2">Your menu is empty</h3>
-          <p className="text-neutral-400 mb-6">Start by creating a category like "Meals" or "Beverages"</p>
+          <UtensilsCrossed className="w-16 h-16 text-muted/30 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-ink mb-2">Your menu is empty</h3>
+          <p className="text-muted mb-6">Start by creating a category like "Meals" or "Beverages"</p>
           <Button
             size="lg"
             onClick={() => { setEditingCategory(null); setCategoryForm({ name: "", description: "" }); setShowCategoryModal(true) }}
@@ -363,13 +363,13 @@ export default function MenuManagement() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     {expandedCategory === category.id ? (
-                      <ChevronUp className="w-6 h-6 text-neutral-400" />
+                      <ChevronUp className="w-6 h-6 text-muted" />
                     ) : (
-                      <ChevronDown className="w-6 h-6 text-neutral-400" />
+                      <ChevronDown className="w-6 h-6 text-muted" />
                     )}
                     <div>
-                      <h3 className="text-lg font-bold text-brand-black">{category.name}</h3>
-                      <p className="text-sm text-neutral-500">
+                      <h3 className="text-lg font-bold text-ink">{category.name}</h3>
+                      <p className="text-sm text-muted">
                         {category.items?.length || 0} {category.items?.length === 1 ? "item" : "items"}
                       </p>
                     </div>
@@ -377,13 +377,13 @@ export default function MenuManagement() {
                   <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => openEditCategory(category)}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-100 transition-colors text-sm font-medium text-neutral-600"
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-elevated transition-colors text-sm font-medium text-muted"
                     >
                       <Pencil className="w-4 h-4" /> Edit
                     </button>
                     <button
                       onClick={() => setDeleteCategoryTarget(category)}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium text-brand-red border border-brand-red/30"
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-primary/10 transition-colors text-sm font-medium text-brand-red border border-brand-red/30"
                     >
                       <Trash2 className="w-4 h-4" /> Delete
                     </button>
@@ -399,19 +399,22 @@ export default function MenuManagement() {
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <CardContent className="border-t border-neutral-100 pt-4">
+                    <CardContent className="border-t border-line pt-4">
                       <div className="space-y-3">
-                        {category.items?.map((item: any) => (
-                          <div
+                        {category.items?.map((item: any, itemIdx: number) => (
+                          <motion.div
                             key={item.id}
-                            className="flex items-center justify-between p-4 rounded-xl border border-neutral-100 hover:border-neutral-200 transition-colors"
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: itemIdx * 0.03 }}
+                            className="flex items-center justify-between p-4 rounded-xl border border-line hover:border-primary/30 transition-colors"
                           >
                             <div className="flex items-center gap-4">
                               {item.imageUrl ? (
                                 <img src={item.imageUrl} alt={item.name} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
                               ) : (
-                                <div className="w-16 h-16 rounded-xl bg-neutral-100 flex items-center justify-center flex-shrink-0">
-                                  <UtensilsCrossed className="w-6 h-6 text-neutral-300" />
+                                <div className="w-16 h-16 rounded-xl bg-surface-elevated flex items-center justify-center flex-shrink-0">
+                                  <UtensilsCrossed className="w-6 h-6 text-muted" />
                                 </div>
                               )}
                               <div>
@@ -431,7 +434,7 @@ export default function MenuManagement() {
                                     </Badge>
                                   )}
                                 </div>
-                                <p className="font-bold text-brand-black">{item.name}</p>
+                                <p className="font-bold text-ink">{item.name}</p>
                                 <p className="text-lg font-extrabold text-brand-red mt-0.5">{formatPrice(item.price)}</p>
                                 {item.tags?.length > 0 && (
                                   <div className="flex gap-1 mt-1.5">
@@ -448,38 +451,38 @@ export default function MenuManagement() {
                                 onClick={() => toggleAvailability.mutate(item.id)}
                                 className={`px-4 py-2 rounded-xl text-sm font-bold transition-colors ${
                                   item.isAvailable
-                                    ? "bg-brand-black text-white"
-                                    : "bg-neutral-100 text-neutral-500 border border-neutral-200"
+                                    ? "bg-ink text-canvas"
+                                    : "bg-surface-elevated text-muted border border-line"
                                 }`}
                               >
                                 {item.isAvailable ? "Available" : "Unavailable"}
                               </button>
                               <button
                                 onClick={() => setCustomizationTarget({ itemId: item.id, itemName: item.name })}
-                                className="p-2.5 hover:bg-neutral-100 rounded-xl text-neutral-500 transition-colors"
+                                className="p-2.5 hover:bg-surface-elevated rounded-xl text-muted transition-colors"
                                 title="Manage customisations"
                               >
                                 <Settings2 className="w-5 h-5" />
                               </button>
                               <button
                                 onClick={() => openEditItem(item, category.id)}
-                                className="p-2.5 hover:bg-neutral-100 rounded-xl text-neutral-500 transition-colors"
+                                className="p-2.5 hover:bg-surface-elevated rounded-xl text-muted transition-colors"
                               >
                                 <Pencil className="w-5 h-5" />
                               </button>
                               <button
                                 onClick={() => setDeleteItemTarget({ item, categoryName: category.name })}
-                                className="p-2.5 hover:bg-red-50 rounded-xl text-neutral-400 hover:text-brand-red transition-colors"
+                                className="p-2.5 hover:bg-primary/10 rounded-xl text-muted hover:text-brand-red transition-colors"
                               >
                                 <Trash2 className="w-5 h-5" />
                               </button>
                             </div>
-                          </div>
+                          </motion.div>
                         ))}
 
                         {(!category.items || category.items.length === 0) && (
-                          <div className="text-center py-8 border border-dashed border-neutral-200 rounded-xl">
-                            <p className="text-neutral-400 font-medium mb-3">No items in this category yet</p>
+                          <div className="text-center py-8 border border-dashed border-line rounded-xl">
+                            <p className="text-muted font-medium mb-3">No items in this category yet</p>
                             <Button
                               size="sm"
                               onClick={() => {
@@ -519,7 +522,7 @@ export default function MenuManagement() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col"
+              className="fixed right-0 top-0 h-full w-full max-w-md bg-surface shadow-2xl z-50 flex flex-col"
             >
               <CustomizationManager
                 itemId={customizationTarget.itemId}
@@ -539,11 +542,11 @@ export default function MenuManagement() {
       >
         {deleteCategoryTarget && (
           <div className="space-y-5">
-            <div className="flex items-start gap-4 p-4 bg-red-50 border border-brand-red/20 rounded-xl">
+            <div className="flex items-start gap-4 p-4 bg-primary/10 border border-brand-red/20 rounded-xl">
               <AlertTriangle className="w-6 h-6 text-brand-red flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold text-brand-black">This action cannot be undone</p>
-                <p className="text-sm text-neutral-600 mt-1">
+                <p className="font-bold text-ink">This action cannot be undone</p>
+                <p className="text-sm text-muted mt-1">
                   Deleting <strong>"{deleteCategoryTarget.name}"</strong> will permanently remove this category and all {deleteCategoryTarget.items?.length || 0} item{deleteCategoryTarget.items?.length !== 1 ? "s" : ""} inside it.
                 </p>
               </div>
@@ -572,11 +575,11 @@ export default function MenuManagement() {
       >
         {deleteItemTarget && (
           <div className="space-y-5">
-            <div className="flex items-start gap-4 p-4 bg-red-50 border border-brand-red/20 rounded-xl">
+            <div className="flex items-start gap-4 p-4 bg-primary/10 border border-brand-red/20 rounded-xl">
               <AlertTriangle className="w-6 h-6 text-brand-red flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold text-brand-black">Are you sure?</p>
-                <p className="text-sm text-neutral-600 mt-1">
+                <p className="font-bold text-ink">Are you sure?</p>
+                <p className="text-sm text-muted mt-1">
                   <strong>"{deleteItemTarget.item.name}"</strong> will be permanently removed from the menu.
                 </p>
               </div>
@@ -605,22 +608,22 @@ export default function MenuManagement() {
       >
         <form onSubmit={handleCategorySubmit} className="space-y-5">
           <div className="space-y-1.5">
-            <label className="block text-sm font-bold text-brand-black">Category Name</label>
+            <label className="block text-sm font-bold text-ink">Category Name</label>
             <input
               value={categoryForm.name}
               onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
               placeholder="e.g. Meals, Beverages, Snacks"
               required
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="block text-sm font-bold text-brand-black">Description <span className="font-normal text-neutral-400">(optional)</span></label>
+            <label className="block text-sm font-bold text-ink">Description <span className="font-normal text-muted">(optional)</span></label>
             <input
               value={categoryForm.description}
               onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
               placeholder="Brief description of this category"
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
             />
           </div>
           <div className="flex gap-3 pt-2">
@@ -651,11 +654,11 @@ export default function MenuManagement() {
           />
 
           <div className="space-y-1.5">
-            <label className="block text-sm font-bold text-brand-black">Category</label>
+            <label className="block text-sm font-bold text-ink">Category</label>
             <select
               value={itemForm.categoryId}
               onChange={(e) => setItemForm({ ...itemForm, categoryId: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl border border-neutral-200 text-base focus:outline-none focus:border-brand-red"
+              className="w-full px-4 py-3 rounded-xl border border-line text-base focus:outline-none focus:border-brand-red"
               required
             >
               <option value="">Select a category</option>
@@ -666,28 +669,28 @@ export default function MenuManagement() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-sm font-bold text-brand-black">Item Name</label>
+            <label className="block text-sm font-bold text-ink">Item Name</label>
             <input
               value={itemForm.name}
               onChange={(e) => setItemForm({ ...itemForm, name: e.target.value })}
               placeholder="e.g. Butter Chicken, Masala Chai"
               required
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-sm font-bold text-brand-black">Description <span className="font-normal text-neutral-400">(optional)</span></label>
+            <label className="block text-sm font-bold text-ink">Description <span className="font-normal text-muted">(optional)</span></label>
             <input
               value={itemForm.description}
               onChange={(e) => setItemForm({ ...itemForm, description: e.target.value })}
               placeholder="Brief description of this item"
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-sm font-bold text-brand-black">Price (₹)</label>
+            <label className="block text-sm font-bold text-ink">Price (₹)</label>
             <input
               type="number"
               min="0"
@@ -696,20 +699,20 @@ export default function MenuManagement() {
               onChange={(e) => setItemForm({ ...itemForm, price: e.target.value })}
               placeholder="e.g. 120"
               required
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-brand-black">Food Type</label>
+            <label className="block text-sm font-bold text-ink">Food Type</label>
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={() => setItemForm({ ...itemForm, isVeg: true })}
                 className={`flex-1 py-3 rounded-xl text-sm font-bold transition-colors border-2 ${
                   itemForm.isVeg
-                    ? "bg-brand-black text-white border-brand-black"
-                    : "bg-white text-neutral-500 border-neutral-200"
+                    ? "bg-ink text-canvas border-ink"
+                    : "bg-surface text-muted border-line"
                 }`}
               >
                 Vegetarian
@@ -720,7 +723,7 @@ export default function MenuManagement() {
                 className={`flex-1 py-3 rounded-xl text-sm font-bold transition-colors border-2 ${
                   !itemForm.isVeg
                     ? "bg-brand-red text-white border-brand-red"
-                    : "bg-white text-neutral-500 border-neutral-200"
+                    : "bg-surface text-muted border-line"
                 }`}
               >
                 Non-Vegetarian
@@ -729,25 +732,25 @@ export default function MenuManagement() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-sm font-bold text-brand-black">Tags <span className="font-normal text-neutral-400">(comma-separated)</span></label>
+            <label className="block text-sm font-bold text-ink">Tags <span className="font-normal text-muted">(comma-separated)</span></label>
             <input
               placeholder="bestseller, new, spicy"
               value={itemForm.tags}
               onChange={(e) => setItemForm({ ...itemForm, tags: e.target.value })}
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
             />
           </div>
 
           {editingItem && (
-            <div className="space-y-4 rounded-xl border border-neutral-200 p-4">
+            <div className="space-y-4 rounded-xl border border-line p-4">
               <div className="flex items-center gap-2">
                 <Box className="w-4 h-4 text-brand-red" />
-                <h4 className="text-sm font-bold text-brand-black">3D model (AR)</h4>
+                <h4 className="text-sm font-bold text-ink">3D model (AR)</h4>
               </div>
 
               {((saveModel3d.error as any)?.response?.status === 402 ||
                 (requestModel3d.error as any)?.response?.status === 402) && (
-                <div className="flex items-center gap-2 rounded-lg bg-neutral-50 border border-neutral-200 px-3 py-2 text-xs font-medium text-neutral-600">
+                <div className="flex items-center gap-2 rounded-lg bg-surface-elevated border border-line px-3 py-2 text-xs font-medium text-muted">
                   <Lock className="w-3.5 h-3.5 text-brand-red" />
                   Requires Pro —{" "}
                   <Link href="/admin/billing" className="text-brand-red underline">
@@ -757,12 +760,12 @@ export default function MenuManagement() {
               )}
 
               <div className="space-y-1.5">
-                <label className="block text-sm font-bold text-brand-black">Model URL <span className="font-normal text-neutral-400">(.glb or .gltf)</span></label>
+                <label className="block text-sm font-bold text-ink">Model URL <span className="font-normal text-muted">(.glb or .gltf)</span></label>
                 <input
                   value={model3dForm.model3dUrl}
                   onChange={(e) => setModel3dForm({ ...model3dForm, model3dUrl: e.target.value })}
                   placeholder="https://cdn.example.com/models/dish.glb"
-                  className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                  className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
                 />
                 {!isValidModel3dUrl(model3dForm.model3dUrl) && (
                   <p className="text-xs font-medium text-brand-red">Must be a URL ending in .glb or .gltf</p>
@@ -770,12 +773,12 @@ export default function MenuManagement() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-sm font-bold text-brand-black">USDZ URL (iOS AR — .usdz) <span className="font-normal text-neutral-400">(optional)</span></label>
+                <label className="block text-sm font-bold text-ink">USDZ URL (iOS AR — .usdz) <span className="font-normal text-muted">(optional)</span></label>
                 <input
                   value={model3dForm.model3dUsdzUrl}
                   onChange={(e) => setModel3dForm({ ...model3dForm, model3dUsdzUrl: e.target.value })}
                   placeholder="https://cdn.example.com/models/dish.usdz"
-                  className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                  className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
                 />
                 {!isValidModel3dUsdzUrl(model3dForm.model3dUsdzUrl) && (
                   <p className="text-xs font-medium text-brand-red">Must be a URL ending in .usdz</p>
@@ -783,12 +786,12 @@ export default function MenuManagement() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-sm font-bold text-brand-black">Poster image URL <span className="font-normal text-neutral-400">(optional)</span></label>
+                <label className="block text-sm font-bold text-ink">Poster image URL <span className="font-normal text-muted">(optional)</span></label>
                 <input
                   value={model3dForm.model3dPosterUrl}
                   onChange={(e) => setModel3dForm({ ...model3dForm, model3dPosterUrl: e.target.value })}
                   placeholder="https://cdn.example.com/models/dish-poster.jpg"
-                  className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                  className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
                 />
               </div>
 
@@ -803,14 +806,14 @@ export default function MenuManagement() {
                 Save 3D model
               </Button>
 
-              <div className="space-y-1.5 pt-2 border-t border-neutral-100">
-                <label className="block text-sm font-bold text-brand-black">Request a 3D model <span className="font-normal text-neutral-400">(optional notes)</span></label>
+              <div className="space-y-1.5 pt-2 border-t border-line">
+                <label className="block text-sm font-bold text-ink">Request a 3D model <span className="font-normal text-muted">(optional notes)</span></label>
                 <textarea
                   value={modelRequestNotes}
                   onChange={(e) => setModelRequestNotes(e.target.value)}
                   placeholder="Anything our team should know while modelling this dish"
                   rows={2}
-                  className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                  className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
                 />
                 <Button
                   type="button"

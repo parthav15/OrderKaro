@@ -65,7 +65,7 @@ export function QrPosterModal({ table, restaurantId, restaurantName, onClose }: 
     <Modal isOpen={!!table} onClose={onClose} title={table ? `${table.label} · QR` : "QR"}>
       {table && data && (
         <div className="space-y-5">
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-neutral-100">
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-surface-elevated">
             {(["code", "poster", "link"] as Tab[]).map((key) => (
               <button
                 key={key}
@@ -73,8 +73,8 @@ export function QrPosterModal({ table, restaurantId, restaurantName, onClose }: 
                 className={
                   "flex-1 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-[0.18em] transition-colors " +
                   (tab === key
-                    ? "bg-white text-brand-black shadow-sm"
-                    : "text-neutral-500 hover:text-brand-black")
+                    ? "bg-surface text-ink shadow-sm"
+                    : "text-muted hover:text-ink")
                 }
               >
                 {key}
@@ -91,7 +91,7 @@ export function QrPosterModal({ table, restaurantId, restaurantName, onClose }: 
                 exit={{ opacity: 0, y: -6 }}
                 className="space-y-4"
               >
-                <div className="bg-neutral-50 rounded-2xl p-6 flex items-center justify-center">
+                <div className="bg-surface-elevated rounded-2xl p-6 flex items-center justify-center">
                   <img src={data.qrDataUrl} alt="QR Code" className="w-64 h-64" />
                 </div>
                 <Button size="lg" variant="outline" className="w-full" onClick={downloadCode}>
@@ -108,7 +108,7 @@ export function QrPosterModal({ table, restaurantId, restaurantName, onClose }: 
                 exit={{ opacity: 0, y: -6 }}
                 className="space-y-4"
               >
-                <div className="bg-neutral-50 rounded-2xl p-4 flex items-center justify-center">
+                <div className="bg-surface-elevated rounded-2xl p-4 flex items-center justify-center">
                   {posterUrl ? (
                     <motion.img
                       key={posterUrl}
@@ -120,7 +120,7 @@ export function QrPosterModal({ table, restaurantId, restaurantName, onClose }: 
                       style={{ width: 200, height: 356 }}
                     />
                   ) : (
-                    <div className="w-[200px] h-[356px] rounded-xl bg-neutral-100 animate-pulse" />
+                    <div className="w-[200px] h-[356px] rounded-xl bg-surface-elevated animate-pulse" />
                   )}
                 </div>
                 <Button size="lg" className="w-full" onClick={downloadPoster} disabled={!posterUrl}>
@@ -138,11 +138,11 @@ export function QrPosterModal({ table, restaurantId, restaurantName, onClose }: 
                 exit={{ opacity: 0, y: -6 }}
                 className="space-y-4"
               >
-                <div className="p-4 rounded-2xl border border-neutral-100 bg-neutral-50">
-                  <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-neutral-400 mb-1.5">
+                <div className="p-4 rounded-2xl border border-line bg-surface-elevated">
+                  <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-muted mb-1.5">
                     Direct URL
                   </p>
-                  <p className="text-sm text-brand-black break-all">{data.url}</p>
+                  <p className="text-sm text-ink break-all">{data.url}</p>
                 </div>
                 <div className="flex gap-2">
                   <Button size="lg" variant="outline" className="flex-1" onClick={copyUrl}>

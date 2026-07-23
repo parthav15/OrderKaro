@@ -1,10 +1,15 @@
 "use client"
 
+import { motion } from "framer-motion"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export function MenuSkeleton() {
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+    >
       <div className="px-5 pt-12 pb-8">
         <Skeleton className="h-3 w-32 rounded-full" />
         <Skeleton className="h-12 w-2/3 rounded-xl mt-3" />
@@ -44,6 +49,6 @@ export function MenuSkeleton() {
           </div>
         ))}
       </div>
-    </div>
+    </motion.div>
   )
 }

@@ -133,9 +133,9 @@ export default function RestaurantsPage() {
             <div className="w-10 h-10 rounded-xl bg-brand-red/10 flex items-center justify-center">
               <Store className="w-5 h-5 text-brand-red" />
             </div>
-            <h1 className="text-3xl font-extrabold text-brand-black">Restaurants</h1>
+            <h1 className="text-3xl font-extrabold text-ink">Restaurants</h1>
           </div>
-          <p className="text-neutral-500">Manage all your restaurant locations and their settings</p>
+          <p className="text-muted">Manage all your restaurant locations and their settings</p>
         </div>
         <Button size="lg" onClick={openCreateModal}>
           <Plus className="w-5 h-5" /> Add Restaurant
@@ -145,7 +145,7 @@ export default function RestaurantsPage() {
       {isLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-48 rounded-xl bg-neutral-100 animate-pulse" />
+            <div key={i} className="h-48 rounded-xl bg-surface-elevated animate-pulse" />
           ))}
         </div>
       )}
@@ -154,11 +154,11 @@ export default function RestaurantsPage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center py-24 border-2 border-dashed border-neutral-200 rounded-2xl"
+          className="text-center py-24 border-2 border-dashed border-line rounded-2xl"
         >
-          <Store className="w-16 h-16 text-neutral-200 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-brand-black mb-2">No restaurants yet</h3>
-          <p className="text-neutral-400 mb-6">Create your first restaurant location to start taking orders</p>
+          <Store className="w-16 h-16 text-muted/30 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-ink mb-2">No restaurants yet</h3>
+          <p className="text-muted mb-6">Create your first restaurant location to start taking orders</p>
           <Button size="lg" onClick={openCreateModal}>
             <Plus className="w-5 h-5" /> Create First Restaurant
           </Button>
@@ -187,9 +187,9 @@ export default function RestaurantsPage() {
                       </Badge>
                     </div>
 
-                    <h3 className="text-xl font-extrabold text-brand-black">{restaurant.name}</h3>
+                    <h3 className="text-xl font-extrabold text-ink">{restaurant.name}</h3>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-sm text-neutral-400">/{restaurant.slug}</span>
+                      <span className="text-sm text-muted">/{restaurant.slug}</span>
                       <a
                         href={`/${restaurant.slug}/menu`}
                         target="_blank"
@@ -201,17 +201,17 @@ export default function RestaurantsPage() {
                     </div>
 
                     {restaurant.description && (
-                      <p className="text-sm text-neutral-500 mt-2 line-clamp-2">{restaurant.description}</p>
+                      <p className="text-sm text-muted mt-2 line-clamp-2">{restaurant.description}</p>
                     )}
 
-                    <div className="flex items-center gap-5 mt-4 pt-4 border-t border-neutral-100">
+                    <div className="flex items-center gap-5 mt-4 pt-4 border-t border-line">
                       {restaurant.openingTime && restaurant.closingTime && (
-                        <div className="flex items-center gap-2 text-sm text-neutral-600">
-                          <Clock className="w-4 h-4 text-neutral-400" />
+                        <div className="flex items-center gap-2 text-sm text-muted">
+                          <Clock className="w-4 h-4 text-muted" />
                           <span className="font-semibold">{restaurant.openingTime} – {restaurant.closingTime}</span>
                         </div>
                       )}
-                      <span className="text-sm text-neutral-500">
+                      <span className="text-sm text-muted">
                         ~{restaurant.avgPrepTime} min avg prep
                       </span>
                     </div>
@@ -227,7 +227,7 @@ export default function RestaurantsPage() {
                       </Button>
                       <button
                         onClick={() => setDeleteTarget(restaurant)}
-                        className="flex items-center gap-2 px-3 py-2 rounded-xl border border-brand-red/30 text-sm font-semibold text-brand-red hover:bg-red-50 transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl border border-brand-red/30 text-sm font-semibold text-brand-red hover:bg-primary/10 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" /> Delete
                       </button>
@@ -247,11 +247,11 @@ export default function RestaurantsPage() {
       >
         {deleteTarget && (
           <div className="space-y-5">
-            <div className="flex items-start gap-4 p-4 bg-red-50 border border-brand-red/20 rounded-xl">
+            <div className="flex items-start gap-4 p-4 bg-primary/10 border border-brand-red/20 rounded-xl">
               <AlertTriangle className="w-6 h-6 text-brand-red flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold text-brand-black">Delete "{deleteTarget.name}"?</p>
-                <p className="text-sm text-neutral-600 mt-1">
+                <p className="font-bold text-ink">Delete "{deleteTarget.name}"?</p>
+                <p className="text-sm text-muted mt-1">
                   This will permanently delete this restaurant, all its menus, tables, staff, and data. This cannot be undone.
                 </p>
               </div>
@@ -281,7 +281,7 @@ export default function RestaurantsPage() {
       >
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-brand-black">Restaurant Name</label>
+            <label className="block text-sm font-bold text-ink">Restaurant Name</label>
             <input
               placeholder="e.g. Main Campus Cafeteria"
               value={form.name}
@@ -290,12 +290,12 @@ export default function RestaurantsPage() {
                 setForm((f) => ({ ...f, name, slug: editingRestaurant ? f.slug : generateSlug(name) }))
               }}
               required
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-brand-black">URL Slug</label>
+            <label className="block text-sm font-bold text-ink">URL Slug</label>
             <input
               placeholder="e.g. main-campus"
               value={form.slug}
@@ -303,49 +303,49 @@ export default function RestaurantsPage() {
                 setForm({ ...form, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })
               }
               required
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
             />
             {form.slug && (
-              <p className="text-xs text-neutral-400">Menu URL: /{form.slug}/menu</p>
+              <p className="text-xs text-muted">Menu URL: /{form.slug}/menu</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-brand-black">
-              Description <span className="font-normal text-neutral-400">(optional)</span>
+            <label className="block text-sm font-bold text-ink">
+              Description <span className="font-normal text-muted">(optional)</span>
             </label>
             <textarea
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               placeholder="Brief description of this restaurant"
               rows={2}
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20 resize-none"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20 resize-none"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="block text-sm font-bold text-brand-black">Opening Time</label>
+              <label className="block text-sm font-bold text-ink">Opening Time</label>
               <input
                 type="time"
                 value={form.openingTime}
                 onChange={(e) => setForm({ ...form, openingTime: e.target.value })}
-                className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-bold text-brand-black">Closing Time</label>
+              <label className="block text-sm font-bold text-ink">Closing Time</label>
               <input
                 type="time"
                 value={form.closingTime}
                 onChange={(e) => setForm({ ...form, closingTime: e.target.value })}
-                className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-brand-black">Average Prep Time (minutes)</label>
+            <label className="block text-sm font-bold text-ink">Average Prep Time (minutes)</label>
             <input
               type="number"
               min="1"
@@ -353,9 +353,9 @@ export default function RestaurantsPage() {
               value={String(form.avgPrepTime)}
               onChange={(e) => setForm({ ...form, avgPrepTime: Number(e.target.value) })}
               required
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
             />
-            <p className="text-xs text-neutral-400">Shown to customers as estimated wait time</p>
+            <p className="text-xs text-muted">Shown to customers as estimated wait time</p>
           </div>
 
           <div className="flex gap-3 pt-2">

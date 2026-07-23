@@ -20,6 +20,7 @@ import {
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { Logo } from "@/components/ui/logo"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { useAuthStore } from "@/stores/auth"
 
 const SUPER_ADMIN_EMAIL =
@@ -82,7 +83,7 @@ export function AdminTopNav() {
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.05 }}
-          className="pointer-events-auto bg-white/80 backdrop-blur-xl border border-neutral-200/60 shadow-lg shadow-black/[0.04] rounded-2xl px-2 py-1.5 flex items-center gap-0.5 overflow-x-auto scrollbar-hide"
+          className="pointer-events-auto bg-surface/80 backdrop-blur-xl border border-line/60 shadow-lg shadow-black/[0.04] rounded-2xl px-2 py-1.5 flex items-center gap-0.5 overflow-x-auto scrollbar-hide"
         >
           {allItems.map((item) => {
             const active = isActive(item.href)
@@ -97,7 +98,7 @@ export function AdminTopNav() {
                   {active && (
                     <motion.div
                       layoutId="activeNavPill"
-                      className="absolute inset-0 bg-[#DC2626] rounded-xl shadow-sm"
+                      className="absolute inset-0 bg-primary rounded-xl shadow-sm"
                       transition={{
                         type: "spring",
                         stiffness: 380,
@@ -110,14 +111,14 @@ export function AdminTopNav() {
                       "relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-[13px] font-semibold transition-colors duration-150 whitespace-nowrap",
                       active
                         ? "text-white"
-                        : "text-neutral-500 hover:text-[#0A0A0A]"
+                        : "text-muted hover:text-ink"
                     )}
                   >
                     <Icon
                       size={14}
                       className={cn(
                         "shrink-0",
-                        active ? "text-white" : "text-neutral-400"
+                        active ? "text-white" : "text-muted"
                       )}
                     />
                     {item.label}
@@ -134,20 +135,22 @@ export function AdminTopNav() {
           transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.1 }}
           className="pointer-events-auto shrink-0 flex items-center gap-2.5"
         >
-          <div className="flex items-center gap-2.5 bg-white/80 backdrop-blur-xl border border-neutral-200/60 rounded-xl px-3 py-1.5 shadow-lg shadow-black/[0.04]">
-            <div className="w-7 h-7 rounded-lg bg-[#0A0A0A] flex items-center justify-center shrink-0">
-              <span className="text-white text-xs font-bold leading-none">
+          <ThemeToggle className="shadow-lg shadow-black/[0.04]" />
+
+          <div className="flex items-center gap-2.5 bg-surface/80 backdrop-blur-xl border border-line/60 rounded-xl px-3 py-1.5 shadow-lg shadow-black/[0.04]">
+            <div className="w-7 h-7 rounded-lg bg-ink flex items-center justify-center shrink-0">
+              <span className="text-canvas text-xs font-bold leading-none">
                 {userInitial}
               </span>
             </div>
-            <span className="text-sm font-semibold text-[#0A0A0A] max-w-[100px] truncate hidden md:block">
+            <span className="text-sm font-semibold text-ink max-w-[100px] truncate hidden md:block">
               {user?.name}
             </span>
             <motion.button
               whileHover={{ scale: 1.08 }}
               whileTap={{ scale: 0.92 }}
               onClick={handleLogout}
-              className="p-1.5 rounded-lg text-neutral-400 hover:bg-red-50 hover:text-[#DC2626] transition-colors duration-150"
+              className="p-1.5 rounded-lg text-muted hover:bg-primary/10 hover:text-primary transition-colors duration-150"
               title="Logout"
             >
               <LogOut size={15} />

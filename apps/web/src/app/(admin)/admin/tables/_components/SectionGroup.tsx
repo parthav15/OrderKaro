@@ -28,7 +28,7 @@ export function SectionGroup({
     <motion.section layout className="space-y-4">
       <motion.div
         layout
-        className="sticky top-20 z-10 -mx-2 px-2 py-2 backdrop-blur-md bg-neutral-50/85 flex items-center justify-between"
+        className="sticky top-20 z-10 -mx-2 px-2 py-2 backdrop-blur-md bg-surface-elevated/85 flex items-center justify-between"
       >
         <button
           type="button"
@@ -38,14 +38,14 @@ export function SectionGroup({
           <motion.span
             animate={{ rotate: open ? 0 : -90 }}
             transition={{ type: "spring", stiffness: 320, damping: 24 }}
-            className="text-neutral-400 group-hover:text-brand-black transition-colors"
+            className="text-muted group-hover:text-ink transition-colors"
           >
             <ChevronDown className="w-4 h-4" />
           </motion.span>
-          <span className="text-[11px] uppercase tracking-[0.22em] font-bold text-brand-black">
+          <span className="text-[11px] uppercase tracking-[0.22em] font-bold text-ink">
             {title}
           </span>
-          <span className="text-[11px] font-semibold tabular-nums text-neutral-400">
+          <span className="text-[11px] font-semibold tabular-nums text-muted">
             {count}
           </span>
         </button>
@@ -54,7 +54,7 @@ export function SectionGroup({
           <button
             type="button"
             onClick={allSelected ? onClearAll : onSelectAll}
-            className="text-[10px] uppercase tracking-[0.18em] font-bold text-neutral-400 hover:text-brand-red transition-colors"
+            className="text-[10px] uppercase tracking-[0.18em] font-bold text-muted hover:text-brand-red transition-colors"
           >
             {allSelected ? "Clear" : "Select all"}
           </button>

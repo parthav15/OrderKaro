@@ -19,20 +19,20 @@ export function SectionHeading({ eyebrow = "From the kitchen", title, count }: S
     >
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-brand-black/45">
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink/45">
             {eyebrow}
           </p>
-          <h2 className="font-heading text-[34px] sm:text-[40px] font-extrabold tracking-tight text-brand-black leading-[0.98] mt-2">
+          <h2 className="font-heading text-[34px] sm:text-[40px] font-extrabold tracking-tight text-ink leading-[0.98] mt-2">
             {title}
           </h2>
         </div>
         {typeof count === "number" && (
-          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-brand-black/40 pb-2 whitespace-nowrap">
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-ink/40 pb-2 whitespace-nowrap">
             {String(count).padStart(2, "0")} {count === 1 ? "dish" : "dishes"}
           </p>
         )}
       </div>
-      <div className="mt-4 h-px bg-brand-black/12" />
+      <div className="mt-4 h-px bg-ink/12" />
     </motion.div>
   )
 }

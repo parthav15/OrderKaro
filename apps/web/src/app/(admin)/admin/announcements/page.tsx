@@ -132,16 +132,16 @@ export default function AnnouncementsPage() {
             <div className="w-10 h-10 rounded-xl bg-brand-red/10 flex items-center justify-center">
               <Megaphone className="w-5 h-5 text-brand-red" />
             </div>
-            <h1 className="text-3xl font-extrabold text-brand-black">Announcements</h1>
+            <h1 className="text-3xl font-extrabold text-ink">Announcements</h1>
           </div>
-          <p className="text-neutral-500">Banners shown to customers when they browse your menu</p>
+          <p className="text-muted">Banners shown to customers when they browse your menu</p>
         </div>
         <div className="flex items-center gap-3">
           {restaurants && restaurants.length > 1 && (
             <select
               value={restaurantId || ""}
               onChange={(e) => setRestaurantId(e.target.value)}
-              className="px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
+              className="px-4 py-3 rounded-xl border border-line text-sm focus:outline-none focus:border-brand-red"
             >
               {restaurants.map((c: any) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
@@ -157,7 +157,7 @@ export default function AnnouncementsPage() {
       {isLoading && (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-24 rounded-xl bg-neutral-100 animate-pulse" />
+            <div key={i} className="h-24 rounded-xl bg-surface-elevated animate-pulse" />
           ))}
         </div>
       )}
@@ -166,11 +166,11 @@ export default function AnnouncementsPage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center py-24 border-2 border-dashed border-neutral-200 rounded-2xl"
+          className="text-center py-24 border-2 border-dashed border-line rounded-2xl"
         >
-          <Megaphone className="w-16 h-16 text-neutral-200 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-brand-black mb-2">No announcements yet</h3>
-          <p className="text-neutral-400 mb-6">
+          <Megaphone className="w-16 h-16 text-muted/30 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-ink mb-2">No announcements yet</h3>
+          <p className="text-muted mb-6">
             Create an announcement to show important messages to your customers
           </p>
           <Button size="lg" onClick={openCreate}>
@@ -194,7 +194,7 @@ export default function AnnouncementsPage() {
                   <CardContent className="py-5">
                     <div className="flex items-start gap-4">
                       <div className="flex-1 min-w-0">
-                        <p className="text-lg font-bold text-brand-black leading-snug">{a.message}</p>
+                        <p className="text-lg font-bold text-ink leading-snug">{a.message}</p>
                         <div className="flex items-center gap-2 mt-3 flex-wrap">
                           <Badge
                             variant={!a.isActive ? "default" : isExpired(a) ? "warning" : "success"}
@@ -202,7 +202,7 @@ export default function AnnouncementsPage() {
                             {!a.isActive ? "Inactive" : isExpired(a) ? "Expired" : "Live — Visible to customers"}
                           </Badge>
                           {a.expiresAt && (
-                            <span className="text-sm text-neutral-400">
+                            <span className="text-sm text-muted">
                               Expires:{" "}
                               {new Date(a.expiresAt).toLocaleDateString("en-IN", {
                                 day: "numeric",
@@ -213,7 +213,7 @@ export default function AnnouncementsPage() {
                               })}
                             </span>
                           )}
-                          <span className="text-sm text-neutral-400">
+                          <span className="text-sm text-muted">
                             Created:{" "}
                             {new Date(a.createdAt).toLocaleDateString("en-IN", {
                               day: "numeric",
@@ -227,24 +227,24 @@ export default function AnnouncementsPage() {
                         <button
                           onClick={() => toggleMutation.mutate({ id: a.id, isActive: !a.isActive })}
                           title={a.isActive ? "Deactivate — hide from customers" : "Activate — show to customers"}
-                          className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-neutral-50 transition-colors text-sm font-semibold text-neutral-600"
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-surface-elevated transition-colors text-sm font-semibold text-muted"
                         >
                           {a.isActive ? (
-                            <ToggleRight className="w-6 h-6 text-brand-black" />
+                            <ToggleRight className="w-6 h-6 text-ink" />
                           ) : (
-                            <ToggleLeft className="w-6 h-6 text-neutral-400" />
+                            <ToggleLeft className="w-6 h-6 text-muted" />
                           )}
                           {a.isActive ? "On" : "Off"}
                         </button>
                         <button
                           onClick={() => openEdit(a)}
-                          className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-neutral-50 transition-colors text-sm font-semibold text-neutral-600"
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-surface-elevated transition-colors text-sm font-semibold text-muted"
                         >
                           <Pencil className="w-4 h-4" /> Edit
                         </button>
                         <button
                           onClick={() => setDeleteTarget(a)}
-                          className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-red-50 transition-colors text-sm font-semibold text-brand-red border border-brand-red/30"
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-primary/10 transition-colors text-sm font-semibold text-brand-red border border-brand-red/30"
                         >
                           <Trash2 className="w-4 h-4" /> Delete
                         </button>
@@ -265,11 +265,11 @@ export default function AnnouncementsPage() {
       >
         {deleteTarget && (
           <div className="space-y-5">
-            <div className="flex items-start gap-4 p-4 bg-red-50 border border-brand-red/20 rounded-xl">
+            <div className="flex items-start gap-4 p-4 bg-primary/10 border border-brand-red/20 rounded-xl">
               <AlertTriangle className="w-6 h-6 text-brand-red flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold text-brand-black">Delete this announcement?</p>
-                <p className="text-sm text-neutral-600 mt-1 line-clamp-2">"{deleteTarget.message}"</p>
+                <p className="font-bold text-ink">Delete this announcement?</p>
+                <p className="text-sm text-muted mt-1 line-clamp-2">"{deleteTarget.message}"</p>
               </div>
             </div>
             <div className="flex gap-3">
@@ -297,7 +297,7 @@ export default function AnnouncementsPage() {
       >
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-brand-black">
+            <label className="block text-sm font-bold text-ink">
               Message
             </label>
             <textarea
@@ -305,29 +305,29 @@ export default function AnnouncementsPage() {
               onChange={(e) => setForm({ ...form, message: e.target.value })}
               placeholder="e.g. Closed for Holi on March 14th. Reopening March 15th morning."
               rows={4}
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black placeholder:text-neutral-400 transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20 resize-none"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20 resize-none"
               required
             />
-            <p className="text-xs text-neutral-400">This message will appear as a banner on your menu page</p>
+            <p className="text-xs text-muted">This message will appear as a banner on your menu page</p>
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-bold text-brand-black">
-              Expiry Date & Time <span className="font-normal text-neutral-400">(optional)</span>
+            <label className="block text-sm font-bold text-ink">
+              Expiry Date & Time <span className="font-normal text-muted">(optional)</span>
             </label>
             <input
               type="datetime-local"
               value={form.expiresAt}
               onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-base text-brand-black transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
             />
-            <p className="text-xs text-neutral-400">Leave blank to keep it active indefinitely</p>
+            <p className="text-xs text-muted">Leave blank to keep it active indefinitely</p>
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-xl border border-neutral-200">
+          <div className="flex items-center justify-between p-4 bg-surface-elevated rounded-xl border border-line">
             <div>
-              <p className="text-sm font-bold text-brand-black">Show to Customers</p>
-              <p className="text-xs text-neutral-400 mt-0.5">
+              <p className="text-sm font-bold text-ink">Show to Customers</p>
+              <p className="text-xs text-muted mt-0.5">
                 {form.isActive ? "This banner is currently visible on your menu" : "This banner is hidden from customers"}
               </p>
             </div>
@@ -337,9 +337,9 @@ export default function AnnouncementsPage() {
               className="p-1 flex-shrink-0"
             >
               {form.isActive ? (
-                <ToggleRight className="w-10 h-10 text-brand-black" />
+                <ToggleRight className="w-10 h-10 text-ink" />
               ) : (
-                <ToggleLeft className="w-10 h-10 text-neutral-400" />
+                <ToggleLeft className="w-10 h-10 text-muted" />
               )}
             </button>
           </div>

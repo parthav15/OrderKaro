@@ -11,8 +11,8 @@ interface VegMarkerProps {
 export function VegMarker({ isVeg, size = "md", className }: VegMarkerProps) {
   const sizeClass = size === "sm" ? "w-3 h-3" : "w-3.5 h-3.5"
   const dotClass = size === "sm" ? "w-1.5 h-1.5" : "w-1.5 h-1.5"
-  const colorClass = isVeg ? "border-brand-black" : "border-brand-red"
-  const dotColorClass = isVeg ? "bg-brand-black" : "bg-brand-red"
+  const colorClass = isVeg ? "border-ink" : "border-brand-red"
+  const dotColorClass = isVeg ? "bg-ink" : "bg-brand-red"
 
   return (
     <span

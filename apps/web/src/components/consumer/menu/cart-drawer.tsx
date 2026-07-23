@@ -47,13 +47,13 @@ export function CartDrawer({ slug }: CartDrawerProps) {
             <motion.div
               data-cart-target
               animate={controls}
-              className="bg-brand-black text-white rounded-[22px] px-4 py-3 flex items-center gap-4 shadow-[0_10px_40px_-8px_rgba(0,0,0,0.35)] border border-white/[0.04]"
+              className="bg-ink text-canvas rounded-[22px] px-4 py-3 flex items-center gap-4 shadow-[0_10px_40px_-8px_rgba(0,0,0,0.35)] border border-canvas/[0.04]"
             >
               <div className="flex items-center -space-x-2.5">
                 {previewItems.map((item, i) => (
                   <div
                     key={`${item.menuItemId}-${i}`}
-                    className="relative w-9 h-9 rounded-full overflow-hidden border-2 border-brand-black bg-white/10 flex items-center justify-center"
+                    className="relative w-9 h-9 rounded-full overflow-hidden border-2 border-ink bg-canvas/10 flex items-center justify-center"
                   >
                     {item.imageUrl ? (
                       <Image
@@ -64,21 +64,21 @@ export function CartDrawer({ slug }: CartDrawerProps) {
                         className="object-cover"
                       />
                     ) : (
-                      <span className="font-serif italic text-base text-white/85">
+                      <span className="font-serif italic text-base text-canvas/85">
                         {item.name.charAt(0)}
                       </span>
                     )}
                   </div>
                 ))}
                 {remaining > 0 && (
-                  <div className="w-9 h-9 rounded-full border-2 border-brand-black bg-white/15 flex items-center justify-center text-[10px] font-bold">
+                  <div className="w-9 h-9 rounded-full border-2 border-ink bg-canvas/15 flex items-center justify-center text-[10px] font-bold">
                     +{remaining}
                   </div>
                 )}
               </div>
 
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] uppercase tracking-[0.22em] text-white/55 font-bold leading-none">
+                <p className="text-[10px] uppercase tracking-[0.22em] text-canvas/55 font-bold leading-none">
                   {itemCount} {itemCount === 1 ? "item" : "items"}
                 </p>
                 <p className="text-[17px] font-extrabold leading-tight tabular-nums mt-1">

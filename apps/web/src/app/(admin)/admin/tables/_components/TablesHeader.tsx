@@ -48,14 +48,14 @@ export function TablesHeader({
             <div className="w-10 h-10 rounded-xl bg-brand-red/10 flex items-center justify-center">
               <LayoutGrid className="w-5 h-5 text-brand-red" />
             </div>
-            <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-neutral-400">
+            <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-muted">
               Operations · Tables
             </p>
           </div>
-          <h1 className="text-[44px] leading-[1.05] font-extrabold tracking-tight text-brand-black font-heading">
+          <h1 className="text-[44px] leading-[1.05] font-extrabold tracking-tight text-ink font-heading">
             Tables &amp; QR codes
           </h1>
-          <p className="text-neutral-500 max-w-xl">
+          <p className="text-muted max-w-xl">
             Print, manage and monitor every scannable surface in your restaurant.
             Tap a card to inspect its QR, or hold delete to retire one.
           </p>
@@ -66,7 +66,7 @@ export function TablesHeader({
             <select
               value={restaurantId}
               onChange={(e) => onRestaurantChange(e.target.value)}
-              className="px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red bg-white"
+              className="px-4 py-3 rounded-xl border border-line text-sm focus:outline-none focus:border-brand-red bg-surface"
             >
               {restaurants.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -81,7 +81,7 @@ export function TablesHeader({
             whileHover={{ y: -1 }}
             onClick={onBulkDownload}
             disabled={bulkExporting || !restaurantId || !hasTables}
-            className="inline-flex items-center gap-2 px-5 py-3 text-sm font-bold rounded-xl bg-white text-brand-black border border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50 transition-colors disabled:opacity-40 disabled:pointer-events-none"
+            className="inline-flex items-center gap-2 px-5 py-3 text-sm font-bold rounded-xl bg-surface text-ink border border-line hover:border-line hover:bg-surface-elevated transition-colors disabled:opacity-40 disabled:pointer-events-none"
           >
             <AnimatePresence mode="wait" initial={false}>
               {bulkExporting ? (

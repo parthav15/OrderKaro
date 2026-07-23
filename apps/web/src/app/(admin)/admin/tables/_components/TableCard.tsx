@@ -72,12 +72,12 @@ export function TableCard({
 
       <div
         className={
-          "relative rounded-2xl bg-white transition-colors " +
+          "relative rounded-2xl bg-surface transition-colors " +
           (selected
             ? "ring-2 ring-brand-red border border-transparent"
             : hovered
-            ? "border border-brand-red/30 shadow-[0_4px_24px_-12px_rgba(220,38,38,0.18)]"
-            : "border border-neutral-100")
+            ? "border border-brand-red/30 shadow-[0_4px_24px_-12px_rgba(var(--brand-red)/0.18)]"
+            : "border border-line")
         }
       >
         {!table.isActive && (
@@ -86,7 +86,7 @@ export function TableCard({
             className="absolute inset-0 rounded-2xl pointer-events-none opacity-30"
             style={{
               backgroundImage:
-                "repeating-linear-gradient(135deg, transparent 0 7px, rgba(10,10,10,0.04) 7px 8px)",
+                "repeating-linear-gradient(135deg, transparent 0 7px, rgba(var(--ink) / 0.04) 7px 8px)",
             }}
           />
         )}
@@ -100,8 +100,8 @@ export function TableCard({
             (selected
               ? "bg-brand-red border-brand-red flex items-center justify-center"
               : selectionMode
-              ? "bg-white border-neutral-300 hover:border-brand-red"
-              : "bg-white/80 border-neutral-200 opacity-0 group-hover:opacity-100 hover:border-brand-red")
+              ? "bg-surface border-line hover:border-brand-red"
+              : "bg-surface/80 border-line opacity-0 group-hover:opacity-100 hover:border-brand-red")
           }
           style={{ opacity: selected || selectionMode || hovered ? 1 : 0 }}
         >
@@ -118,21 +118,21 @@ export function TableCard({
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 mb-1.5">
-                <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-neutral-400 truncate">
+                <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-muted truncate">
                   {table.section || "Unassigned"} · {relativeAge(table.createdAt)}
                 </span>
               </div>
-              <h3 className="text-2xl font-extrabold text-brand-black font-heading tracking-tight leading-none truncate">
+              <h3 className="text-2xl font-extrabold text-ink font-heading tracking-tight leading-none truncate">
                 {table.label}
               </h3>
               <div className="mt-3 flex items-center gap-3">
                 <StatusDot active={isLive} />
-                <span className="text-xs font-semibold text-neutral-600 tabular-nums">
+                <span className="text-xs font-semibold text-muted tabular-nums">
                   {isLive ? `${liveCount} active` : "Idle"}
                 </span>
-                <span className="text-neutral-200">·</span>
-                <span className="text-xs text-neutral-500 tabular-nums">
-                  <span className="font-bold text-brand-black">{table.todayOrderCount}</span> today
+                <span className="text-muted/50">·</span>
+                <span className="text-xs text-muted tabular-nums">
+                  <span className="font-bold text-ink">{table.todayOrderCount}</span> today
                 </span>
               </div>
             </div>
@@ -144,7 +144,7 @@ export function TableCard({
             whileTap={{ scale: 0.95 }}
             onClick={() => onDownload(table)}
             disabled={isDownloading}
-            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-brand-black text-white text-xs font-bold hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+            className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-ink text-canvas text-xs font-bold hover:opacity-90 transition-colors disabled:opacity-50 disabled:pointer-events-none"
           >
             <AnimatePresence mode="wait" initial={false}>
               {isDownloading ? (
@@ -175,7 +175,7 @@ export function TableCard({
             whileTap={{ scale: 0.92 }}
             onClick={() => onView(table)}
             aria-label="View QR"
-            className="w-9 h-9 inline-flex items-center justify-center rounded-xl border border-neutral-200 text-brand-black hover:border-neutral-300 hover:bg-neutral-50 transition-colors"
+            className="w-9 h-9 inline-flex items-center justify-center rounded-xl border border-line text-ink hover:border-line hover:bg-surface-elevated transition-colors"
           >
             <Eye className="w-4 h-4" />
           </motion.button>
@@ -184,7 +184,7 @@ export function TableCard({
             whileTap={{ scale: 0.92 }}
             onClick={() => onEdit(table)}
             aria-label="Edit table"
-            className="w-9 h-9 inline-flex items-center justify-center rounded-xl border border-neutral-200 text-brand-black hover:border-neutral-300 hover:bg-neutral-50 transition-colors"
+            className="w-9 h-9 inline-flex items-center justify-center rounded-xl border border-line text-ink hover:border-line hover:bg-surface-elevated transition-colors"
           >
             <Pencil className="w-4 h-4" />
           </motion.button>

@@ -29,23 +29,23 @@ import { toast } from "sonner"
 const statusConfig: Record<string, { label: string; dot: string; pill: string }> = {
   PLACED: {
     label: "New Order",
-    dot: "bg-[#DC2626]",
-    pill: "bg-red-50 text-[#DC2626] border border-[#DC2626]/20",
+    dot: "bg-primary",
+    pill: "bg-primary/10 text-primary border border-primary/20",
   },
   ACCEPTED: {
     label: "Accepted",
-    dot: "bg-amber-500",
-    pill: "bg-amber-50 text-amber-700 border border-amber-200",
+    dot: "bg-warning",
+    pill: "bg-warning/10 text-warning border border-warning/30",
   },
   PREPARING: {
     label: "Preparing",
-    dot: "bg-amber-500 animate-pulse",
-    pill: "bg-amber-50 text-amber-700 border border-amber-200",
+    dot: "bg-warning animate-pulse",
+    pill: "bg-warning/10 text-warning border border-warning/30",
   },
   READY: {
     label: "Ready",
-    dot: "bg-green-500",
-    pill: "bg-green-50 text-green-700 border border-green-200",
+    dot: "bg-success",
+    pill: "bg-success/10 text-success border border-success/30",
   },
 }
 
@@ -62,20 +62,17 @@ const nextStatusConfig: Record<
   PLACED: {
     label: "Accept Order",
     icon: CheckCircle2,
-    className:
-      "bg-green-600 hover:bg-green-700 text-white flex-1",
+    className: "bg-success hover:opacity-90 text-white flex-1",
   },
   ACCEPTED: {
     label: "Start Preparing",
     icon: Flame,
-    className:
-      "bg-amber-500 hover:bg-amber-600 text-white flex-1",
+    className: "bg-warning hover:opacity-90 text-white flex-1",
   },
   PREPARING: {
     label: "Mark Ready",
     icon: PackageCheck,
-    className:
-      "bg-green-600 hover:bg-green-700 text-white flex-1",
+    className: "bg-success hover:opacity-90 text-white flex-1",
   },
 }
 
@@ -171,18 +168,16 @@ export default function AdminDashboard() {
       label: "Active Orders",
       value: activeOrders?.length ?? 0,
       icon: ShoppingBag,
-      iconColor: "text-[#DC2626]",
-      iconBg: "bg-red-50",
-      cardBg: "bg-white",
+      iconColor: "text-primary",
+      iconBg: "bg-primary/10",
       valueSuffix: "",
     },
     {
       label: "Today's Revenue",
       value: formatPrice(summary?.todayRevenue ?? 0),
       icon: IndianRupee,
-      iconColor: "text-[#0A0A0A]",
-      iconBg: "bg-neutral-100",
-      cardBg: "bg-white",
+      iconColor: "text-ink",
+      iconBg: "bg-surface-elevated",
       valueSuffix: "",
     },
     {
@@ -192,18 +187,16 @@ export default function AdminDashboard() {
         restaurants?.find((c: any) => c.id === restaurantId)?.avgPrepTime ??
         15,
       icon: Clock,
-      iconColor: "text-[#0A0A0A]",
-      iconBg: "bg-neutral-100",
-      cardBg: "bg-white",
+      iconColor: "text-ink",
+      iconBg: "bg-surface-elevated",
       valueSuffix: " min",
     },
     {
       label: "Today's Orders",
       value: summary?.todayOrders ?? 0,
       icon: TrendingUp,
-      iconColor: "text-[#0A0A0A]",
-      iconBg: "bg-neutral-100",
-      cardBg: "bg-white",
+      iconColor: "text-ink",
+      iconBg: "bg-surface-elevated",
       valueSuffix: "",
     },
   ]
@@ -212,24 +205,24 @@ export default function AdminDashboard() {
     <div>
       <div className="mb-8 flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-3xl font-extrabold text-[#0A0A0A] tracking-tight">
+          <h1 className="text-3xl font-extrabold text-ink tracking-tight">
             Welcome back, {user?.name?.split(" ")[0]}
           </h1>
-          <p className="text-neutral-500 mt-1.5 text-base">
+          <p className="text-muted mt-1.5 text-base">
             Here&apos;s your restaurant at a glance
           </p>
         </div>
 
         {restaurants && restaurants.length > 1 && (
           <div className="relative">
-            <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1.5">
+            <label className="block text-xs font-bold text-muted uppercase tracking-widest mb-1.5">
               Restaurant
             </label>
             <div className="relative">
               <select
                 value={restaurantId || ""}
                 onChange={(e) => setRestaurantId(e.target.value)}
-                className="appearance-none pl-4 pr-10 py-3 rounded-xl border border-neutral-200 text-base font-semibold text-[#0A0A0A] focus:outline-none focus:border-[#DC2626] bg-white min-w-[180px] cursor-pointer"
+                className="appearance-none pl-4 pr-10 py-3 rounded-xl border border-line text-base font-semibold text-ink focus:outline-none focus:border-primary bg-surface min-w-[180px] cursor-pointer"
               >
                 {restaurants.map((c: any) => (
                   <option key={c.id} value={c.id}>
@@ -239,7 +232,7 @@ export default function AdminDashboard() {
               </select>
               <ChevronDown
                 size={18}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none"
               />
             </div>
           </div>
@@ -254,20 +247,32 @@ export default function AdminDashboard() {
               key={stat.label}
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
+              whileHover={{ y: -3 }}
               transition={{ delay: idx * 0.08, type: "spring", stiffness: 200, damping: 20 }}
             >
-              <Card className={stat.cardBg}>
+              <Card>
                 <CardContent className="py-5 px-5">
                   <div
                     className={`w-12 h-12 rounded-xl ${stat.iconBg} flex items-center justify-center mb-4`}
                   >
                     <Icon size={24} className={stat.iconColor} />
                   </div>
-                  <p className="text-sm font-medium text-neutral-500 mb-1">{stat.label}</p>
-                  <p className="text-3xl font-extrabold text-[#0A0A0A] leading-none">
-                    {stat.value}
+                  <p className="text-sm font-medium text-muted mb-1">{stat.label}</p>
+                  <p className="text-3xl font-extrabold text-ink leading-none">
+                    <AnimatePresence mode="popLayout" initial={false}>
+                      <motion.span
+                        key={String(stat.value)}
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 8 }}
+                        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                        className="inline-block"
+                      >
+                        {stat.value}
+                      </motion.span>
+                    </AnimatePresence>
                     {stat.valueSuffix && (
-                      <span className="text-lg font-bold text-neutral-400 ml-1">
+                      <span className="text-lg font-bold text-muted ml-1">
                         {stat.valueSuffix}
                       </span>
                     )}
@@ -282,12 +287,12 @@ export default function AdminDashboard() {
       <div>
         <div className="flex items-center gap-3 mb-5">
           <span className="relative flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#DC2626] opacity-75" />
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-[#DC2626]" />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-primary" />
           </span>
-          <h2 className="text-xl font-extrabold text-[#0A0A0A]">Live Orders</h2>
+          <h2 className="text-xl font-extrabold text-ink">Live Orders</h2>
           {activeOrders && activeOrders.length > 0 && (
-            <span className="px-2.5 py-0.5 rounded-full bg-[#DC2626] text-white text-xs font-bold">
+            <span className="px-2.5 py-0.5 rounded-full bg-primary text-white text-xs font-bold">
               {activeOrders.length}
             </span>
           )}
@@ -302,6 +307,7 @@ export default function AdminDashboard() {
                 return (
                   <motion.div
                     key={order.id}
+                    layout
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.96 }}
@@ -312,30 +318,31 @@ export default function AdminDashboard() {
                         <div className="flex items-start justify-between gap-4 mb-5">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2.5 flex-wrap mb-2">
-                              <span className="text-lg font-extrabold text-[#0A0A0A]">
+                              <span className="text-lg font-extrabold text-ink">
                                 Order #{order.orderNumber}
                               </span>
                               {config && (
-                                <span
+                                <motion.span
+                                  layout
                                   className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold ${config.pill}`}
                                 >
                                   <span className={`w-2 h-2 rounded-full ${config.dot}`} />
                                   {config.label}
-                                </span>
+                                </motion.span>
                               )}
                               {order.paymentMethod === "CASH" &&
                                 order.paymentStatus !== "PAID" && (
-                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-[#DC2626] border border-[#DC2626]/30">
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/30">
                                     <Banknote size={12} />
                                     CASH PENDING
                                   </span>
                                 )}
                             </div>
-                            <p className="text-sm text-neutral-500 font-medium">
+                            <p className="text-sm text-muted font-medium">
                               {order.table?.label ? `${order.table.label} · ` : ""}
                               {order.items?.length} item{order.items?.length !== 1 ? "s" : ""}
                             </p>
-                            <p className="text-sm text-neutral-400 mt-1 leading-relaxed">
+                            <p className="text-sm text-muted mt-1 leading-relaxed">
                               {order.items
                                 ?.slice(0, 3)
                                 .map((i: any) => `${i.quantity}× ${i.menuItem?.name}`)
@@ -346,7 +353,7 @@ export default function AdminDashboard() {
                           </div>
 
                           <div className="text-right shrink-0">
-                            <p className="text-2xl font-extrabold text-[#0A0A0A] leading-none">
+                            <p className="text-2xl font-extrabold text-ink leading-none">
                               {formatPrice(order.totalAmount)}
                             </p>
                             <Badge
@@ -385,7 +392,7 @@ export default function AdminDashboard() {
                                 whileTap={{ scale: 0.97 }}
                                 whileHover={{ y: -1 }}
                                 onClick={() => openCashModal(order)}
-                                className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold border-2 border-[#0A0A0A] text-[#0A0A0A] hover:bg-neutral-50 transition-colors bg-white"
+                                className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold border-2 border-ink text-ink hover:bg-surface-elevated transition-colors bg-surface"
                               >
                                 <Banknote size={18} />
                                 Collect Cash
@@ -403,7 +410,7 @@ export default function AdminDashboard() {
                                   status: "CANCELLED",
                                 })
                               }
-                              className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold border border-[#DC2626] text-[#DC2626] hover:bg-red-50 transition-colors bg-white disabled:opacity-50 disabled:pointer-events-none"
+                              className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold border border-primary text-primary hover:bg-primary/10 transition-colors bg-surface disabled:opacity-50 disabled:pointer-events-none"
                             >
                               <X size={16} />
                               Cancel
@@ -423,15 +430,15 @@ export default function AdminDashboard() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="text-center py-20 border-2 border-dashed border-neutral-200 rounded-2xl"
+                className="text-center py-20 border-2 border-dashed border-line rounded-2xl"
               >
-                <div className="w-20 h-20 rounded-2xl bg-neutral-50 flex items-center justify-center mx-auto mb-5">
-                  <ShoppingBag size={36} className="text-neutral-300" />
+                <div className="w-20 h-20 rounded-2xl bg-surface-elevated flex items-center justify-center mx-auto mb-5">
+                  <ShoppingBag size={36} className="text-muted" />
                 </div>
-                <p className="text-lg font-bold text-neutral-400">
+                <p className="text-lg font-bold text-muted">
                   No active orders right now
                 </p>
-                <p className="text-sm text-neutral-300 mt-1">
+                <p className="text-sm text-muted mt-1">
                   New orders will appear here automatically
                 </p>
               </motion.div>
@@ -451,14 +458,14 @@ export default function AdminDashboard() {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-5"
           >
-            <div className="bg-neutral-50 rounded-xl p-5 space-y-2">
+            <div className="bg-surface-elevated rounded-xl p-5 space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-neutral-500 font-medium">Order Total</span>
-                <span className="text-2xl font-extrabold text-[#0A0A0A]">
+                <span className="text-sm text-muted font-medium">Order Total</span>
+                <span className="text-2xl font-extrabold text-ink">
                   {formatPrice(orderAmount)}
                 </span>
               </div>
-              <div className="text-xs text-neutral-400 leading-relaxed">
+              <div className="text-xs text-muted leading-relaxed">
                 {cashOrder.items
                   ?.map((i: any) => `${i.quantity}× ${i.menuItem?.name}`)
                   .join(", ")}
@@ -466,18 +473,18 @@ export default function AdminDashboard() {
             </div>
 
             <div>
-              <label className="text-sm font-bold text-[#0A0A0A] block mb-2.5">
+              <label className="text-sm font-bold text-ink block mb-2.5">
                 Amount Received from Customer
               </label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 font-bold text-lg">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted font-bold text-lg">
                   ₹
                 </span>
                 <input
                   type="number"
                   value={amountReceived}
                   onChange={(e) => setAmountReceived(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3.5 rounded-xl border border-neutral-200 text-2xl font-extrabold text-[#0A0A0A] focus:outline-none focus:border-[#DC2626]"
+                  className="w-full pl-10 pr-4 py-3.5 rounded-xl border border-line text-2xl font-extrabold text-ink focus:outline-none focus:border-primary"
                   min={orderAmount}
                   step="1"
                   autoFocus
@@ -489,14 +496,14 @@ export default function AdminDashboard() {
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
-                className="bg-red-50 border border-[#DC2626]/20 rounded-xl p-4"
+                className="bg-primary/10 border border-primary/20 rounded-xl p-4"
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <Wallet size={16} className="text-[#DC2626]" />
-                  <span className="text-sm font-bold text-[#DC2626]">Wallet Credit</span>
+                  <Wallet size={16} className="text-primary" />
+                  <span className="text-sm font-bold text-primary">Wallet Credit</span>
                 </div>
-                <p className="text-sm text-neutral-600">
-                  <span className="font-bold text-[#0A0A0A]">
+                <p className="text-sm text-muted">
+                  <span className="font-bold text-ink">
                     {formatPrice(changeAmount)}
                   </span>{" "}
                   will be added to the customer&apos;s wallet
@@ -505,7 +512,7 @@ export default function AdminDashboard() {
             )}
 
             {enteredAmount > 0 && enteredAmount < orderAmount && (
-              <p className="text-xs text-[#DC2626] font-semibold">
+              <p className="text-xs text-primary font-semibold">
                 Amount must be at least {formatPrice(orderAmount)}
               </p>
             )}
@@ -533,36 +540,41 @@ export default function AdminDashboard() {
             animate={{ opacity: 1, scale: 1 }}
             className="text-center space-y-5"
           >
-            <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto">
-              <CircleCheck size={32} className="text-green-600" />
-            </div>
+            <motion.div
+              initial={{ scale: 0.6, rotate: -8 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", stiffness: 260, damping: 18 }}
+              className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto"
+            >
+              <CircleCheck size={32} className="text-success" />
+            </motion.div>
 
             <div>
-              <h3 className="text-lg font-extrabold text-[#0A0A0A]">Payment Collected</h3>
-              <p className="text-sm text-neutral-500 mt-1">
+              <h3 className="text-lg font-extrabold text-ink">Payment Collected</h3>
+              <p className="text-sm text-muted mt-1">
                 Order #{cashResult.orderNumber} — {cashResult.consumerName}
               </p>
             </div>
 
-            <div className="bg-neutral-50 rounded-xl p-4 space-y-2.5 text-sm">
+            <div className="bg-surface-elevated rounded-xl p-4 space-y-2.5 text-sm">
               <div className="flex justify-between">
-                <span className="text-neutral-500">Order Amount</span>
+                <span className="text-muted">Order Amount</span>
                 <span className="font-bold">{formatPrice(cashResult.orderAmount)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-neutral-500">Amount Received</span>
+                <span className="text-muted">Amount Received</span>
                 <span className="font-bold">{formatPrice(cashResult.amountReceived)}</span>
               </div>
               {cashResult.changeAmount > 0 && (
                 <>
-                  <div className="border-t border-neutral-200 pt-2.5 flex justify-between">
-                    <span className="text-neutral-500">Change credited to Wallet</span>
-                    <span className="font-bold text-[#DC2626]">
+                  <div className="border-t border-line pt-2.5 flex justify-between">
+                    <span className="text-muted">Change credited to Wallet</span>
+                    <span className="font-bold text-primary">
                       {formatPrice(cashResult.changeAmount)}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-neutral-500">New Wallet Balance</span>
+                    <span className="text-muted">New Wallet Balance</span>
                     <span className="font-bold">
                       {formatPrice(cashResult.newWalletBalance)}
                     </span>

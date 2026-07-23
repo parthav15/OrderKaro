@@ -13,7 +13,7 @@ export function StatusDot({ active, size = 8 }: StatusDotProps) {
         className={
           active
             ? "absolute inset-0 rounded-full bg-brand-red animate-ping opacity-60"
-            : "absolute inset-0 rounded-full bg-neutral-300"
+            : "absolute inset-0 rounded-full bg-muted"
         }
       />
       <span
@@ -21,7 +21,7 @@ export function StatusDot({ active, size = 8 }: StatusDotProps) {
         className={
           active
             ? "relative rounded-full bg-brand-red"
-            : "relative rounded-full bg-neutral-400"
+            : "relative rounded-full bg-muted"
         }
       />
     </span>

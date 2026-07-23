@@ -100,21 +100,21 @@ function UsageMeter({
     <div>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center text-neutral-500">
+          <div className="w-8 h-8 rounded-lg bg-surface-elevated flex items-center justify-center text-muted">
             {icon}
           </div>
-          <p className="text-sm font-bold text-brand-black">{label}</p>
+          <p className="text-sm font-bold text-ink">{label}</p>
         </div>
-        <p className={`text-sm font-bold ${critical ? "text-brand-red" : "text-neutral-500"}`}>
+        <p className={`text-sm font-bold ${critical ? "text-brand-red" : "text-muted"}`}>
           {used} / {max}
         </p>
       </div>
-      <div className="h-2.5 rounded-full bg-neutral-100 overflow-hidden">
+      <div className="h-2.5 rounded-full bg-surface-elevated overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${percent}%` }}
           transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className={`h-full rounded-full ${critical ? "bg-brand-red" : "bg-brand-black"}`}
+          className={`h-full rounded-full ${critical ? "bg-brand-red" : "bg-ink"}`}
         />
       </div>
     </div>
@@ -127,9 +127,9 @@ function FeatureRow({ label, enabled }: { label: string; enabled: boolean }) {
       {enabled ? (
         <Check className="w-4 h-4 text-brand-red shrink-0" />
       ) : (
-        <X className="w-4 h-4 text-neutral-300 shrink-0" />
+        <X className="w-4 h-4 text-muted shrink-0" />
       )}
-      <span className={`text-sm ${enabled ? "text-brand-black" : "text-neutral-400"}`}>{label}</span>
+      <span className={`text-sm ${enabled ? "text-ink" : "text-muted"}`}>{label}</span>
     </div>
   )
 }
@@ -210,15 +210,15 @@ export default function BillingPage() {
             <div className="w-10 h-10 rounded-xl bg-brand-red/10 flex items-center justify-center">
               <CreditCard className="w-5 h-5 text-brand-red" />
             </div>
-            <h1 className="text-3xl font-extrabold text-brand-black">Billing & Plan</h1>
+            <h1 className="text-3xl font-extrabold text-ink">Billing & Plan</h1>
           </div>
-          <p className="text-neutral-500">Manage your subscription plan and view billing history</p>
+          <p className="text-muted">Manage your subscription plan and view billing history</p>
         </div>
         {restaurants && restaurants.length > 1 && (
           <select
             value={restaurantId}
             onChange={(e) => setRestaurantId(e.target.value)}
-            className="px-4 py-3 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-brand-red"
+            className="px-4 py-3 rounded-xl border border-line text-sm focus:outline-none focus:border-brand-red"
           >
             {restaurants.map((c: any) => (
               <option key={c.id} value={c.id}>{c.name}</option>
@@ -230,7 +230,7 @@ export default function BillingPage() {
       {isLoading && (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-32 rounded-xl bg-neutral-100 animate-pulse" />
+            <div key={i} className="h-32 rounded-xl bg-surface-elevated animate-pulse" />
           ))}
         </div>
       )}
@@ -242,22 +242,22 @@ export default function BillingPage() {
               <CardContent className="py-6">
                 <div className="flex items-start justify-between flex-wrap gap-4">
                   <div>
-                    <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Current Plan</p>
+                    <p className="text-xs font-bold text-muted uppercase tracking-wider mb-1">Current Plan</p>
                     <div className="flex items-center gap-3">
-                      <h2 className="text-3xl font-extrabold text-brand-black">{data.definition.label}</h2>
+                      <h2 className="text-3xl font-extrabold text-ink">{data.definition.label}</h2>
                       {data.plan !== "FREE" && <Badge variant="success">Active</Badge>}
                     </div>
-                    <p className="text-sm text-neutral-500 mt-2">
+                    <p className="text-sm text-muted mt-2">
                       {data.plan === "FREE"
                         ? "You are on the Free plan"
                         : `Renews on ${formatDate(data.planValidUntil)}`}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-3xl font-extrabold text-brand-black">
+                    <p className="text-3xl font-extrabold text-ink">
                       {formatPrice(data.definition.monthlyPrice)}
                     </p>
-                    <p className="text-sm text-neutral-400">/month</p>
+                    <p className="text-sm text-muted">/month</p>
                   </div>
                 </div>
 
@@ -280,8 +280,8 @@ export default function BillingPage() {
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <Card>
               <CardHeader>
-                <h2 className="text-lg font-bold text-brand-black">Usage</h2>
-                <p className="text-sm text-neutral-400">How much of your plan's limits you're using</p>
+                <h2 className="text-lg font-bold text-ink">Usage</h2>
+                <p className="text-sm text-muted">How much of your plan's limits you're using</p>
               </CardHeader>
               <CardContent className="space-y-6 py-6">
                 <UsageMeter
@@ -302,8 +302,8 @@ export default function BillingPage() {
 
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
             <div className="mb-5">
-              <h2 className="text-xl font-bold text-brand-black">Plans</h2>
-              <p className="text-neutral-500 text-sm">Pick the plan that fits your restaurant</p>
+              <h2 className="text-xl font-bold text-ink">Plans</h2>
+              <p className="text-muted text-sm">Pick the plan that fits your restaurant</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {data.catalogue.map((planDef, idx) => {
@@ -321,29 +321,29 @@ export default function BillingPage() {
                     <Card className={`h-full ${isActive ? "border-brand-red/40 ring-1 ring-brand-red/20" : ""}`}>
                       <CardContent className="py-6 flex flex-col h-full">
                         <div className="flex items-center justify-between mb-1">
-                          <h3 className="text-lg font-extrabold text-brand-black">{planDef.label}</h3>
+                          <h3 className="text-lg font-extrabold text-ink">{planDef.label}</h3>
                           {isActive && <Badge variant="danger">Current</Badge>}
                           {planDef.name === "PRO" && !isActive && (
                             <Sparkles className="w-5 h-5 text-brand-red" />
                           )}
                         </div>
                         <div className="flex items-baseline gap-1 mb-5">
-                          <span className="text-3xl font-extrabold text-brand-black">
+                          <span className="text-3xl font-extrabold text-ink">
                             {formatPrice(planDef.monthlyPrice)}
                           </span>
-                          <span className="text-sm text-neutral-400">/month</span>
+                          <span className="text-sm text-muted">/month</span>
                         </div>
 
                         <div className="space-y-2 mb-5">
-                          <p className="text-sm text-neutral-500">
-                            Up to <strong className="text-brand-black">{planDef.maxMenuItems}</strong> menu items
+                          <p className="text-sm text-muted">
+                            Up to <strong className="text-ink">{planDef.maxMenuItems}</strong> menu items
                           </p>
-                          <p className="text-sm text-neutral-500">
-                            Up to <strong className="text-brand-black">{planDef.maxTables}</strong> tables
+                          <p className="text-sm text-muted">
+                            Up to <strong className="text-ink">{planDef.maxTables}</strong> tables
                           </p>
                         </div>
 
-                        <div className="space-y-2 pt-4 border-t border-neutral-100 mb-6">
+                        <div className="space-y-2 pt-4 border-t border-line mb-6">
                           <FeatureRow label="Custom Branding" enabled={planDef.features.branding} />
                           <FeatureRow label="Delivery Orders" enabled={planDef.features.delivery} />
                           <FeatureRow label="View Analytics" enabled={planDef.features.viewAnalytics} />
@@ -374,21 +374,21 @@ export default function BillingPage() {
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <Card>
               <CardHeader>
-                <h2 className="text-lg font-bold text-brand-black">Billing History</h2>
-                <p className="text-sm text-neutral-400">Past subscription payments</p>
+                <h2 className="text-lg font-bold text-ink">Billing History</h2>
+                <p className="text-sm text-muted">Past subscription payments</p>
               </CardHeader>
               <CardContent className="py-4">
                 {data.subscriptions.length === 0 ? (
                   <div className="text-center py-16">
-                    <Receipt className="w-14 h-14 text-neutral-200 mx-auto mb-4" />
-                    <h3 className="text-lg font-bold text-brand-black mb-1">No billing history yet</h3>
-                    <p className="text-neutral-400 text-sm">Your subscription payments will appear here</p>
+                    <Receipt className="w-14 h-14 text-muted/30 mx-auto mb-4" />
+                    <h3 className="text-lg font-bold text-ink mb-1">No billing history yet</h3>
+                    <p className="text-muted text-sm">Your subscription payments will appear here</p>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="text-left text-neutral-400 border-b border-neutral-100">
+                        <tr className="text-left text-muted border-b border-line">
                           <th className="py-3 font-bold">Plan</th>
                           <th className="py-3 font-bold">Amount</th>
                           <th className="py-3 font-bold">Status</th>
@@ -398,16 +398,16 @@ export default function BillingPage() {
                       </thead>
                       <tbody>
                         {data.subscriptions.map((sub) => (
-                          <tr key={sub.id} className="border-b border-neutral-50 last:border-0">
-                            <td className="py-4 font-bold text-brand-black">{sub.plan}</td>
-                            <td className="py-4 text-brand-black">{formatPrice(sub.amount)}</td>
+                          <tr key={sub.id} className="border-b border-line/50 last:border-0">
+                            <td className="py-4 font-bold text-ink">{sub.plan}</td>
+                            <td className="py-4 text-ink">{formatPrice(sub.amount)}</td>
                             <td className="py-4">
                               <Badge variant={statusBadgeVariant(sub.status)}>{sub.status}</Badge>
                             </td>
-                            <td className="py-4 text-neutral-500">
+                            <td className="py-4 text-muted">
                               {formatDate(sub.periodStart)} – {formatDate(sub.periodEnd)}
                             </td>
-                            <td className="py-4 text-neutral-500">{formatDate(sub.createdAt)}</td>
+                            <td className="py-4 text-muted">{formatDate(sub.createdAt)}</td>
                           </tr>
                         ))}
                       </tbody>

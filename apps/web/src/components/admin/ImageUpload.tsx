@@ -59,7 +59,7 @@ export function ImageUpload({ value, onUpload }: ImageUploadProps) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", damping: 20, stiffness: 300 }}
-            className="relative w-full h-36 rounded-xl overflow-hidden border border-neutral-200 group cursor-pointer"
+            className="relative w-full h-36 rounded-xl overflow-hidden border border-line group cursor-pointer"
             onClick={() => inputRef.current?.click()}
           >
             <img
@@ -74,9 +74,9 @@ export function ImageUpload({ value, onUpload }: ImageUploadProps) {
               type="button"
               whileTap={{ scale: 0.9 }}
               onClick={handleRemove}
-              className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md hover:bg-neutral-100 transition-colors"
+              className="absolute top-2 right-2 p-1 bg-surface rounded-full shadow-md hover:bg-surface-elevated transition-colors"
             >
-              <X className="w-3.5 h-3.5 text-brand-black" />
+              <X className="w-3.5 h-3.5 text-ink" />
             </motion.button>
           </motion.div>
         ) : (
@@ -87,18 +87,18 @@ export function ImageUpload({ value, onUpload }: ImageUploadProps) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", damping: 20, stiffness: 300 }}
-            whileHover={{ borderColor: "#DC2626" }}
+            whileHover={{ borderColor: "rgb(var(--brand-red))" }}
             whileTap={{ scale: 0.98 }}
             onClick={() => !isUploading && inputRef.current?.click()}
             disabled={isUploading}
-            className="w-full h-36 rounded-xl border-2 border-dashed border-neutral-200 flex flex-col items-center justify-center gap-2 transition-colors disabled:pointer-events-none"
+            className="w-full h-36 rounded-xl border-2 border-dashed border-line flex flex-col items-center justify-center gap-2 transition-colors disabled:pointer-events-none"
           >
             {isUploading ? (
               <Loader2 className="w-6 h-6 text-brand-red animate-spin" />
             ) : (
-              <Camera className="w-6 h-6 text-neutral-400" />
+              <Camera className="w-6 h-6 text-muted" />
             )}
-            <span className="text-sm text-neutral-400 font-medium">
+            <span className="text-sm text-muted font-medium">
               {isUploading ? "Uploading..." : "Click to upload image"}
             </span>
           </motion.button>
