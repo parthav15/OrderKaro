@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react"
 import { View, Modal, Pressable, ScrollView } from "react-native"
 import { MotiView, AnimatePresence } from "moti"
+import { Easing } from "react-native-reanimated"
 import { X, Minus, Plus, Check, Box } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
@@ -99,10 +100,10 @@ export function ItemDetailSheet({
         <AnimatePresence>
           {item && (
             <MotiView
-              from={{ translateY: 500 }}
-              animate={{ translateY: 0 }}
-              exit={{ translateY: 500 }}
-              transition={{ type: "spring", damping: 24, stiffness: 220 }}
+              from={{ translateY: 40, opacity: 0 }}
+              animate={{ translateY: 0, opacity: 1 }}
+              exit={{ translateY: 40, opacity: 0 }}
+              transition={{ type: "timing", duration: 240, easing: Easing.out(Easing.cubic) }}
               className="bg-surface-elevated rounded-t-[32px] max-h-[85%]"
             >
               <View className="items-center pt-4">
