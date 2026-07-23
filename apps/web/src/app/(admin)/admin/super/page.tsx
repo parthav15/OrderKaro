@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
@@ -14,6 +15,8 @@ import {
   TrendingUp,
   ChevronDown,
   ChevronUp,
+  ChevronRight,
+  Coins,
 } from "lucide-react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -162,6 +165,34 @@ export default function SuperAdminPage() {
         <p className="text-muted text-sm">
           System-wide owner and restaurant management
         </p>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.04 }}
+        className="mb-8"
+      >
+        <Link href="/admin/super/fees">
+          <motion.div
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.99 }}
+            className="group flex items-center justify-between gap-4 rounded-xl bg-surface border border-line shadow-sm px-6 py-5 transition-colors hover:border-primary/30"
+          >
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <Coins className="w-5 h-5 text-brand-red" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-bold text-ink text-sm">Marketplace Fees</p>
+                <p className="text-xs text-muted">
+                  Configure platform delivery &amp; convenience fees
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-muted group-hover:text-brand-red group-hover:translate-x-0.5 transition-all shrink-0" />
+          </motion.div>
+        </Link>
       </motion.div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
