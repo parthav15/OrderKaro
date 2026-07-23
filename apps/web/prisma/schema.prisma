@@ -89,11 +89,35 @@ model RestaurantPaymentAccount {
   stripePayoutsEnabled   Boolean @default(false)
   stripeDetailsSubmitted Boolean @default(false)
 
+  collectionMode          CollectionMode  @default(BYO)
+  cashfreeVendorId        String?         @unique
+  vendorKycStatus         VendorKycStatus @default(PENDING)
+  payoutName              String?
+  payoutEmail             String?
+  payoutPhone             String?
+  payoutPanCipher         String?
+  payoutBankAccountCipher String?
+  payoutIfsc              String?
+  payoutUpi               String?
+
   lastCheckedAt DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   @@index([provider, status])
+}
+
+model PlatformConfig {
+  id                    String   @id @default("singleton")
+  deliveryFeeEnabled    Boolean  @default(false)
+  deliveryFeeMode       FeeMode  @default(FLAT)
+  deliveryFeeAmount     Decimal  @default(0) @db.Decimal(10, 2)
+  convenienceFeeEnabled Boolean  @default(false)
+  convenienceFeeMode    FeeMode  @default(FLAT)
+  convenienceFeeAmount  Decimal  @default(0) @db.Decimal(10, 2)
+  minFee                Decimal  @default(0) @db.Decimal(10, 2)
+  maxFee                Decimal? @db.Decimal(10, 2)
+  updatedAt             DateTime @updatedAt
 }
 
 model Subscription {
@@ -342,6 +366,10 @@ model Order {
   paymentTxnId        String?
   paymentRedirectUrl  String?
   platformFee         Decimal?         @db.Decimal(10, 2)
+  subtotal                   Decimal?         @db.Decimal(10, 2)
+  convenienceFee             Decimal?         @db.Decimal(10, 2)
+  restaurantSettlementAmount Decimal?         @db.Decimal(10, 2)
+  settlementStatus           SettlementStatus @default(PENDING)
   paidAt              DateTime?
   idempotencyKey      String?          @unique
   trackingToken       String?          @unique
@@ -443,6 +471,29 @@ enum PaymentProvider {
   PAYPUR
   STRIPE
   CASHFREE
+}
+
+enum CollectionMode {
+  BYO
+  MARKETPLACE
+}
+
+enum VendorKycStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum SettlementStatus {
+  PENDING
+  SETTLED
+  FAILED
+  REVERSED
+}
+
+enum FeeMode {
+  FLAT
+  PERCENT
 }
 
 enum PaymentAccountStatus {
