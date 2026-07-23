@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { useState, useEffect } from "react"
+import { ThemeProvider } from "next-themes"
 import { Toaster } from "sonner"
 import { PwaInstallBanner } from "@/components/consumer/pwa-install-banner"
 import { registerServiceWorker } from "@/lib/pwa"
@@ -29,19 +30,21 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-      <PwaInstallBanner />
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          style: {
-            background: "#0A0A0A",
-            color: "#FFFFFF",
-            border: "none",
-          },
-        }}
-      />
-    </QueryClientProvider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+      <QueryClientProvider client={queryClient}>
+        {children}
+        <PwaInstallBanner />
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            style: {
+              background: "rgb(var(--surface-elevated))",
+              color: "rgb(var(--ink))",
+              border: "1px solid rgb(var(--line))",
+            },
+          }}
+        />
+      </QueryClientProvider>
+    </ThemeProvider>
   )
 }
