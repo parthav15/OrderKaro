@@ -1,18 +1,56 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Logo } from "@/components/ui/logo"
 import { Input } from "@/components/ui/input"
 import { useAuthStore } from "@/stores/auth"
 import api from "@/lib/api"
 import { toast } from "sonner"
 
 type LoginMode = "owner" | "staff"
+
+const easePremium = [0.22, 1, 0.36, 1] as const
+
+const fieldContainer = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
+}
+
+const fieldItem = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: easePremium } },
+}
+
+function revealUp(delay: number) {
+  return {
+    initial: { opacity: 0, y: 16 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.5, delay, ease: easePremium },
+  }
+}
+
+function FormField({ children }: { children: React.ReactNode }) {
+  const [focused, setFocused] = useState(false)
+  return (
+    <motion.div
+      variants={fieldItem}
+      className="relative"
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+    >
+      <motion.span
+        aria-hidden
+        className="pointer-events-none absolute -inset-1 rounded-2xl bg-primary/20 blur-md"
+        animate={{ opacity: focused ? 1 : 0 }}
+        transition={{ duration: 0.3, ease: easePremium }}
+      />
+      <div className="relative">{children}</div>
+    </motion.div>
+  )
+}
 
 export default function LoginPage() {
   const router = useRouter()
@@ -78,128 +116,137 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-dvh w-full overflow-hidden bg-black flex items-center justify-center">
-      <Image
-        src="https://res.cloudinary.com/dpjw3fe8d/image/upload/v1773754328/orderkaro/branding/orderkaro-hero-2.png"
-        alt=""
-        fill
-        priority
-        className="object-cover opacity-40"
-      />
-      <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/30 to-black/60" />
+    <div>
+      <motion.div {...revealUp(0)} className="mb-8 text-center">
+        <span className="mx-auto mb-4 block h-1 w-12 rounded-full bg-gradient-to-r from-primary to-accent" />
+        <h1 className="font-serif text-3xl italic text-ink">Welcome back</h1>
+        <p className="mt-2 text-sm text-muted">Sign in to manage your restaurant</p>
+      </motion.div>
 
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 w-full max-w-md mx-4"
+        {...revealUp(0.08)}
+        className="relative mb-8 flex gap-1 rounded-2xl border border-line bg-surface p-1"
       >
-        <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-black/20 p-8 md:p-10">
-          <div className="text-center mb-8">
-            <Link href="/">
-              <Logo size="lg" />
-            </Link>
-            <p className="text-neutral-500 mt-2 text-base font-medium">Welcome back</p>
-          </div>
-
-          <div className="flex gap-2 mb-7 bg-neutral-100 p-1 rounded-xl">
-            {(["owner", "staff"] as LoginMode[]).map((m) => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                className={`relative flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-200 ${
-                  mode === m
-                    ? "bg-[#0A0A0A] text-white shadow-sm"
-                    : "text-neutral-500 hover:text-neutral-700"
-                }`}
-              >
-                {m === "owner" ? "Owner" : "Staff"}
-              </button>
-            ))}
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <AnimatePresence mode="wait">
-              {mode === "owner" ? (
-                <motion.div
-                  key="owner"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 10 }}
-                  transition={{ duration: 0.2 }}
-                  className="space-y-5"
-                >
-                  <Input
-                    label="Email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    required
-                  />
-                  <Input
-                    label="Password"
-                    type="password"
-                    placeholder="Enter password"
-                    value={form.password}
-                    onChange={(e) => setForm({ ...form, password: e.target.value })}
-                    required
-                  />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="staff"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 10 }}
-                  transition={{ duration: 0.2 }}
-                  className="space-y-5"
-                >
-                  <Input
-                    label="Restaurant Slug"
-                    placeholder="e.g. campus-cafe"
-                    value={form.restaurantSlug}
-                    onChange={(e) =>
-                      setForm({ ...form, restaurantSlug: e.target.value })
-                    }
-                    required
-                  />
-                  <Input
-                    label="Email"
-                    type="email"
-                    placeholder="staff@example.com"
-                    value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    required
-                  />
-                  <Input
-                    label="Password"
-                    type="password"
-                    placeholder="Enter password"
-                    value={form.password}
-                    onChange={(e) => setForm({ ...form, password: e.target.value })}
-                    required
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <Button type="submit" className="w-full" size="lg" loading={loading}>
-              Sign In
-            </Button>
-          </form>
-
-          <p className="text-center text-sm text-neutral-500 mt-7">
-            Don&apos;t have an account?{" "}
-            <Link
-              href="/register"
-              className="text-[#DC2626] font-bold hover:underline"
+        {(["owner", "staff"] as LoginMode[]).map((m) => (
+          <button
+            key={m}
+            onClick={() => setMode(m)}
+            aria-pressed={mode === m}
+            className="relative flex-1 rounded-xl py-3 text-sm font-semibold outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            {mode === m && (
+              <motion.span
+                layoutId="login-mode-pill"
+                aria-hidden
+                className="absolute inset-0 rounded-xl bg-primary"
+                transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              />
+            )}
+            <span
+              className={`relative z-10 transition-colors duration-200 ${
+                mode === m ? "text-white" : "text-muted"
+              }`}
             >
-              Register
-            </Link>
-          </p>
-        </div>
+              {m === "owner" ? "Owner" : "Staff"}
+            </span>
+          </button>
+        ))}
       </motion.div>
+
+      <motion.form {...revealUp(0.16)} onSubmit={handleSubmit} className="space-y-5">
+        <AnimatePresence mode="wait">
+          {mode === "owner" ? (
+            <motion.div
+              key="owner"
+              initial="hidden"
+              animate="show"
+              exit={{ opacity: 0, x: 14, transition: { duration: 0.25, ease: easePremium } }}
+              variants={fieldContainer}
+              className="space-y-5"
+            >
+              <FormField>
+                <Input
+                  label="Email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  required
+                />
+              </FormField>
+              <FormField>
+                <Input
+                  label="Password"
+                  type="password"
+                  placeholder="Enter password"
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  required
+                />
+              </FormField>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="staff"
+              initial="hidden"
+              animate="show"
+              exit={{ opacity: 0, x: 14, transition: { duration: 0.25, ease: easePremium } }}
+              variants={fieldContainer}
+              className="space-y-5"
+            >
+              <FormField>
+                <Input
+                  label="Restaurant Slug"
+                  placeholder="e.g. campus-cafe"
+                  value={form.restaurantSlug}
+                  onChange={(e) =>
+                    setForm({ ...form, restaurantSlug: e.target.value })
+                  }
+                  required
+                />
+              </FormField>
+              <FormField>
+                <Input
+                  label="Email"
+                  type="email"
+                  placeholder="staff@example.com"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  required
+                />
+              </FormField>
+              <FormField>
+                <Input
+                  label="Password"
+                  type="password"
+                  placeholder="Enter password"
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  required
+                />
+              </FormField>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="relative pt-2">
+          <span aria-hidden className="absolute inset-x-6 -bottom-2 h-8 rounded-full bg-primary/25 blur-xl" />
+          <Button type="submit" className="relative w-full" size="lg" loading={loading}>
+            Sign In
+          </Button>
+        </div>
+      </motion.form>
+
+      <motion.p {...revealUp(0.24)} className="mt-8 text-center text-sm text-muted">
+        Don&apos;t have an account?{" "}
+        <Link
+          href="/register"
+          className="group relative font-semibold text-primary outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          Register
+          <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-primary transition-all duration-300 group-hover:w-full" />
+        </Link>
+      </motion.p>
     </div>
   )
 }
