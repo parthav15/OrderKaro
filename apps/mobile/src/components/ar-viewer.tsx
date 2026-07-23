@@ -1,7 +1,7 @@
 import { View, Pressable, Linking, Platform } from "react-native"
 import { WebView } from "react-native-webview"
 import { MotiView } from "moti"
-import { X, Box } from "lucide-react-native"
+import { X, Scan } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { useTheme } from "@/theme/theme-provider"
 
@@ -64,23 +64,28 @@ export function ArViewer({
         allowsInlineMediaPlayback
         originWhitelist={["*"]}
       />
-      {canLaunchAr ? (
-        <View className="absolute bottom-10 left-0 right-0 items-center">
-          <Pressable
-            onPress={() => launchAr(modelUrl, usdzUrl, itemName)}
-            className="flex-row items-center gap-2 rounded-full bg-primary px-6 py-3.5"
-          >
-            <Box size={18} color={colors.onPrimary} />
-            <Text className="font-sans-bold text-base" style={{ color: colors.onPrimary }}>
-              View in your space
+      <View className="absolute bottom-0 left-0 right-0 items-center pb-12 pt-6">
+        {canLaunchAr ? (
+          <>
+            <Pressable
+              onPress={() => launchAr(modelUrl, usdzUrl, itemName)}
+              className="flex-row items-center gap-2.5 rounded-full bg-primary px-8 py-4"
+            >
+              <Scan size={20} color={colors.onPrimary} />
+              <Text className="font-sans-bold text-base" style={{ color: colors.onPrimary }}>
+                View on your table
+              </Text>
+            </Pressable>
+            <Text variant="muted" className="text-xs mt-3">
+              Point your camera at a flat surface
             </Text>
-          </Pressable>
-        </View>
-      ) : (
-        <Text variant="muted" className="absolute bottom-8 left-0 right-0 text-center text-xs px-8">
-          Drag to rotate to preview in 3D.
-        </Text>
-      )}
+          </>
+        ) : (
+          <Text variant="muted" className="text-center text-xs px-8">
+            Drag to preview · open on your phone to place it on your table
+          </Text>
+        )}
+      </View>
     </MotiView>
   )
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FC, type DetailedHTMLProps, type HTMLAttributes } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Box, Loader2 } from "lucide-react"
+import { X, Box, Loader2, Scan } from "lucide-react"
 
 type ModelViewerAttributes = DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> & {
   src?: string
@@ -117,12 +117,21 @@ export function ArViewer({
               shadow-intensity="1"
               touch-action="pan-y"
               style={{ width: "100%", height: "100%", backgroundColor: "transparent" }}
-            />
+            >
+              <button
+                slot="ar-button"
+                style={{ backgroundColor: "#A31D33" }}
+                className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-full px-6 py-3.5 text-white font-bold text-sm shadow-xl"
+              >
+                <Scan className="w-4 h-4" />
+                View on your table
+              </button>
+            </ModelViewer>
           )}
         </div>
 
         <p className="text-center text-neutral-500 text-xs pb-6 px-6">
-          Drag to rotate. On a supported phone, tap the AR button to place this dish on your table.
+          Drag to rotate. On a phone, tap &ldquo;View on your table&rdquo; to place this dish in AR — AR needs an iPhone or Android device.
         </p>
       </motion.div>
     </AnimatePresence>
