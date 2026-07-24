@@ -24,9 +24,6 @@ import { Logo } from "@/components/ui/logo"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { useAuthStore } from "@/stores/auth"
 
-const SUPER_ADMIN_EMAIL =
-  process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL || "admin@orderkaro.com"
-
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
@@ -52,7 +49,7 @@ export function AdminTopNav() {
   const logout = useAuthStore((s) => s.logout)
   const user = useAuthStore((s) => s.user)
 
-  const isSuperAdmin = user?.email === SUPER_ADMIN_EMAIL
+  const isSuperAdmin = Boolean(user?.isSuperAdmin)
 
   const isActive = (href: string) =>
     href === "/admin" ? pathname === "/admin" : pathname.startsWith(href)

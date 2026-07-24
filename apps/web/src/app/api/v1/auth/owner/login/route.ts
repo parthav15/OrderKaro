@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     const owner = await prisma.owner.findUnique({
       where: { email: data.email },
-      select: { id: true, name: true, email: true, passwordHash: true },
+      select: { id: true, name: true, email: true, passwordHash: true, isSuperAdmin: true },
     })
 
     if (!owner) {
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     const refreshToken = generateRefreshToken({ id: owner.id, role: "OWNER" })
 
     return success({
-      owner: { id: owner.id, name: owner.name, email: owner.email },
+      owner: { id: owner.id, name: owner.name, email: owner.email, isSuperAdmin: owner.isSuperAdmin },
       accessToken,
       refreshToken,
     })

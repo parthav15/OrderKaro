@@ -1,15 +1,7 @@
 import { NextRequest } from "next/server"
 import prisma from "@/lib/prisma"
-import { success, handleError, requireRole, AuthError } from "@/lib/api-utils"
-
-async function requireSuperAdmin(request: NextRequest) {
-  const user = requireRole(request, "OWNER")
-  const owner = await prisma.owner.findUnique({ where: { id: user.id } })
-  const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || "admin@orderkaro.com"
-  if (!owner || owner.email !== superAdminEmail) {
-    throw new AuthError("Super admin access required", 403)
-  }
-}
+import { success, handleError } from "@/lib/api-utils"
+import { requireSuperAdmin } from "@/lib/require-super-admin"
 
 export async function GET(request: NextRequest) {
   try {

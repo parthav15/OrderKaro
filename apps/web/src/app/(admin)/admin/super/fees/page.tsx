@@ -24,9 +24,6 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { useReducedMotionSafe } from "@/hooks/use-reduced-motion-safe"
 
-const SUPER_ADMIN_EMAIL =
-  process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL || "admin@orderkaro.com"
-
 type FeeMode = "FLAT" | "PERCENT"
 type FeeBeneficiary = "RESTAURANT" | "PLATFORM"
 type CollectionMode = "BYO" | "MARKETPLACE"
@@ -154,7 +151,7 @@ export default function SuperAdminFeesPage() {
   const user = useAuthStore((s) => s.user)
   const queryClient = useQueryClient()
   const reduceMotion = useReducedMotionSafe()
-  const isSuperAdmin = user?.email === SUPER_ADMIN_EMAIL
+  const isSuperAdmin = Boolean(user?.isSuperAdmin)
   const [search, setSearch] = useState("")
 
   const feesQuery = useQuery<RestaurantFeesResponse>({

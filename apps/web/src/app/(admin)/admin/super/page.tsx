@@ -52,16 +52,13 @@ interface SystemStats {
   totalRevenue: number
 }
 
-const SUPER_ADMIN_EMAIL =
-  process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL || "admin@orderkaro.com"
-
 export default function SuperAdminPage() {
   const user = useAuthStore((s) => s.user)
   const queryClient = useQueryClient()
   const [search, setSearch] = useState("")
   const [expandedOwnerId, setExpandedOwnerId] = useState<string | null>(null)
 
-  const isSuperAdmin = user?.email === SUPER_ADMIN_EMAIL
+  const isSuperAdmin = Boolean(user?.isSuperAdmin)
 
   const { data: stats, isLoading: statsLoading } = useQuery<SystemStats>({
     queryKey: ["super-admin-stats"],

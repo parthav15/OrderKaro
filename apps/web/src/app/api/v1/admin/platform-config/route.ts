@@ -1,17 +1,9 @@
 import { NextRequest } from "next/server"
 import { z } from "zod"
 import prisma from "@/lib/prisma"
-import { success, handleError, requireRole, parseBody, AuthError } from "@/lib/api-utils"
+import { success, handleError, parseBody } from "@/lib/api-utils"
+import { requireSuperAdmin } from "@/lib/require-super-admin"
 import { getPlatformConfig } from "@/lib/platform-fees"
-
-async function requireSuperAdmin(request: NextRequest) {
-  const user = requireRole(request, "OWNER")
-  const owner = await prisma.owner.findUnique({ where: { id: user.id } })
-  const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || "admin@orderkaro.com"
-  if (!owner || owner.email !== superAdminEmail) {
-    throw new AuthError("Super admin access required", 403)
-  }
-}
 
 const platformConfigSchema = z.object({
   deliveryFeeEnabled: z.boolean(),

@@ -1,26 +1,8 @@
 import { NextRequest } from "next/server"
 import prisma from "@/lib/prisma"
-import {
-  success,
-  error,
-  handleError,
-  requireRole,
-  parseBody,
-  AuthError,
-} from "@/lib/api-utils"
+import { success, error, handleError, parseBody } from "@/lib/api-utils"
+import { requireSuperAdmin } from "@/lib/require-super-admin"
 import { modelRequestUpdateSchema } from "@orderkaro/shared"
-import type { JwtPayload } from "@orderkaro/shared"
-
-async function verifySuperAdmin(user: JwtPayload) {
-  if (user.role !== "OWNER") throw new AuthError("Super admin access required", 403)
-  const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || "admin@orderkaro.com"
-  const owner = await prisma.owner.findUnique({
-    where: { id: user.id },
-    select: { email: true },
-  })
-  if (!owner || owner.email !== superAdminEmail)
-    throw new AuthError("Super admin access required", 403)
-}
 
 export async function PATCH(
   request: NextRequest,
@@ -28,8 +10,7 @@ export async function PATCH(
 ) {
   try {
     const { reqId } = await params
-    const user = requireRole(request, "OWNER")
-    await verifySuperAdmin(user)
+    await requireSuperAdmin(request)
 
     const body = await request.json()
     const data = parseBody(modelRequestUpdateSchema, body)

@@ -79,6 +79,7 @@ export default function LoginPage() {
             name: data.data.owner.name,
             email: data.data.owner.email,
             role: "OWNER",
+            isSuperAdmin: data.data.owner.isSuperAdmin,
           },
           data.data.accessToken,
           data.data.refreshToken

@@ -8,6 +8,7 @@ interface User {
   phone?: string
   role: string
   restaurantId?: string
+  isSuperAdmin?: boolean
 }
 
 interface AuthState {
