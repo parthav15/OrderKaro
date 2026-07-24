@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { Plus, Pencil, Trash2, ChevronDown, ChevronUp, Settings2, UtensilsCrossed, AlertTriangle, Box, Sparkles, Lock } from "lucide-react"
+import { Plus, Pencil, Trash2, ChevronDown, ChevronUp, Settings2, UtensilsCrossed, AlertTriangle, Box, Sparkles, Lock, Truck, Store } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Modal } from "@/components/ui/modal"
 import { CustomizationManager } from "@/components/admin/CustomizationManager"
 import { ImageUpload } from "@/components/admin/ImageUpload"
+import { ToggleSwitch } from "@/components/admin/fee-config-card"
 import api from "@/lib/api"
 import { formatPrice } from "@/lib/utils"
 import { toast } from "sonner"
@@ -38,6 +39,7 @@ export default function MenuManagement() {
     categoryId: "",
     tags: "",
     imageUrl: "",
+    availableForDelivery: true,
   })
   const [customizationTarget, setCustomizationTarget] = useState<CustomizationPanelTarget | null>(null)
   const [deleteCategoryTarget, setDeleteCategoryTarget] = useState<any>(null)
@@ -112,7 +114,7 @@ export default function MenuManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["full-menu"] })
       setShowItemModal(false)
-      setItemForm({ name: "", description: "", price: "", isVeg: true, categoryId: "", tags: "", imageUrl: "" })
+      setItemForm({ name: "", description: "", price: "", isVeg: true, categoryId: "", tags: "", imageUrl: "", availableForDelivery: true })
       setEditingItem(null)
       toast.success("Item created")
     },
@@ -125,7 +127,7 @@ export default function MenuManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["full-menu"] })
       setShowItemModal(false)
-      setItemForm({ name: "", description: "", price: "", isVeg: true, categoryId: "", tags: "", imageUrl: "" })
+      setItemForm({ name: "", description: "", price: "", isVeg: true, categoryId: "", tags: "", imageUrl: "", availableForDelivery: true })
       setEditingItem(null)
       toast.success("Item updated")
     },
@@ -202,6 +204,7 @@ export default function MenuManagement() {
       categoryId,
       tags: item.tags?.join(", ") || "",
       imageUrl: item.imageUrl || "",
+      availableForDelivery: item.availableForDelivery ?? true,
     })
     setModel3dForm({ model3dUrl: item.model3dUrl || "", model3dUsdzUrl: item.model3dUsdzUrl || "", model3dPosterUrl: item.model3dPosterUrl || "" })
     setModelRequestNotes("")
@@ -217,7 +220,7 @@ export default function MenuManagement() {
   function closeItemModal() {
     setShowItemModal(false)
     setEditingItem(null)
-    setItemForm({ name: "", description: "", price: "", isVeg: true, categoryId: "", tags: "", imageUrl: "" })
+    setItemForm({ name: "", description: "", price: "", isVeg: true, categoryId: "", tags: "", imageUrl: "", availableForDelivery: true })
     setModel3dForm({ model3dUrl: "", model3dUsdzUrl: "", model3dPosterUrl: "" })
     setModelRequestNotes("")
   }
@@ -308,7 +311,7 @@ export default function MenuManagement() {
             size="lg"
             onClick={() => {
               setEditingItem(null)
-              setItemForm({ name: "", description: "", price: "", isVeg: true, categoryId: categories?.[0]?.id || "", tags: "", imageUrl: "" })
+              setItemForm({ name: "", description: "", price: "", isVeg: true, categoryId: categories?.[0]?.id || "", tags: "", imageUrl: "", availableForDelivery: true })
               setModel3dForm({ model3dUrl: "", model3dUsdzUrl: "", model3dPosterUrl: "" })
               setModelRequestNotes("")
               setShowItemModal(true)
@@ -433,6 +436,11 @@ export default function MenuManagement() {
                                       <Box className="w-2.5 h-2.5" /> AR
                                     </Badge>
                                   )}
+                                  {item.availableForDelivery === false && (
+                                    <Badge variant="default" className="text-xs">
+                                      <Store className="w-2.5 h-2.5" /> Pickup only
+                                    </Badge>
+                                  )}
                                 </div>
                                 <p className="font-bold text-ink">{item.name}</p>
                                 <p className="text-lg font-extrabold text-brand-red mt-0.5">{formatPrice(item.price)}</p>
@@ -487,7 +495,7 @@ export default function MenuManagement() {
                               size="sm"
                               onClick={() => {
                                 setEditingItem(null)
-                                setItemForm({ name: "", description: "", price: "", isVeg: true, categoryId: category.id, tags: "", imageUrl: "" })
+                                setItemForm({ name: "", description: "", price: "", isVeg: true, categoryId: category.id, tags: "", imageUrl: "", availableForDelivery: true })
                                 setModel3dForm({ model3dUrl: "", model3dUsdzUrl: "", model3dPosterUrl: "" })
                                 setModelRequestNotes("")
                                 setShowItemModal(true)
@@ -729,6 +737,23 @@ export default function MenuManagement() {
                 Non-Vegetarian
               </button>
             </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-4 rounded-xl border border-line px-4 py-3.5">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-surface-elevated flex items-center justify-center shrink-0">
+                <Truck className="w-4 h-4 text-muted" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-ink">Available for delivery</p>
+                <p className="text-xs text-muted">Turn off for dishes that travel poorly — pickup only</p>
+              </div>
+            </div>
+            <ToggleSwitch
+              checked={itemForm.availableForDelivery}
+              onChange={(v) => setItemForm({ ...itemForm, availableForDelivery: v })}
+              ariaLabel="Toggle available for delivery"
+            />
           </div>
 
           <div className="space-y-1.5">

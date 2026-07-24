@@ -23,6 +23,7 @@ export interface MenuItem {
   imageUrl: string | null
   isVeg: boolean
   isAvailable: boolean
+  availableForDelivery: boolean
   tags: string[]
   customizations: Customization[]
   model3dUrl?: string | null

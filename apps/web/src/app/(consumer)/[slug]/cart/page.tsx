@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
@@ -16,19 +16,24 @@ import {
   Bike,
   MapPin,
   Smartphone,
+  AlertTriangle,
+  CheckCircle2,
+  Loader2,
 } from "lucide-react"
 import { useCartStore } from "@/stores/cart"
 import { useAuthStore } from "@/stores/auth"
 import { Button } from "@/components/ui/button"
-import { formatPrice, generateUUID } from "@/lib/utils"
+import { cn, formatPrice, generateUUID } from "@/lib/utils"
 import api from "@/lib/api"
 import { toast } from "sonner"
 import { requestNotificationPermission, getNotificationPermission, isNotificationSupported } from "@/lib/pwa"
 import { useWalletRecharge } from "@/hooks/use-wallet-recharge"
+import { useReducedMotionSafe } from "@/hooks/use-reduced-motion-safe"
 import { StorefrontTheme } from "@/components/consumer/storefront-theme"
 import { PaymentModal } from "@/components/consumer/payment-modal"
 
 type OrderType = "DINE_IN" | "TAKEAWAY" | "DELIVERY"
+type PaymentMethod = "CASH" | "WALLET" | "ONLINE"
 
 interface StorefrontConfig {
   name?: string
@@ -39,6 +44,9 @@ interface StorefrontConfig {
   minOrderValue?: string
   hasLocation?: boolean
   onlinePaymentEnabled?: boolean
+  acceptsWallet?: boolean
+  acceptsCash?: boolean
+  acceptsOnline?: boolean
 }
 
 const FULFILLMENT_OPTIONS: Array<{ value: OrderType; label: string; icon: typeof Utensils }> = [
@@ -47,11 +55,18 @@ const FULFILLMENT_OPTIONS: Array<{ value: OrderType; label: string; icon: typeof
   { value: "DELIVERY", label: "Delivery", icon: Bike },
 ]
 
+const PAYMENT_METHOD_META: Record<PaymentMethod, { label: string; icon: typeof Wallet }> = {
+  WALLET: { label: "Wallet", icon: Wallet },
+  CASH: { label: "Cash", icon: Banknote },
+  ONLINE: { label: "Pay online", icon: Smartphone },
+}
+
 export default function CartPage({ params }: { params: { slug: string } }) {
   const router = useRouter()
   const { items, removeItem, updateQuantity, clearCart, getTotal, restaurantId, tableId } = useCartStore()
   const user = useAuthStore((s) => s.user)
-  const [paymentMethod, setPaymentMethod] = useState<"CASH" | "WALLET" | "ONLINE">("CASH")
+  const reducedMotion = useReducedMotionSafe()
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("WALLET")
   const [specialInstructions, setSpecialInstructions] = useState("")
   const [loading, setLoading] = useState(false)
   const [walletBalance, setWalletBalance] = useState<number | null>(null)
@@ -65,14 +80,27 @@ export default function CartPage({ params }: { params: { slug: string } }) {
   const [storefront, setStorefront] = useState<StorefrontConfig | null>(null)
   const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null)
   const [locating, setLocating] = useState(false)
+  const [locationMessage, setLocationMessage] = useState<string | null>(null)
 
   const fixedTable = !!tableId
   const tableLabel = tables.find((t) => t.id === tableId)?.label
 
-  const onlinePaymentAvailable = Boolean(storefront?.onlinePaymentEnabled)
+  const acceptsWallet = storefront?.acceptsWallet !== false
+  const acceptsCash = storefront?.acceptsCash !== false
+  const acceptsOnline = storefront?.acceptsOnline !== false
+  const onlinePaymentAvailable = acceptsOnline && Boolean(storefront?.onlinePaymentEnabled)
   const deliveryZoneActive = Boolean(storefront?.deliveryEnabled && storefront?.hasLocation)
   const deliveryFeeAmount =
     deliveryZoneActive && orderType === "DELIVERY" ? Number(storefront?.deliveryFee ?? 0) : 0
+
+  const availablePaymentMethods: PaymentMethod[] = []
+  if (acceptsWallet) availablePaymentMethods.push("WALLET")
+  if (acceptsCash) availablePaymentMethods.push("CASH")
+  if (onlinePaymentAvailable) availablePaymentMethods.push("ONLINE")
+
+  const deliveryRestrictedItems =
+    orderType === "DELIVERY" ? items.filter((item) => item.availableForDelivery === false) : []
+  const hasDeliveryRestrictedItems = deliveryRestrictedItems.length > 0
 
   const itemsTotal = getTotal()
   const total = itemsTotal + deliveryFeeAmount
@@ -116,11 +144,19 @@ export default function CartPage({ params }: { params: { slug: string } }) {
     }
   }, [params.slug])
 
+  useEffect(() => {
+    if (!storefront) return
+    setPaymentMethod((current) =>
+      availablePaymentMethods.includes(current) ? current : availablePaymentMethods[0] ?? current
+    )
+  }, [storefront, acceptsWallet, acceptsCash, onlinePaymentAvailable])
+
   function handleUseMyLocation() {
     if (!navigator.geolocation) {
-      toast.error("Location is not available on this device")
+      setLocationMessage("Location isn't available on this device. Enter your address below instead.")
       return
     }
+    setLocationMessage(null)
     setLocating(true)
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -129,11 +165,16 @@ export default function CartPage({ params }: { params: { slug: string } }) {
           longitude: position.coords.longitude,
         })
         setLocating(false)
+        setLocationMessage(null)
         toast.success("Location captured")
       },
-      () => {
+      (geoError) => {
         setLocating(false)
-        toast.error("Could not get your location. Please allow location access.")
+        setLocationMessage(
+          geoError.code === geoError.PERMISSION_DENIED
+            ? "Location access denied. Allow it in your browser settings or enter your address below."
+            : "Couldn't get your location right now. Enter your address below instead."
+        )
       },
       { enableHighAccuracy: true, timeout: 10000 }
     )
@@ -161,6 +202,10 @@ export default function CartPage({ params }: { params: { slug: string } }) {
 
     if (finalOrderType === "DINE_IN" && !finalTableId) {
       toast.error("Please select your table")
+      return
+    }
+    if (finalOrderType === "DELIVERY" && hasDeliveryRestrictedItems) {
+      toast.error("Remove pickup-only items or switch fulfillment to place this order")
       return
     }
     if (finalOrderType === "DELIVERY" && !finalDeliveryLocation) {
@@ -272,64 +317,85 @@ export default function CartPage({ params }: { params: { slug: string } }) {
       </motion.div>
 
       <div className="px-4 py-4 space-y-3">
-        {items.map((item, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.05 }}
-            className="flex gap-3 p-3 rounded-xl border border-line"
-          >
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className={`w-3 h-3 border-2 rounded-sm flex items-center justify-center ${
-                  item.isVeg ? "border-ink" : "border-brand-red"
-                }`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${
-                    item.isVeg ? "bg-ink" : "bg-brand-red"
-                  }`} />
-                </span>
-                <h3 className="font-semibold text-sm truncate">{item.name}</h3>
-              </div>
-              {item.selectedOptions.length > 0 && (
-                <p className="text-xs text-muted mt-1">
-                  {item.selectedOptions.map((o) => o.optionNames.join(", ")).join(" · ")}
-                </p>
+        {items.map((item, index) => {
+          const isDeliveryRestricted = orderType === "DELIVERY" && item.availableForDelivery === false
+          return (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className={cn(
+                "flex gap-3 p-3 rounded-xl border transition-colors",
+                isDeliveryRestricted ? "border-danger/40 bg-danger/5" : "border-line"
               )}
-              <p className="font-bold text-sm mt-1">
-                {formatPrice(
-                  (item.price + item.selectedOptions.reduce((s, o) => s + o.priceAdjustment, 0)) * item.quantity
+            >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className={`w-3 h-3 border-2 rounded-sm flex items-center justify-center ${
+                    item.isVeg ? "border-ink" : "border-brand-red"
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${
+                      item.isVeg ? "bg-ink" : "bg-brand-red"
+                    }`} />
+                  </span>
+                  <h3 className="font-semibold text-sm truncate">{item.name}</h3>
+                </div>
+                {item.selectedOptions.length > 0 && (
+                  <p className="text-xs text-muted mt-1">
+                    {item.selectedOptions.map((o) => o.optionNames.join(", ")).join(" · ")}
+                  </p>
                 )}
-              </p>
-            </div>
-            <div className="flex flex-col items-end gap-2">
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => removeItem(index)}
-                className="text-muted hover:text-brand-red transition-colors"
-              >
-                <Trash2 className="w-4 h-4" />
-              </motion.button>
-              <div className="flex items-center border border-line rounded-lg">
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => item.quantity > 1 ? updateQuantity(index, item.quantity - 1) : removeItem(index)}
-                  className="px-2 py-1"
-                >
-                  <Minus className="w-3 h-3" />
-                </motion.button>
-                <span className="px-2 text-sm font-semibold">{item.quantity}</span>
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => updateQuantity(index, item.quantity + 1)}
-                  className="px-2 py-1"
-                >
-                  <Plus className="w-3 h-3" />
-                </motion.button>
+                <p className="font-bold text-sm mt-1">
+                  {formatPrice(
+                    (item.price + item.selectedOptions.reduce((s, o) => s + o.priceAdjustment, 0)) * item.quantity
+                  )}
+                </p>
+                <AnimatePresence initial={false}>
+                  {isDeliveryRestricted && (
+                    <motion.p
+                      key="delivery-restricted"
+                      initial={reducedMotion ? { opacity: 0 } : { opacity: 0, height: 0, y: -4 }}
+                      animate={{ opacity: 1, height: "auto", y: 0 }}
+                      exit={reducedMotion ? { opacity: 0 } : { opacity: 0, height: 0, y: -4 }}
+                      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                      className="flex items-center gap-1.5 text-xs font-semibold text-danger mt-1.5 overflow-hidden"
+                    >
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                      Pickup only — not available for delivery
+                    </motion.p>
+                  )}
+                </AnimatePresence>
               </div>
-            </div>
-          </motion.div>
-        ))}
+              <div className="flex flex-col items-end gap-2">
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => removeItem(index)}
+                  className="text-muted hover:text-brand-red transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </motion.button>
+                <div className="flex items-center border border-line rounded-lg">
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => item.quantity > 1 ? updateQuantity(index, item.quantity - 1) : removeItem(index)}
+                    className="px-2 py-1"
+                  >
+                    <Minus className="w-3 h-3" />
+                  </motion.button>
+                  <span className="px-2 text-sm font-semibold">{item.quantity}</span>
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => updateQuantity(index, item.quantity + 1)}
+                    className="px-2 py-1"
+                  >
+                    <Plus className="w-3 h-3" />
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          )
+        })}
       </div>
 
       <motion.div
@@ -348,21 +414,31 @@ export default function CartPage({ params }: { params: { slug: string } }) {
         ) : (
           <>
             <div className="flex gap-2">
-              {FULFILLMENT_OPTIONS.map((m) => (
-                <motion.button
-                  key={m.value}
-                  whileTap={{ scale: 0.96 }}
-                  onClick={() => setOrderType(m.value)}
-                  className={`flex-1 flex flex-col items-center gap-1 p-3 rounded-xl border text-xs font-semibold transition-colors ${
-                    orderType === m.value
-                      ? "border-brand-red bg-primary/10 text-brand-red"
-                      : "border-line text-ink"
-                  }`}
-                >
-                  <m.icon className="w-5 h-5" />
-                  {m.label}
-                </motion.button>
-              ))}
+              {FULFILLMENT_OPTIONS.map((m) => {
+                const active = orderType === m.value
+                return (
+                  <motion.button
+                    key={m.value}
+                    layout
+                    whileTap={{ scale: 0.96 }}
+                    onClick={() => setOrderType(m.value)}
+                    className={cn(
+                      "relative flex-1 flex flex-col items-center gap-1 p-3 rounded-xl border text-xs font-semibold overflow-hidden transition-colors",
+                      active ? "border-brand-red text-brand-red" : "border-line text-ink"
+                    )}
+                  >
+                    {active && (
+                      <motion.span
+                        layoutId="fulfillment-active"
+                        className="absolute inset-0 bg-primary/10"
+                        transition={reducedMotion ? { duration: 0 } : { type: "spring", stiffness: 380, damping: 32 }}
+                      />
+                    )}
+                    <m.icon className="relative w-5 h-5" />
+                    <span className="relative">{m.label}</span>
+                  </motion.button>
+                )
+              })}
             </div>
             {orderType === "DINE_IN" && (
               <select
@@ -380,6 +456,77 @@ export default function CartPage({ params }: { params: { slug: string } }) {
             )}
             {orderType === "DELIVERY" && (
               <div className="space-y-3">
+                <div className="space-y-2">
+                  <motion.button
+                    type="button"
+                    layout
+                    whileTap={{ scale: 0.97 }}
+                    onClick={handleUseMyLocation}
+                    disabled={locating}
+                    className={cn(
+                      "relative w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-sm font-bold overflow-hidden transition-colors disabled:opacity-70",
+                      coords
+                        ? "border-success text-success bg-success/5"
+                        : "border-line text-ink hover:border-brand-red"
+                    )}
+                  >
+                    <AnimatePresence mode="wait" initial={false}>
+                      {locating ? (
+                        <motion.span
+                          key="locating"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.15 }}
+                          className="flex items-center gap-2"
+                        >
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Getting your location…
+                        </motion.span>
+                      ) : coords ? (
+                        <motion.span
+                          key="captured"
+                          initial={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.7 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ type: "spring", stiffness: 420, damping: 22 }}
+                          className="flex items-center gap-2"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                          Location captured — tap to update
+                        </motion.span>
+                      ) : (
+                        <motion.span
+                          key="idle"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.15 }}
+                          className="flex items-center gap-2"
+                        >
+                          <MapPin className="w-4 h-4" />
+                          Use my current location
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </motion.button>
+                  <AnimatePresence initial={false}>
+                    {locationMessage && (
+                      <motion.p
+                        key="location-message"
+                        initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -6, height: 0 }}
+                        animate={{ opacity: 1, y: 0, height: "auto" }}
+                        exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -6, height: 0 }}
+                        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                        className="flex items-start gap-2 text-xs text-danger bg-danger/10 border border-danger/30 rounded-lg px-3 py-2 overflow-hidden"
+                      >
+                        <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                        <span>{locationMessage}</span>
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </div>
+
                 <input
                   value={deliveryLocation}
                   onChange={(e) => setDeliveryLocation(e.target.value)}
@@ -389,36 +536,16 @@ export default function CartPage({ params }: { params: { slug: string } }) {
                 />
 
                 {deliveryZoneActive && (
-                  <div className="space-y-2">
-                    <motion.button
-                      type="button"
-                      whileTap={{ scale: 0.97 }}
-                      onClick={handleUseMyLocation}
-                      disabled={locating}
-                      className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-sm font-bold transition-colors disabled:opacity-60 ${
-                        coords
-                          ? "border-brand-red text-brand-red"
-                          : "border-line text-ink hover:border-brand-red"
-                      }`}
-                    >
-                      <MapPin className="w-4 h-4" />
-                      {locating
-                        ? "Getting your location..."
-                        : coords
-                          ? "Location captured — tap to update"
-                          : "Use my current location"}
-                    </motion.button>
-                    <p className="text-xs text-muted">
-                      {storefront?.name ?? "This restaurant"} delivers within{" "}
-                      {storefront?.deliveryRadiusKm} km
-                      {Number(storefront?.deliveryFee ?? 0) > 0
-                        ? ` · delivery fee ${formatPrice(Number(storefront?.deliveryFee))}`
-                        : " · free delivery"}
-                      {Number(storefront?.minOrderValue ?? 0) > 0
-                        ? ` · min order ${formatPrice(Number(storefront?.minOrderValue))}`
-                        : ""}
-                    </p>
-                  </div>
+                  <p className="text-xs text-muted">
+                    {storefront?.name ?? "This restaurant"} delivers within{" "}
+                    {storefront?.deliveryRadiusKm} km
+                    {Number(storefront?.deliveryFee ?? 0) > 0
+                      ? ` · delivery fee ${formatPrice(Number(storefront?.deliveryFee))}`
+                      : " · free delivery"}
+                    {Number(storefront?.minOrderValue ?? 0) > 0
+                      ? ` · min order ${formatPrice(Number(storefront?.minOrderValue))}`
+                      : ""}
+                  </p>
                 )}
               </div>
             )}
@@ -445,60 +572,75 @@ export default function CartPage({ params }: { params: { slug: string } }) {
       >
         <h3 className="font-semibold text-sm">Payment Method</h3>
         <div className="flex gap-3">
-          <motion.button
-            whileTap={{ scale: 0.96 }}
-            onClick={() => setPaymentMethod("CASH")}
-            className={`flex-1 flex items-center gap-2 p-3 rounded-xl border text-sm font-medium transition-colors ${
-              paymentMethod === "CASH" ? "border-brand-red bg-primary/10 text-brand-red" : "border-line"
-            }`}
-          >
-            <Banknote className="w-5 h-5" />
-            Cash
-          </motion.button>
-          <motion.button
-            whileTap={{ scale: 0.96 }}
-            onClick={() => setPaymentMethod("WALLET")}
-            className={`flex-1 flex items-center gap-2 p-3 rounded-xl border text-sm font-medium transition-colors ${
-              paymentMethod === "WALLET" ? "border-brand-red bg-primary/10 text-brand-red" : "border-line"
-            }`}
-          >
-            <Wallet className="w-5 h-5" />
-            Wallet
-          </motion.button>
-          {onlinePaymentAvailable && (
-            <motion.button
-              whileTap={{ scale: 0.96 }}
-              onClick={() => setPaymentMethod("ONLINE")}
-              className={`flex-1 flex items-center gap-2 p-3 rounded-xl border text-sm font-medium transition-colors ${
-                paymentMethod === "ONLINE"
-                  ? "border-brand-red bg-primary/10 text-brand-red"
-                  : "border-line"
-              }`}
-            >
-              <Smartphone className="w-5 h-5" />
-              Pay online
-            </motion.button>
-          )}
+          <AnimatePresence initial={false} mode="popLayout">
+            {availablePaymentMethods.map((method) => {
+              const meta = PAYMENT_METHOD_META[method]
+              const Icon = meta.icon
+              const active = paymentMethod === method
+              return (
+                <motion.button
+                  key={method}
+                  layout
+                  initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.94 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.94 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => setPaymentMethod(method)}
+                  className={cn(
+                    "relative flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border text-sm font-medium overflow-hidden transition-colors",
+                    active ? "border-brand-red text-brand-red" : "border-line text-ink"
+                  )}
+                >
+                  {active && (
+                    <motion.span
+                      layoutId="payment-method-active"
+                      className="absolute inset-0 bg-primary/10"
+                      transition={reducedMotion ? { duration: 0 } : { type: "spring", stiffness: 380, damping: 32 }}
+                    />
+                  )}
+                  <Icon className="relative w-5 h-5" />
+                  <span className="relative">{meta.label}</span>
+                </motion.button>
+              )
+            })}
+          </AnimatePresence>
         </div>
-        {paymentMethod === "ONLINE" && (
-          <p className="text-xs text-muted px-1">
-            You will be taken to a secure payment page. Your order reaches the kitchen once the
-            payment is confirmed.
-          </p>
-        )}
-        {paymentMethod === "WALLET" && (
-          <div className="flex items-center justify-between text-sm px-1">
-            <span className="text-muted">
-              Wallet balance:{" "}
-              <span className="font-semibold text-ink">
-                {walletBalance === null ? "…" : formatPrice(walletBalance)}
+        <AnimatePresence mode="wait" initial={false}>
+          {paymentMethod === "ONLINE" && (
+            <motion.p
+              key="online-note"
+              initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
+              transition={{ duration: 0.2 }}
+              className="text-xs text-muted px-1"
+            >
+              You will be taken to a secure payment page. Your order reaches the kitchen once the
+              payment is confirmed.
+            </motion.p>
+          )}
+          {paymentMethod === "WALLET" && (
+            <motion.div
+              key="wallet-note"
+              initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center justify-between text-sm px-1"
+            >
+              <span className="text-muted">
+                Wallet balance:{" "}
+                <span className="font-semibold text-ink">
+                  {walletBalance === null ? "…" : formatPrice(walletBalance)}
+                </span>
               </span>
-            </span>
-            {walletInsufficient && (
-              <span className="text-brand-red font-medium">Short by {formatPrice(shortfall)}</span>
-            )}
-          </div>
-        )}
+              {walletInsufficient && (
+                <span className="text-brand-red font-medium">Short by {formatPrice(shortfall)}</span>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
       <motion.div
@@ -507,6 +649,25 @@ export default function CartPage({ params }: { params: { slug: string } }) {
         transition={{ type: "spring", stiffness: 300, damping: 32 }}
         className="fixed bottom-0 inset-x-0 p-4 bg-surface border-t border-line"
       >
+        <AnimatePresence initial={false}>
+          {hasDeliveryRestrictedItems && (
+            <motion.div
+              key="delivery-block-notice"
+              initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 10, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: "auto" }}
+              exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 10, height: 0 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="flex items-start gap-2 bg-danger/10 border border-danger/30 rounded-xl p-3 mb-3 overflow-hidden"
+            >
+              <AlertTriangle className="w-4 h-4 text-danger shrink-0 mt-0.5" />
+              <p className="text-xs font-semibold text-danger">
+                {deliveryRestrictedItems.length === 1
+                  ? "1 item is pickup-only — remove it or switch fulfillment to place this order."
+                  : `${deliveryRestrictedItems.length} items are pickup-only — remove them or switch fulfillment to place this order.`}
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
         {deliveryFeeAmount > 0 && (
           <div className="flex justify-between items-center mb-1.5">
             <span className="text-xs text-muted">Items</span>
@@ -527,7 +688,11 @@ export default function CartPage({ params }: { params: { slug: string } }) {
           <span className="text-sm text-muted">Total</span>
           <span className="text-xl font-extrabold text-ink">{formatPrice(total)}</span>
         </div>
-        {walletInsufficient ? (
+        {hasDeliveryRestrictedItems ? (
+          <Button className="w-full" size="lg" disabled>
+            Place Order
+          </Button>
+        ) : walletInsufficient ? (
           <Button className="w-full" size="lg" loading={recharging} onClick={handleTopUp}>
             <Wallet className="w-4 h-4" />
             Add {formatPrice(shortfall)} to wallet

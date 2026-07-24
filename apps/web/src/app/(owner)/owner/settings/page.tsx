@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   Settings,
@@ -17,13 +17,50 @@ import {
   ToggleLeft,
   ToggleRight,
   ArrowUpCircle,
+  Wallet,
+  Banknote,
+  CreditCard,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { ToggleSwitch } from "@/components/admin/fee-config-card"
 import api from "@/lib/api"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { BRAND_COLOR_PRESETS, DEFAULT_BRAND_COLOR, readableTextColor } from "@/lib/brand-color"
+import { useReducedMotionSafe } from "@/hooks/use-reduced-motion-safe"
+
+interface PaymentMethodsFormState {
+  acceptsWallet: boolean
+  acceptsCash: boolean
+  acceptsOnline: boolean
+}
+
+const PAYMENT_METHOD_FIELDS: {
+  key: keyof PaymentMethodsFormState
+  label: string
+  description: string
+  icon: typeof Wallet
+}[] = [
+  {
+    key: "acceptsWallet",
+    label: "Wallet",
+    description: "Prepaid balance customers top up and spend at your restaurant",
+    icon: Wallet,
+  },
+  {
+    key: "acceptsCash",
+    label: "Cash",
+    description: "Paid in person, collected by your counter staff",
+    icon: Banknote,
+  },
+  {
+    key: "acceptsOnline",
+    label: "Online",
+    description: "Card, UPI and net banking through your payment gateway",
+    icon: CreditCard,
+  },
+]
 
 const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/
 
@@ -140,6 +177,50 @@ export default function SettingsPage() {
   })
 
   const deliveryUpgradeRequired = (updateDeliveryZone.error as any)?.response?.status === 402
+
+  const reduceMotion = useReducedMotionSafe()
+
+  const [paymentMethodsForm, setPaymentMethodsForm] = useState<PaymentMethodsFormState>({
+    acceptsWallet: true,
+    acceptsCash: true,
+    acceptsOnline: true,
+  })
+
+  useEffect(() => {
+    if (restaurant) {
+      setPaymentMethodsForm({
+        acceptsWallet: restaurant.acceptsWallet ?? true,
+        acceptsCash: restaurant.acceptsCash ?? true,
+        acceptsOnline: restaurant.acceptsOnline ?? true,
+      })
+    }
+  }, [restaurant])
+
+  const enabledPaymentMethodCount =
+    Number(paymentMethodsForm.acceptsWallet) +
+    Number(paymentMethodsForm.acceptsCash) +
+    Number(paymentMethodsForm.acceptsOnline)
+
+  function isLastEnabledPaymentMethod(key: keyof PaymentMethodsFormState) {
+    return paymentMethodsForm[key] && enabledPaymentMethodCount === 1
+  }
+
+  function togglePaymentMethod(key: keyof PaymentMethodsFormState) {
+    setPaymentMethodsForm((prev) => {
+      const count = Number(prev.acceptsWallet) + Number(prev.acceptsCash) + Number(prev.acceptsOnline)
+      if (prev[key] && count === 1) return prev
+      return { ...prev, [key]: !prev[key] }
+    })
+  }
+
+  const updatePaymentMethods = useMutation({
+    mutationFn: (data: PaymentMethodsFormState) => api.put(`/api/v1/restaurants/${restaurantId}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["restaurants"] })
+      toast.success("Payment methods saved successfully")
+    },
+    onError: (err: any) => toast.error(err.response?.data?.error || "Failed to save payment methods"),
+  })
 
   function useCurrentLocation() {
     if (!navigator.geolocation) {
@@ -385,6 +466,89 @@ export default function SettingsPage() {
           <Button type="submit" size="lg" className="w-full" loading={update.isPending}>
             <CheckCircle2 className="w-5 h-5" /> Save All Settings
           </Button>
+        </motion.div>
+      </form>
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          updatePaymentMethods.mutate(paymentMethodsForm)
+        }}
+        className="mt-6"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reduceMotion ? 0.01 : 0.3, delay: reduceMotion ? 0 : 0.22 }}
+        >
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-surface-elevated flex items-center justify-center">
+                  <Wallet className="w-5 h-5 text-muted" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-ink">Payment Methods</h2>
+                  <p className="text-sm text-muted">Choose how customers can pay at checkout</p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="divide-y divide-line">
+                {PAYMENT_METHOD_FIELDS.map((field, idx) => {
+                  const Icon = field.icon
+                  const isLast = isLastEnabledPaymentMethod(field.key)
+                  return (
+                    <motion.div
+                      key={field.key}
+                      initial={{ opacity: 0, x: reduceMotion ? 0 : -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{
+                        duration: reduceMotion ? 0.01 : 0.25,
+                        delay: reduceMotion ? 0 : 0.05 * idx,
+                      }}
+                      className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-9 h-9 rounded-xl bg-surface-elevated flex items-center justify-center shrink-0">
+                          <Icon className="w-4 h-4 text-muted" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-ink">{field.label}</p>
+                          <p className="text-xs text-muted">{field.description}</p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-1.5 shrink-0">
+                        <ToggleSwitch
+                          checked={paymentMethodsForm[field.key]}
+                          onChange={() => togglePaymentMethod(field.key)}
+                          ariaLabel={`Toggle ${field.label} payments`}
+                          disabled={isLast}
+                        />
+                        <AnimatePresence>
+                          {isLast && (
+                            <motion.p
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ duration: reduceMotion ? 0.01 : 0.2 }}
+                              className="max-w-[8.5rem] overflow-hidden text-right text-[11px] leading-tight text-muted"
+                            >
+                              At least one must stay on
+                            </motion.p>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </motion.div>
+                  )
+                })}
+              </div>
+
+              <Button type="submit" className="w-full" loading={updatePaymentMethods.isPending}>
+                <CheckCircle2 className="w-5 h-5" /> Save Payment Methods
+              </Button>
+            </CardContent>
+          </Card>
         </motion.div>
       </form>
 

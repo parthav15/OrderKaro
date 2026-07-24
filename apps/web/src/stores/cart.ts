@@ -8,6 +8,7 @@ interface CartItem {
   quantity: number
   imageUrl?: string
   isVeg: boolean
+  availableForDelivery?: boolean
   selectedOptions: Array<{
     customizationId: string
     customizationName: string

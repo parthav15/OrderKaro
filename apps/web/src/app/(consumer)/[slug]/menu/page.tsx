@@ -188,6 +188,7 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
       quantity: 1,
       imageUrl: item.imageUrl || undefined,
       isVeg: item.isVeg,
+      availableForDelivery: item.availableForDelivery,
       selectedOptions: [],
     })
     triggerFlyToCart({
@@ -253,6 +254,7 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
       quantity,
       imageUrl: item.imageUrl || undefined,
       isVeg: item.isVeg,
+      availableForDelivery: item.availableForDelivery,
       selectedOptions: opts,
     })
     setSelectedItem(null)
