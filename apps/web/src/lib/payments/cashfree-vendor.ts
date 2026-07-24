@@ -120,6 +120,7 @@ export interface CashfreeSplitSession {
   redirectUrl: string
   providerOrderId: string
   upiIntent?: string
+  paymentSessionId?: string
 }
 
 export async function createCashfreeSplitCheckout(
@@ -181,6 +182,7 @@ export async function createCashfreeSplitCheckout(
     redirectUrl,
     providerOrderId: orderData.order_id ?? input.orderId,
     upiIntent: upiIntent ?? undefined,
+    paymentSessionId: orderData.payment_session_id,
   }
 }
 

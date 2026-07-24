@@ -25,15 +25,63 @@ import { useAuthStore } from "@/stores/auth"
 import { Button } from "@/components/ui/button"
 import { cn, formatPrice, generateUUID } from "@/lib/utils"
 import api from "@/lib/api"
+import { useQueryClient } from "@tanstack/react-query"
+import { load } from "@cashfreepayments/cashfree-js"
 import { toast } from "sonner"
 import { requestNotificationPermission, getNotificationPermission, isNotificationSupported } from "@/lib/pwa"
 import { useWalletRecharge } from "@/hooks/use-wallet-recharge"
 import { useReducedMotionSafe } from "@/hooks/use-reduced-motion-safe"
 import { StorefrontTheme } from "@/components/consumer/storefront-theme"
-import { PaymentModal } from "@/components/consumer/payment-modal"
 
 type OrderType = "DINE_IN" | "TAKEAWAY" | "DELIVERY"
 type PaymentMethod = "CASH" | "WALLET" | "ONLINE"
+
+interface GatewaySession {
+  provider?: string
+  paymentSessionId?: string | null
+  cashfreeMode?: "sandbox" | "production"
+  redirectUrl: string
+  pollUrl: string
+  pollBody: Record<string, unknown>
+}
+
+async function confirmPaymentStatus(
+  pollUrl: string,
+  pollBody: Record<string, unknown>,
+  maxAttempts: number
+): Promise<{ status: string; data: any }> {
+  let latest: any = null
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    if (attempt > 0) await new Promise((resolve) => setTimeout(resolve, 2000))
+    try {
+      const res = await api.post(pollUrl, pollBody)
+      latest = res.data?.data
+      const status: string = latest?.status ?? latest?.outcome ?? "UNKNOWN"
+      if (status === "PAID" || status === "FAILED") return { status, data: latest }
+    } catch {}
+  }
+  return { status: latest?.status ?? latest?.outcome ?? "PENDING", data: latest }
+}
+
+async function driveGatewayCheckout(
+  session: GatewaySession
+): Promise<{ status: string; data: any } | "REDIRECTED"> {
+  if (session.provider === "CASHFREE" && session.paymentSessionId) {
+    const cashfree = await load({ mode: session.cashfreeMode ?? "sandbox" })
+    if (!cashfree) {
+      window.location.href = session.redirectUrl
+      return "REDIRECTED"
+    }
+    const result = await cashfree.checkout({
+      paymentSessionId: session.paymentSessionId,
+      redirectTarget: "_modal",
+    })
+    const completed = Boolean(result?.paymentDetails)
+    return confirmPaymentStatus(session.pollUrl, session.pollBody, completed ? 6 : 1)
+  }
+  window.location.href = session.redirectUrl
+  return "REDIRECTED"
+}
 
 interface StorefrontConfig {
   name?: string
@@ -63,6 +111,7 @@ const PAYMENT_METHOD_META: Record<PaymentMethod, { label: string; icon: typeof W
 
 export default function CartPage({ params }: { params: { slug: string } }) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { items, removeItem, updateQuantity, clearCart, getTotal, restaurantId, tableId } = useCartStore()
   const user = useAuthStore((s) => s.user)
   const reducedMotion = useReducedMotionSafe()
@@ -71,7 +120,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
   const [loading, setLoading] = useState(false)
   const [walletBalance, setWalletBalance] = useState<number | null>(null)
   const { recharging, recharge } = useWalletRecharge()
-  const [paymentSession, setPaymentSession] = useState<any>(null)
+  const [processing, setProcessing] = useState(false)
 
   const [orderType, setOrderType] = useState<OrderType>("TAKEAWAY")
   const [pickedTableId, setPickedTableId] = useState("")
@@ -135,6 +184,8 @@ export default function CartPage({ params }: { params: { slug: string } }) {
       if (topup === "paid") {
         toast.success("Wallet topped up")
         setPaymentMethod("WALLET")
+        loadBalance()
+        queryClient.invalidateQueries({ queryKey: ["consumer-wallet"] })
       } else if (topup === "failed" || topup === "invalid") {
         toast.error("Top-up did not complete")
       } else if (topup === "pending") {
@@ -183,8 +234,24 @@ export default function CartPage({ params }: { params: { slug: string } }) {
   async function handleTopUp() {
     if (shortfall <= 0 || !restaurantId) return
     const session = await recharge(restaurantId, shortfall)
-    if (session) {
-      setPaymentSession({ ...session, kind: "topup" })
+    if (!session) return
+    setProcessing(true)
+    try {
+      const outcome = await driveGatewayCheckout(session)
+      if (outcome === "REDIRECTED") return
+      if (outcome.status === "PAID") {
+        if (typeof outcome.data?.balance !== "undefined") {
+          setWalletBalance(Number(outcome.data.balance))
+        }
+        loadBalance()
+        queryClient.invalidateQueries({ queryKey: ["consumer-wallet"] })
+        setPaymentMethod("WALLET")
+        toast.success("Wallet topped up")
+      } else {
+        toast.error("Top-up not completed. You can try again.")
+      }
+    } finally {
+      setProcessing(false)
     }
   }
 
@@ -247,12 +314,20 @@ export default function CartPage({ params }: { params: { slug: string } }) {
 
       const payment = data.data.payment
       if (payment) {
-        setPaymentSession({
-          ...payment,
-          kind: "order",
-          orderId: data.data.id,
-          fallbackTrackingToken: data.data.trackingToken,
-        })
+        const outcome = await driveGatewayCheckout(payment)
+        if (outcome === "REDIRECTED") return
+        if (outcome.status === "PAID") {
+          const trackingToken = outcome.data?.trackingToken ?? data.data.trackingToken
+          clearCart()
+          toast.success("Payment successful! Track your order")
+          if (trackingToken) {
+            router.push(`/${params.slug}/track/${trackingToken}`)
+          } else {
+            router.push(`/${params.slug}/order/${data.data.id}`)
+          }
+        } else {
+          toast.error("Payment not completed. You can try again.")
+        }
         return
       }
 
@@ -693,7 +768,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
             Place Order
           </Button>
         ) : walletInsufficient ? (
-          <Button className="w-full" size="lg" loading={recharging} onClick={handleTopUp}>
+          <Button className="w-full" size="lg" loading={recharging || processing} onClick={handleTopUp}>
             <Wallet className="w-4 h-4" />
             Add {formatPrice(shortfall)} to wallet
           </Button>
@@ -703,35 +778,6 @@ export default function CartPage({ params }: { params: { slug: string } }) {
           </Button>
         )}
       </motion.div>
-
-      <PaymentModal
-        open={!!paymentSession}
-        session={paymentSession}
-        title={paymentSession?.kind === "topup" ? "Add money" : "Pay for your order"}
-        onSuccess={(data) => {
-          if (paymentSession?.kind === "topup") {
-            if (typeof data?.balance !== "undefined") {
-              setWalletBalance(Number(data.balance))
-            }
-            toast.success("Wallet topped up")
-            setPaymentMethod("WALLET")
-            setPaymentSession(null)
-            return
-          }
-
-          const trackingToken = data?.trackingToken ?? paymentSession?.fallbackTrackingToken
-          const orderId = paymentSession?.orderId
-          clearCart()
-          toast.success("Payment successful! Track your order")
-          setPaymentSession(null)
-          if (trackingToken) {
-            router.push(`/${params.slug}/track/${trackingToken}`)
-          } else if (orderId) {
-            router.push(`/${params.slug}/order/${orderId}`)
-          }
-        }}
-        onClose={() => setPaymentSession(null)}
-      />
     </StorefrontTheme>
   )
 }

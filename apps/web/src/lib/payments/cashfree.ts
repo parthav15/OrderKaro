@@ -121,6 +121,7 @@ export const cashfreeGateway: PaymentGateway = {
       redirectUrl,
       providerOrderId: orderData.order_id ?? request.orderId,
       upiIntent: upiIntent ?? undefined,
+      paymentSessionId: orderData.payment_session_id,
     }
   },
 

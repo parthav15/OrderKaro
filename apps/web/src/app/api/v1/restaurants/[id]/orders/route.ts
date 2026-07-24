@@ -285,6 +285,10 @@ export async function POST(
     if (data.paymentMethod === "ONLINE" && onlinePaymentAccount) {
       const gateway = gatewayForRestaurant(restaurant)
       const currency = currencyForCountry(restaurant.country)
+      const cashfreeMode =
+        (process.env.CASHFREE_ENV || "sandbox").toLowerCase() === "production"
+          ? "production"
+          : "sandbox"
       const returnUrl = `${appUrl}/api/v1/payments/return/${order.id}`
       const payer = await prisma.consumer.findUnique({
         where: { id: user.id },
@@ -375,6 +379,8 @@ export async function POST(
             redirectUrl: session.redirectUrl,
             qrUrl: session.qrUrl ?? null,
             upiIntent: session.upiIntent ?? null,
+            paymentSessionId: session.paymentSessionId ?? null,
+            cashfreeMode,
             amount: Number(totalAmount.toFixed(2)),
             currency,
             pollUrl: `/api/v1/restaurants/${restaurantId}/orders/${order.id}/payment-status`,

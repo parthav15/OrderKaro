@@ -72,8 +72,18 @@ export async function POST(
 
     try {
       const currency = currencyForCountry(restaurant.country)
+      const cashfreeMode =
+        (process.env.CASHFREE_ENV || "sandbox").toLowerCase() === "production"
+          ? "production"
+          : "sandbox"
       const returnUrl = `${appUrl}/api/v1/payments/wallet-return/${pending.id}`
-      let session: { redirectUrl: string; providerOrderId: string; qrUrl?: string; upiIntent?: string }
+      let session: {
+        redirectUrl: string
+        providerOrderId: string
+        qrUrl?: string
+        upiIntent?: string
+        paymentSessionId?: string
+      }
       let providerName = gateway.provider
 
       if (isMarketplaceStripe) {
@@ -124,6 +134,8 @@ export async function POST(
         redirectUrl: session.redirectUrl,
         qrUrl: session.qrUrl ?? null,
         upiIntent: session.upiIntent ?? null,
+        paymentSessionId: session.paymentSessionId ?? null,
+        cashfreeMode,
         amount,
         currency,
         pollUrl: `/api/v1/restaurants/${restaurantId}/wallet/topup/status`,

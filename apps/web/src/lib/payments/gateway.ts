@@ -30,6 +30,7 @@ export interface CheckoutSession {
   providerOrderId: string
   qrUrl?: string
   upiIntent?: string
+  paymentSessionId?: string
 }
 
 export interface PaymentStatusResult {

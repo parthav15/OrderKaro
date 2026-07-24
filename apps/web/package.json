@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@cashfreepayments/cashfree-js": "^1.0.7",
     "@google/model-viewer": "^4.3.1",
     "@orderkaro/shared": "workspace:*",
     "@prisma/client": "^6.19.2",
