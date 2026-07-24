@@ -10,10 +10,13 @@ import {
   RefreshCw,
   ExternalLink,
   Banknote,
+  ChevronDown,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { MarketplaceOnboardingCard } from "@/components/admin/marketplace-onboarding-card"
+import { useReducedMotionSafe } from "@/hooks/use-reduced-motion-safe"
 import api from "@/lib/api"
 import { toast } from "sonner"
 
@@ -63,11 +66,13 @@ function extractErrorMessage(err: unknown, fallback: string) {
 
 export default function PaymentsPage() {
   const queryClient = useQueryClient()
+  const reduceMotion = useReducedMotionSafe()
   const [restaurantId, setRestaurantId] = useState<string>("")
   const [appId, setAppId] = useState("")
   const [secretKey, setSecretKey] = useState("")
   const [replacingCredentials, setReplacingCredentials] = useState(false)
   const [confirmDisconnect, setConfirmDisconnect] = useState(false)
+  const [advancedOpen, setAdvancedOpen] = useState(false)
 
   const { data: restaurants } = useQuery({
     queryKey: ["restaurants"],
@@ -139,7 +144,7 @@ export default function PaymentsPage() {
             </div>
             <h1 className="text-3xl font-extrabold text-ink">Payments</h1>
           </div>
-          <p className="text-muted">Connect the account that receives your diners' money</p>
+          <p className="text-muted">Get paid by Vision Menu, or connect your own payment gateway</p>
         </div>
         {restaurants && restaurants.length > 1 && (
           <select
@@ -154,6 +159,12 @@ export default function PaymentsPage() {
         )}
       </motion.div>
 
+      {restaurantId && (
+        <div className="mb-8">
+          <MarketplaceOnboardingCard key={restaurantId} restaurantId={restaurantId} />
+        </div>
+      )}
+
       {isLoading && (
         <div className="space-y-4">
           {[1, 2].map((i) => (
@@ -164,6 +175,36 @@ export default function PaymentsPage() {
 
       {!isLoading && data && (
         <div className="space-y-8">
+          <div>
+            <button
+              type="button"
+              onClick={() => setAdvancedOpen((v) => !v)}
+              className="w-full flex items-center justify-between gap-3 rounded-xl border border-line bg-surface-elevated/60 px-5 py-4 text-left transition-colors hover:bg-surface-elevated"
+            >
+              <div>
+                <p className="text-sm font-bold text-ink">Advanced: use your own payment gateway instead</p>
+                <p className="text-xs text-muted mt-0.5">
+                  Connect your own Cashfree or Stripe account and collect diner payments directly
+                </p>
+              </div>
+              <motion.span
+                animate={{ rotate: advancedOpen ? 180 : 0 }}
+                transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 26 }}
+              >
+                <ChevronDown className="w-5 h-5 text-muted shrink-0" />
+              </motion.span>
+            </button>
+
+            <AnimatePresence initial={false}>
+              {advancedOpen && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: reduceMotion ? 0.01 : 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  className="overflow-hidden"
+                >
+                  <div className="pt-6">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
             <Card>
               <CardHeader>
@@ -463,6 +504,11 @@ export default function PaymentsPage() {
               )}
             </Card>
           </motion.div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <Card>

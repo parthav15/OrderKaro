@@ -15,6 +15,7 @@ import * as Haptics from "expo-haptics"
 import { ArrowLeft, ShieldCheck, RefreshCw } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
+import { PayoutOnboarding } from "@/components/payout-onboarding"
 import { ownerApi } from "@/lib/owner-api"
 import { useOwnerRestaurant } from "@/lib/use-owner-restaurant"
 import { useTheme } from "@/theme/theme-provider"
@@ -126,13 +127,32 @@ export default function OwnerPayments() {
           </Text>
         </View>
 
-        {isLoading || !data ? (
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator color={colors.primary} />
+        <ScrollView
+          contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: 40 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <PayoutOnboarding restaurant={restaurant} />
+
+          <View className="flex-row items-center my-6">
+            <View className="flex-1 h-px bg-line" />
+            <Text variant="muted" className="text-[11px] tracking-widest uppercase mx-3">
+              Advanced
+            </Text>
+            <View className="flex-1 h-px bg-line" />
           </View>
-        ) : (
-          <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: 40 }}>
-            <View className="bg-surface rounded-3xl border border-line p-5 mb-5">
+
+          <Text variant="muted" className="text-sm leading-relaxed mb-4">
+            Prefer to collect through your own payment gateway instead of Vision Menu payouts?
+            Connect it below.
+          </Text>
+
+          {isLoading || !data ? (
+            <View className="py-10 items-center justify-center">
+              <ActivityIndicator color={colors.primary} />
+            </View>
+          ) : (
+            <>
+              <View className="bg-surface rounded-3xl border border-line p-5 mb-5">
               <View className="flex-row items-center justify-between mb-3">
                 <View className="flex-row items-center gap-2">
                   <ShieldCheck size={18} color={colors.accent} />
@@ -286,8 +306,9 @@ export default function OwnerPayments() {
                 </Pressable>
               </View>
             )}
-          </ScrollView>
-        )}
+            </>
+          )}
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   )
