@@ -12,7 +12,7 @@ const PRICING_PLANS = [
   {
     id: "FREE",
     label: "Free",
-    price: "₹0",
+    price: "$0",
     period: "/month",
     description: "Everything you need to try Vision Menu on a small menu.",
     cta: "Start free",
@@ -28,7 +28,7 @@ const PRICING_PLANS = [
   {
     id: "BASIC",
     label: "Basic",
-    price: "₹499",
+    price: "$9",
     period: "/month",
     description: "For growing restaurants ready to look and feel premium.",
     cta: "Get started",
@@ -45,7 +45,7 @@ const PRICING_PLANS = [
   {
     id: "PRO",
     label: "Pro",
-    price: "₹1,499",
+    price: "$29",
     period: "/month",
     description: "The full platform, including augmented reality menus.",
     cta: "Go Pro",
@@ -144,7 +144,7 @@ export function PricingSection() {
           transition={{ duration: 0.6, delay: 0.2, ease: EASE }}
           className="mt-12 text-center text-sm text-muted font-medium"
         >
-          Prices in INR. Zero commission on any order, on every plan.
+          Prices in USD. Zero commission on any order, on every plan.
         </motion.p>
       </div>
     </section>

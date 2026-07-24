@@ -42,7 +42,7 @@ export function HeroSection() {
             className="mt-7 text-lg text-muted font-medium max-w-xl leading-relaxed"
           >
             QR ordering, AR 3D menus, live kitchen displays and per-restaurant wallets — one premium
-            platform that keeps every order, and every rupee, with you.
+            platform that keeps every order, and every dollar, with you.
           </motion.p>
 
           <motion.div

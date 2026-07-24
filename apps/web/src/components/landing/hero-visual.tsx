@@ -36,9 +36,9 @@ function FloatCard({ parallax, floatDuration, delay, className, children }: Floa
 }
 
 const MENU_ROWS = [
-  { name: "Wood-Fired Margherita", price: "₹320" },
-  { name: "Truffle Arancini", price: "₹280" },
-  { name: "Burnt Butter Pasta", price: "₹410" },
+  { name: "Wood-Fired Margherita", price: "$14" },
+  { name: "Truffle Arancini", price: "$12" },
+  { name: "Burnt Butter Pasta", price: "$18" },
 ]
 
 const TICKET_ROWS = [
@@ -91,7 +91,7 @@ export function HeroVisual() {
           </div>
           <div className="mt-4 flex items-center justify-between rounded-xl bg-primary px-4 py-3 text-white">
             <span className="text-xs font-bold">3 items</span>
-            <span className="text-xs font-bold">₹1,010</span>
+            <span className="text-xs font-bold">$44</span>
           </div>
 
           <div className="absolute -right-4 -top-3 flex items-center gap-1.5 rounded-full border border-accent/40 bg-surface px-2.5 py-1 shadow-lg">
@@ -148,7 +148,7 @@ export function HeroVisual() {
             </span>
             <Wallet size={14} className="text-accent" />
           </div>
-          <p className="font-heading text-xl font-extrabold">₹2,450</p>
+          <p className="font-heading text-xl font-extrabold">$250</p>
           <div className="mt-3 flex items-end gap-1 h-10">
             {CHART_BARS.map((height, i) => (
               <span
