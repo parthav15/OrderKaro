@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { MarketplaceOnboardingCard } from "@/components/admin/marketplace-onboarding-card"
+import { StripeConnectCard } from "@/components/admin/stripe-connect-card"
 import { useReducedMotionSafe } from "@/hooks/use-reduced-motion-safe"
 import api from "@/lib/api"
 import { toast } from "sonner"
@@ -159,9 +160,13 @@ export default function PaymentsPage() {
         )}
       </motion.div>
 
-      {restaurantId && (
+      {restaurantId && !isLoading && data && (
         <div className="mb-8">
-          <MarketplaceOnboardingCard key={restaurantId} restaurantId={restaurantId} />
+          {data.country === "IN" ? (
+            <MarketplaceOnboardingCard key={restaurantId} restaurantId={restaurantId} />
+          ) : (
+            <StripeConnectCard key={restaurantId} restaurantId={restaurantId} />
+          )}
         </div>
       )}
 

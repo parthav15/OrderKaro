@@ -16,6 +16,7 @@ import { ArrowLeft, ShieldCheck, RefreshCw } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
 import { PayoutOnboarding } from "@/components/payout-onboarding"
+import { StripeConnectOnboarding } from "@/components/stripe-connect-onboarding"
 import { ownerApi } from "@/lib/owner-api"
 import { useOwnerRestaurant } from "@/lib/use-owner-restaurant"
 import { useTheme } from "@/theme/theme-provider"
@@ -131,7 +132,15 @@ export default function OwnerPayments() {
           contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: 40 }}
           keyboardShouldPersistTaps="handled"
         >
-          <PayoutOnboarding restaurant={restaurant} />
+          {!restaurant ? (
+            <View className="bg-surface rounded-3xl border border-line p-5 h-44 items-center justify-center">
+              <ActivityIndicator color={colors.primary} />
+            </View>
+          ) : restaurant.country === "IN" ? (
+            <PayoutOnboarding restaurant={restaurant} />
+          ) : (
+            <StripeConnectOnboarding restaurant={restaurant} />
+          )}
 
           <View className="flex-row items-center my-6">
             <View className="flex-1 h-px bg-line" />
