@@ -53,7 +53,7 @@ export async function createCashfreeVendor(payout: VendorPayout): Promise<Vendor
     dashboard_access: false,
     kyc_details: {
       account_type: "PROPRIETORSHIP",
-      business_type: "Food and Beverage",
+      business_type: "Food and Beverages",
       pan: payout.pan,
     },
   }
