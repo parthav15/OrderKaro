@@ -20,6 +20,7 @@ import { distanceInKm, roundKm } from "@/lib/geo"
 import { gatewayForRestaurant, currencyForCountry } from "@/lib/payments"
 import type { CheckoutSession } from "@/lib/payments/gateway"
 import { createConnectCheckout } from "@/lib/payments/stripe-connect"
+import { createCashfreeSplitCheckout } from "@/lib/payments/cashfree-vendor"
 import { computeOrderFees } from "@/lib/order-fees"
 import { resolveAppUrl } from "@/lib/app-url"
 import { activeOrderWhere } from "@/lib/active-orders"
@@ -200,9 +201,11 @@ export async function POST(
       const gateway = gatewayForRestaurant(restaurant)
       const marketplaceReady =
         onlinePaymentAccount?.collectionMode === "MARKETPLACE" &&
-        onlinePaymentAccount.provider === "STRIPE" &&
-        Boolean(onlinePaymentAccount.stripeAccountId) &&
-        onlinePaymentAccount.stripeChargesEnabled
+        ((onlinePaymentAccount.provider === "STRIPE" &&
+          Boolean(onlinePaymentAccount.stripeAccountId) &&
+          onlinePaymentAccount.stripeChargesEnabled) ||
+          (onlinePaymentAccount.provider === "CASHFREE" &&
+            Boolean(onlinePaymentAccount.cashfreeVendorId)))
       if (!onlinePaymentAccount || (!marketplaceReady && !gateway.isReady(onlinePaymentAccount))) {
         throw new AuthError(
           `${restaurant.name} has not set up online payments yet. Please choose cash or wallet.`,
@@ -279,6 +282,11 @@ export async function POST(
         onlinePaymentAccount.provider === "STRIPE" &&
         Boolean(onlinePaymentAccount.stripeAccountId) &&
         onlinePaymentAccount.stripeChargesEnabled
+      const isMarketplaceCashfree =
+        onlinePaymentAccount.collectionMode === "MARKETPLACE" &&
+        onlinePaymentAccount.provider === "CASHFREE" &&
+        Boolean(onlinePaymentAccount.cashfreeVendorId)
+      const isMarketplace = isMarketplaceStripe || isMarketplaceCashfree
 
       try {
         let session: CheckoutSession
@@ -297,6 +305,20 @@ export async function POST(
             destinationAccountId: onlinePaymentAccount.stripeAccountId!,
             successUrl: returnUrl,
             failureUrl: returnUrl,
+          })
+        } else if (isMarketplaceCashfree) {
+          providerName = "CASHFREE"
+          platformFee = orderFees.platformShare
+          session = await createCashfreeSplitCheckout({
+            orderId: order.id,
+            amount: Number(totalAmount.toFixed(2)),
+            currency,
+            vendorId: onlinePaymentAccount.cashfreeVendorId!,
+            restaurantShare: Number(totalAmount.sub(platformFee).toFixed(2)),
+            description: `Order #${order.orderNumber} at ${restaurant.name}`,
+            customerName: payer?.name ?? "Guest",
+            customerPhone: payer?.phone ?? undefined,
+            successUrl: returnUrl,
           })
         } else {
           const commissionPercent = new Decimal(restaurant.commissionPercent.toString())
@@ -322,7 +344,7 @@ export async function POST(
             paymentOrderId: session.providerOrderId,
             paymentRedirectUrl: session.redirectUrl,
             platformFee,
-            ...(isMarketplaceStripe && {
+            ...(isMarketplace && {
               restaurantSettlementAmount: totalAmount.sub(platformFee),
               settlementStatus: "PENDING" as const,
             }),

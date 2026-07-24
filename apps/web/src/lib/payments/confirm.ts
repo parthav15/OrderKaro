@@ -2,6 +2,7 @@ import { Decimal } from "@prisma/client/runtime/library"
 import prisma from "@/lib/prisma"
 import { gatewayFor } from "@/lib/payments"
 import { fetchConnectCheckoutStatus } from "@/lib/payments/stripe-connect"
+import { fetchCashfreeSplitStatus } from "@/lib/payments/cashfree-vendor"
 
 export type ConfirmOutcome = "PAID" | "PENDING" | "FAILED" | "UNKNOWN"
 
@@ -23,8 +24,15 @@ export async function confirmOrderPayment(orderId: string): Promise<ConfirmOutco
     order.paymentProvider === "STRIPE" &&
     account.collectionMode === "MARKETPLACE" &&
     Boolean(account.stripeAccountId)
+  const isMarketplaceCashfree =
+    order.paymentProvider === "CASHFREE" &&
+    account.collectionMode === "MARKETPLACE" &&
+    Boolean(account.cashfreeVendorId)
+  const isMarketplace = isMarketplaceStripe || isMarketplaceCashfree
   const result = isMarketplaceStripe
     ? await fetchConnectCheckoutStatus(order.paymentOrderId)
+    : isMarketplaceCashfree
+    ? await fetchCashfreeSplitStatus(order.paymentOrderId)
     : await gatewayFor(order.paymentProvider).fetchStatus(
         account,
         order.paymentOrderId,
@@ -58,7 +66,7 @@ export async function confirmOrderPayment(orderId: string): Promise<ConfirmOutco
         paymentStatus: "PAID",
         paidAt: new Date(),
         paymentTxnId: result.providerTxnId,
-        ...(isMarketplaceStripe && { settlementStatus: "SETTLED" as const }),
+        ...(isMarketplace && { settlementStatus: "SETTLED" as const }),
         ...(order.status === "AWAITING_PAYMENT" && {
           status: "PLACED",
           statusLogs: {
