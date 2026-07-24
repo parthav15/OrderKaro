@@ -4,7 +4,7 @@ import { getToken, refresh } from "./auth"
 const API_URL =
   process.env.EXPO_PUBLIC_API_URL ||
   (Constants.expoConfig?.extra?.apiUrl as string) ||
-  "https://order-karo-frontend.vercel.app"
+  "https://visionmenu.app"
 
 export class ApiError extends Error {
   status: number

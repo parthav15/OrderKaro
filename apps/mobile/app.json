@@ -48,7 +48,7 @@
       "typedRoutes": true
     },
     "extra": {
-      "apiUrl": "https://order-karo-frontend.vercel.app"
+      "apiUrl": "https://visionmenu.app"
     }
   }
 }

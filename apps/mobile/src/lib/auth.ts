@@ -5,7 +5,7 @@ const REFRESH_KEY = "vm-refresh-token"
 const IDENTITY_KEY = "vm-identity"
 
 const API_URL =
-  process.env.EXPO_PUBLIC_API_URL || "https://order-karo-frontend.vercel.app"
+  process.env.EXPO_PUBLIC_API_URL || "https://visionmenu.app"
 
 export interface Identity {
   id: string

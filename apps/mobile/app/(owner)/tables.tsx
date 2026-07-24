@@ -21,7 +21,7 @@ import { ownerApi } from "@/lib/owner-api"
 import { useOwnerRestaurant } from "@/lib/use-owner-restaurant"
 import { useTheme } from "@/theme/theme-provider"
 
-const WEB_BASE = process.env.EXPO_PUBLIC_API_URL || "https://order-karo-frontend.vercel.app"
+const WEB_BASE = process.env.EXPO_PUBLIC_API_URL || "https://visionmenu.app"
 
 interface Table {
   id: string

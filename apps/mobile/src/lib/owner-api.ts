@@ -1,7 +1,7 @@
 import { getOwnerToken, ownerRefresh } from "./owner-auth"
 
 const API_URL =
-  process.env.EXPO_PUBLIC_API_URL || "https://order-karo-frontend.vercel.app"
+  process.env.EXPO_PUBLIC_API_URL || "https://visionmenu.app"
 
 export class OwnerApiError extends Error {
   status: number
