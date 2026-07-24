@@ -70,8 +70,9 @@ export class AuthError extends Error {
 }
 
 export function handleError(err: unknown) {
-  if (err instanceof AuthError) {
-    return error(err.message, err.status)
+  const known = err as { status?: number; message?: string }
+  if (known && typeof known.status === "number" && typeof known.message === "string") {
+    return error(known.message, known.status)
   }
   console.error(err)
   return error("Internal server error", 500)
