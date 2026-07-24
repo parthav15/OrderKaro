@@ -11,6 +11,8 @@ import {
 } from "@/lib/api-utils"
 import { walletTopupSchema } from "@orderkaro/shared"
 import { gatewayForRestaurant, currencyForCountry } from "@/lib/payments"
+import { createConnectCheckout } from "@/lib/payments/stripe-connect"
+import { createCashfreeSplitCheckout } from "@/lib/payments/cashfree-vendor"
 import { getOrCreateWallet } from "@/lib/wallet"
 import { resolveAppUrl } from "@/lib/app-url"
 
@@ -29,7 +31,17 @@ export async function POST(
       where: { restaurantId },
     })
     const gateway = gatewayForRestaurant(restaurant)
-    if (!account || !gateway.isReady(account)) {
+    const isMarketplaceStripe =
+      account?.collectionMode === "MARKETPLACE" &&
+      account.provider === "STRIPE" &&
+      Boolean(account.stripeAccountId) &&
+      account.stripeChargesEnabled
+    const isMarketplaceCashfree =
+      account?.collectionMode === "MARKETPLACE" &&
+      account.provider === "CASHFREE" &&
+      Boolean(account.cashfreeVendorId)
+    const isMarketplace = isMarketplaceStripe || isMarketplaceCashfree
+    if (!account || (!isMarketplace && !gateway.isReady(account))) {
       return error(`${restaurant.name} has not set up online payments yet`, 422)
     }
 
@@ -59,16 +71,48 @@ export async function POST(
     })
 
     try {
-      const session = await gateway.createCheckout(account, {
-        orderId: pending.id,
-        amount,
-        currency: currencyForCountry(restaurant.country),
-        platformFee: 0,
-        description: `Wallet top-up — ${restaurant.name}`,
-        customer: { name: payer?.name ?? "Guest", phone: payer?.phone ?? undefined },
-        successUrl: `${appUrl}/api/v1/payments/wallet-return/${pending.id}`,
-        failureUrl: `${appUrl}/api/v1/payments/wallet-return/${pending.id}`,
-      })
+      const currency = currencyForCountry(restaurant.country)
+      const returnUrl = `${appUrl}/api/v1/payments/wallet-return/${pending.id}`
+      let session: { redirectUrl: string; providerOrderId: string; qrUrl?: string; upiIntent?: string }
+      let providerName = gateway.provider
+
+      if (isMarketplaceStripe) {
+        providerName = "STRIPE"
+        session = await createConnectCheckout({
+          orderId: pending.id,
+          amount,
+          currency,
+          applicationFee: 0,
+          description: `Wallet top-up — ${restaurant.name}`,
+          destinationAccountId: account.stripeAccountId!,
+          successUrl: returnUrl,
+          failureUrl: returnUrl,
+        })
+      } else if (isMarketplaceCashfree) {
+        providerName = "CASHFREE"
+        session = await createCashfreeSplitCheckout({
+          orderId: pending.id,
+          amount,
+          currency,
+          vendorId: account.cashfreeVendorId!,
+          restaurantShare: amount,
+          description: `Wallet top-up — ${restaurant.name}`,
+          customerName: payer?.name ?? "Guest",
+          customerPhone: payer?.phone ?? undefined,
+          successUrl: returnUrl,
+        })
+      } else {
+        session = await gateway.createCheckout(account, {
+          orderId: pending.id,
+          amount,
+          currency,
+          platformFee: 0,
+          description: `Wallet top-up — ${restaurant.name}`,
+          customer: { name: payer?.name ?? "Guest", phone: payer?.phone ?? undefined },
+          successUrl: returnUrl,
+          failureUrl: returnUrl,
+        })
+      }
 
       await prisma.walletTransaction.update({
         where: { id: pending.id },
@@ -76,12 +120,12 @@ export async function POST(
       })
 
       return success({
-        provider: gateway.provider,
+        provider: providerName,
         redirectUrl: session.redirectUrl,
         qrUrl: session.qrUrl ?? null,
         upiIntent: session.upiIntent ?? null,
         amount,
-        currency: currencyForCountry(restaurant.country),
+        currency,
         pollUrl: `/api/v1/restaurants/${restaurantId}/wallet/topup/status`,
         reference: pending.id,
         pollBody: { transactionId: pending.id },

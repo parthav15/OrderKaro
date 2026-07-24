@@ -1,6 +1,8 @@
 import { Decimal } from "@prisma/client/runtime/library"
 import prisma from "@/lib/prisma"
 import { gatewayForRestaurant } from "@/lib/payments"
+import { fetchConnectCheckoutStatus } from "@/lib/payments/stripe-connect"
+import { fetchCashfreeSplitStatus } from "@/lib/payments/cashfree-vendor"
 
 export async function getOrCreateWallet(consumerId: string, restaurantId: string) {
   return prisma.wallet.upsert({
@@ -31,8 +33,19 @@ export async function confirmWalletTopup(transactionId: string): Promise<TopupOu
   })
   if (!account) return "UNKNOWN"
 
-  const gateway = gatewayForRestaurant(txn.wallet.restaurant)
-  const result = await gateway.fetchStatus(account, txn.reference)
+  const isMarketplaceStripe =
+    account.collectionMode === "MARKETPLACE" &&
+    account.provider === "STRIPE" &&
+    Boolean(account.stripeAccountId)
+  const isMarketplaceCashfree =
+    account.collectionMode === "MARKETPLACE" &&
+    account.provider === "CASHFREE" &&
+    Boolean(account.cashfreeVendorId)
+  const result = isMarketplaceStripe
+    ? await fetchConnectCheckoutStatus(txn.reference)
+    : isMarketplaceCashfree
+    ? await fetchCashfreeSplitStatus(txn.reference)
+    : await gatewayForRestaurant(txn.wallet.restaurant).fetchStatus(account, txn.reference)
 
   if (result.paid) {
     await prisma.$transaction(async (tx) => {
