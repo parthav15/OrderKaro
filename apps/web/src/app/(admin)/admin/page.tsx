@@ -17,6 +17,7 @@ import {
   ChevronUp,
   ChevronRight,
   Coins,
+  Landmark,
 } from "lucide-react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -26,6 +27,7 @@ import { useAuthStore } from "@/stores/auth"
 import api from "@/lib/api"
 import { toast } from "sonner"
 import { formatPrice } from "@/lib/utils"
+import { PlatformRevenueCard } from "@/components/admin/platform-revenue-card"
 
 interface OwnerRestaurant {
   id: string
@@ -50,6 +52,8 @@ interface SystemStats {
   activeRestaurants: number
   totalOrders: number
   totalRevenue: number
+  platformRevenue: number
+  marketplaceRestaurants: number
 }
 
 export default function SuperAdminPage() {
@@ -131,6 +135,13 @@ export default function SuperAdminPage() {
       color: "text-ink",
     },
     {
+      label: "Marketplace Restaurants",
+      value: stats?.marketplaceRestaurants ?? 0,
+      icon: Landmark,
+      bg: "bg-surface-elevated",
+      color: "text-ink",
+    },
+    {
       label: "Total Orders",
       value: stats?.totalOrders ?? 0,
       icon: ShoppingBag,
@@ -138,7 +149,7 @@ export default function SuperAdminPage() {
       color: "text-ink",
     },
     {
-      label: "Total Revenue",
+      label: "Gross Order Value (GMV)",
       value: formatPrice(stats?.totalRevenue ?? 0),
       icon: TrendingUp,
       bg: "bg-surface-elevated",
@@ -167,7 +178,16 @@ export default function SuperAdminPage() {
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.04 }}
+        transition={{ delay: 0.05 }}
+        className="mb-8"
+      >
+        <PlatformRevenueCard value={stats?.platformRevenue ?? 0} loading={statsLoading} />
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.12 }}
         className="mb-8"
       >
         <Link href="/admin/fees">
@@ -192,7 +212,7 @@ export default function SuperAdminPage() {
         </Link>
       </motion.div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         {summaryStats.map((stat, idx) => {
           const Icon = stat.icon
           return (
@@ -210,7 +230,7 @@ export default function SuperAdminPage() {
                     <Icon className={`w-5 h-5 ${stat.color}`} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs text-muted truncate">
+                    <p className="text-xs text-muted leading-snug">
                       {stat.label}
                     </p>
                     <p className="text-xl font-extrabold text-ink leading-tight">

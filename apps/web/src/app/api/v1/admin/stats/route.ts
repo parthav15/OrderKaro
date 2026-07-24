@@ -7,17 +7,23 @@ export async function GET(request: NextRequest) {
   try {
     await requireSuperAdmin(request)
 
-    const [totalOwners, totalRestaurants, activeRestaurants, totalOrders, revenueResult] =
-      await Promise.all([
-        prisma.owner.count(),
-        prisma.restaurant.count(),
-        prisma.restaurant.count({ where: { isActive: true } }),
-        prisma.order.count(),
-        prisma.order.aggregate({
-          where: { paymentStatus: "PAID" },
-          _sum: { totalAmount: true },
-        }),
-      ])
+    const [
+      totalOwners,
+      totalRestaurants,
+      activeRestaurants,
+      totalOrders,
+      revenueResult,
+      marginResult,
+      marketplaceRestaurants,
+    ] = await Promise.all([
+      prisma.owner.count(),
+      prisma.restaurant.count(),
+      prisma.restaurant.count({ where: { isActive: true } }),
+      prisma.order.count(),
+      prisma.order.aggregate({ where: { paymentStatus: "PAID" }, _sum: { totalAmount: true } }),
+      prisma.order.aggregate({ where: { paymentStatus: "PAID" }, _sum: { platformFee: true } }),
+      prisma.restaurantPaymentAccount.count({ where: { collectionMode: "MARKETPLACE" } }),
+    ])
 
     return success({
       totalOwners,
@@ -25,6 +31,8 @@ export async function GET(request: NextRequest) {
       activeRestaurants,
       totalOrders,
       totalRevenue: revenueResult._sum.totalAmount ?? 0,
+      platformRevenue: marginResult._sum.platformFee ?? 0,
+      marketplaceRestaurants,
     })
   } catch (err) {
     return handleError(err)

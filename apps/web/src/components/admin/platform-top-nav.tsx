@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
-import { LayoutGrid, Store, Coins, LogOut, ShieldCheck } from "lucide-react"
+import { LayoutGrid, Store, Coins, Boxes, LogOut, ShieldCheck } from "lucide-react"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { Logo } from "@/components/ui/logo"
@@ -14,6 +14,7 @@ const navItems = [
   { href: "/admin", label: "Overview", icon: LayoutGrid },
   { href: "/admin/restaurants", label: "Restaurants", icon: Store },
   { href: "/admin/fees", label: "Fees", icon: Coins },
+  { href: "/admin/model-requests", label: "AR Models", icon: Boxes },
 ]
 
 export function PlatformTopNav() {
