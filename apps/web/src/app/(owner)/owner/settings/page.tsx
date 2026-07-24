@@ -489,7 +489,7 @@ export default function SettingsPage() {
                   <ArrowUpCircle className="w-4 h-4 text-brand-red shrink-0" />
                   <p className="text-sm text-muted">
                     Upgrade required to customize branding.{" "}
-                    <Link href="/admin/billing" className="text-brand-red font-semibold hover:underline">
+                    <Link href="/owner/billing" className="text-brand-red font-semibold hover:underline">
                       View plans
                     </Link>
                   </p>
@@ -635,7 +635,7 @@ export default function SettingsPage() {
                   <ArrowUpCircle className="w-4 h-4 text-brand-red shrink-0" />
                   <p className="text-sm text-muted">
                     Upgrade required to set up a delivery zone.{" "}
-                    <Link href="/admin/billing" className="text-brand-red font-semibold hover:underline">
+                    <Link href="/owner/billing" className="text-brand-red font-semibold hover:underline">
                       View plans
                     </Link>
                   </p>

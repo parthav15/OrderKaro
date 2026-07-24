@@ -84,7 +84,7 @@ export default function LoginPage() {
           data.data.accessToken,
           data.data.refreshToken
         )
-        router.push("/admin")
+        router.push(data.data.owner.isSuperAdmin ? "/admin" : "/owner")
       } else {
         const slugRes = await api.get(
           `/api/v1/public/restaurant/${form.restaurantSlug}/menu`
@@ -107,7 +107,7 @@ export default function LoginPage() {
           data.data.accessToken,
           data.data.refreshToken
         )
-        router.push(role === "COUNTER" ? "/counter" : "/kitchen")
+        router.push(role === "COUNTER" ? "/staff/counter" : "/staff/kitchen")
       }
     } catch (err: any) {
       toast.error(err.response?.data?.error || "Login failed")

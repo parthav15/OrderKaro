@@ -1,15 +1,17 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { AdminTopNav } from "@/components/admin/top-nav"
+import { motion } from "framer-motion"
+import { ShieldAlert } from "lucide-react"
+import { PlatformTopNav } from "@/components/admin/platform-top-nav"
 import { useAuthStore } from "@/stores/auth"
 import { BrandLoader } from "@/components/ui/brand-loader"
+import { useReducedMotionSafe } from "@/hooks/use-reduced-motion-safe"
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function PlatformLayout({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((s) => s.user)
-  const router = useRouter()
   const [hydrated, setHydrated] = useState(false)
+  const reduceMotion = useReducedMotionSafe()
 
   useEffect(() => {
     if (useAuthStore.persist.hasHydrated()) {
@@ -20,20 +22,33 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [])
 
-  useEffect(() => {
-    if (hydrated && (!user || (user.role !== "OWNER" && user.role !== "MANAGER"))) {
-      router.replace("/login")
-    }
-  }, [user, hydrated, router])
-
-  if (!hydrated || !user || (user.role !== "OWNER" && user.role !== "MANAGER")) {
+  if (!hydrated) {
     return <BrandLoader />
   }
 
   return (
     <div className="min-h-screen bg-canvas">
-      <AdminTopNav />
-      <main className="pt-20 px-8 pb-8 max-w-[1400px] mx-auto">{children}</main>
+      <PlatformTopNav />
+      <main className="mx-auto max-w-[1400px] px-6 pb-16 pt-10">
+        {user?.isSuperAdmin ? (
+          children
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: reduceMotion ? 0 : 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: reduceMotion ? 0.01 : 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className="flex flex-col items-center justify-center py-32 text-center"
+          >
+            <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
+              <ShieldAlert className="h-8 w-8 text-brand-red" />
+            </div>
+            <h2 className="text-xl font-bold text-ink">Access Denied</h2>
+            <p className="mt-2 max-w-sm text-sm text-muted">
+              This area is restricted to the super admin only.
+            </p>
+          </motion.div>
+        )}
+      </main>
     </div>
   )
 }

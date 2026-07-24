@@ -15,8 +15,6 @@ import {
   Coins,
   Settings,
   LogOut,
-  Store,
-  Shield,
 } from "lucide-react"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
@@ -25,22 +23,17 @@ import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { useAuthStore } from "@/stores/auth"
 
 const navItems = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
-  { href: "/admin/menu", label: "Menu", icon: UtensilsCrossed },
-  { href: "/admin/tables", label: "Tables", icon: QrCode },
-  { href: "/admin/staff", label: "Staff", icon: Users },
-  { href: "/admin/wallet", label: "Wallet", icon: Wallet },
-  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/admin/billing", label: "Billing", icon: CreditCard },
-  { href: "/admin/payments", label: "Payments", icon: Banknote },
-  { href: "/admin/fees", label: "Fees", icon: Coins },
-  { href: "/admin/settings", label: "Settings", icon: Settings },
-]
-
-const superAdminItems = [
-  { href: "/admin/restaurants", label: "Restaurants", icon: Store },
-  { href: "/admin/super", label: "Super Admin", icon: Shield },
+  { href: "/owner", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/owner/orders", label: "Orders", icon: ShoppingBag },
+  { href: "/owner/menu", label: "Menu", icon: UtensilsCrossed },
+  { href: "/owner/tables", label: "Tables", icon: QrCode },
+  { href: "/owner/staff", label: "Staff", icon: Users },
+  { href: "/owner/wallet", label: "Wallet", icon: Wallet },
+  { href: "/owner/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/owner/billing", label: "Billing", icon: CreditCard },
+  { href: "/owner/payments", label: "Payments", icon: Banknote },
+  { href: "/owner/fees", label: "Fees", icon: Coins },
+  { href: "/owner/settings", label: "Settings", icon: Settings },
 ]
 
 export function AdminTopNav() {
@@ -49,12 +42,8 @@ export function AdminTopNav() {
   const logout = useAuthStore((s) => s.logout)
   const user = useAuthStore((s) => s.user)
 
-  const isSuperAdmin = Boolean(user?.isSuperAdmin)
-
   const isActive = (href: string) =>
-    href === "/admin" ? pathname === "/admin" : pathname.startsWith(href)
-
-  const allItems = isSuperAdmin ? [...navItems, ...superAdminItems] : navItems
+    href === "/owner" ? pathname === "/owner" : pathname.startsWith(href)
 
   const handleLogout = () => {
     logout()
@@ -66,7 +55,7 @@ export function AdminTopNav() {
   return (
     <div className="fixed top-0 left-0 right-0 z-50 px-6 pt-4 pointer-events-none">
       <div className="flex items-center justify-between max-w-[1400px] mx-auto gap-5">
-        <Link href="/admin" className="pointer-events-auto shrink-0">
+        <Link href="/owner" className="pointer-events-auto shrink-0">
           <motion.span
             initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
@@ -84,7 +73,7 @@ export function AdminTopNav() {
           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.05 }}
           className="pointer-events-auto bg-surface/80 backdrop-blur-xl border border-line/60 shadow-lg shadow-black/[0.04] rounded-2xl px-2 py-1.5 flex items-center gap-0.5 overflow-x-auto scrollbar-hide"
         >
-          {allItems.map((item) => {
+          {navItems.map((item) => {
             const active = isActive(item.href)
             const Icon = item.icon
             return (

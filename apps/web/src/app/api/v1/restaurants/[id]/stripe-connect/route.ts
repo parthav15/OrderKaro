@@ -87,8 +87,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const base = resolveAppUrl(request)
     const onboardingUrl = await createOnboardingLink({
       accountId,
-      refreshUrl: `${base}/admin/payments?stripe=refresh`,
-      returnUrl: `${base}/admin/payments?stripe=return`,
+      refreshUrl: `${base}/owner/payments?stripe=refresh`,
+      returnUrl: `${base}/owner/payments?stripe=return`,
     })
     return success({ onboardingUrl, accountId })
   } catch (err) {

@@ -753,7 +753,7 @@ export default function MenuManagement() {
                 <div className="flex items-center gap-2 rounded-lg bg-surface-elevated border border-line px-3 py-2 text-xs font-medium text-muted">
                   <Lock className="w-3.5 h-3.5 text-brand-red" />
                   Requires Pro —{" "}
-                  <Link href="/admin/billing" className="text-brand-red underline">
+                  <Link href="/owner/billing" className="text-brand-red underline">
                     upgrade your plan
                   </Link>
                 </div>

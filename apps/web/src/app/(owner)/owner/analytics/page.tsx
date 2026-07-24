@@ -537,7 +537,7 @@ export default function AnalyticsPage() {
                 </div>
                 <p className="text-muted font-medium max-w-md mb-5">{menuViewsUpsellMessage}</p>
                 <Link
-                  href="/admin/billing"
+                  href="/owner/billing"
                   className="px-6 py-3 rounded-xl bg-brand-red text-white text-sm font-bold hover:bg-primary-hover transition-colors"
                 >
                   View plans

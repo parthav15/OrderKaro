@@ -78,7 +78,7 @@ export default function RegisterPage() {
         data.data.refreshToken
       )
       toast.success("Account created successfully")
-      router.push("/admin")
+      router.push("/owner")
     } catch (err: any) {
       toast.error(err.response?.data?.error || "Registration failed")
     } finally {

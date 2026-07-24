@@ -20,7 +20,7 @@ export async function POST(
 
 async function handleReturn(request: NextRequest, params: { subscriptionId: string }) {
   const appUrl = resolveAppUrl(request)
-  const billingPath = "/admin/billing"
+  const billingPath = "/owner/billing"
 
   const subscription = await prisma.subscription.findUnique({
     where: { id: params.subscriptionId },
