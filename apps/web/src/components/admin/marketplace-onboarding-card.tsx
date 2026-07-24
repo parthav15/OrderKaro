@@ -86,9 +86,9 @@ function kycBadgeVariant(status: VendorKycStatus): "success" | "warning" | "dang
 }
 
 function kycBadgeLabel(status: VendorKycStatus) {
-  if (status === "VERIFIED") return "Verified"
-  if (status === "REJECTED") return "Action needed"
-  return "Verification in progress"
+  if (status === "VERIFIED") return "Bank verified"
+  if (status === "REJECTED") return "Bank verification failed"
+  return "Bank verification in progress"
 }
 
 function fieldError(value: string, valid: boolean, message: string) {
@@ -234,7 +234,7 @@ function OnboardingForm({ data, form, onFieldChange, onSubmit, onCancel, saving,
             error={fieldError(form.pan, panValid, "Enter a valid PAN, e.g. ABCDE1234F")}
           />
           <p className="text-xs text-muted mt-1.5">
-            Required every update for KYC verification — never stored in plain text
+            Required every update for bank verification — never stored in plain text
           </p>
         </div>
       </FieldStagger>

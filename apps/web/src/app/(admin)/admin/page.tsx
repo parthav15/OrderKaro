@@ -167,11 +167,11 @@ export default function SuperAdminPage() {
         <div className="flex items-center gap-3 mb-1">
           <Shield className="w-6 h-6 text-brand-red" />
           <h1 className="text-2xl font-extrabold text-ink">
-            Super Admin
+            Platform Overview
           </h1>
         </div>
         <p className="text-muted text-sm">
-          System-wide owner and restaurant management
+          Restaurants, revenue &amp; approvals across the platform
         </p>
       </motion.div>
 
@@ -317,7 +317,7 @@ export default function SuperAdminPage() {
                               <Badge
                                 variant={owner.isVerified ? "success" : "warning"}
                               >
-                                {owner.isVerified ? "Verified" : "Unverified"}
+                                {owner.isVerified ? "Account verified" : "Account unverified"}
                               </Badge>
                             </div>
                             <p className="text-xs text-muted truncate">
@@ -352,12 +352,12 @@ export default function SuperAdminPage() {
                             {owner.isVerified ? (
                               <>
                                 <XCircle className="w-3.5 h-3.5" />
-                                Unverify
+                                Unverify account
                               </>
                             ) : (
                               <>
                                 <CheckCircle2 className="w-3.5 h-3.5" />
-                                Verify
+                                Verify account
                               </>
                             )}
                           </Button>

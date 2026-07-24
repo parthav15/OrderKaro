@@ -53,9 +53,9 @@ const KYC_META: Record<
   KycStatus,
   { label: string; tone: "success" | "warning" | "danger"; pill: string }
 > = {
-  PENDING: { label: "Verification in progress", tone: "warning", pill: "bg-warning/15" },
-  VERIFIED: { label: "Verified", tone: "success", pill: "bg-success/15" },
-  REJECTED: { label: "Action needed", tone: "danger", pill: "bg-danger/15" },
+  PENDING: { label: "Bank verification in progress", tone: "warning", pill: "bg-warning/15" },
+  VERIFIED: { label: "Bank verified", tone: "success", pill: "bg-success/15" },
+  REJECTED: { label: "Bank verification failed", tone: "danger", pill: "bg-danger/15" },
 }
 
 function Field({
