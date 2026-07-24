@@ -55,6 +55,10 @@ model Restaurant {
   deliveryFee      Decimal @default(0) @db.Decimal(10, 2)
   minOrderValue    Decimal @default(0) @db.Decimal(10, 2)
 
+  acceptsWallet Boolean @default(true)
+  acceptsCash   Boolean @default(true)
+  acceptsOnline Boolean @default(true)
+
   staff          Staff[]
   categories     Category[]
   tables         Table[]
@@ -236,6 +240,7 @@ model MenuItem {
   imageUrl         String?
   isVeg            Boolean  @default(true)
   isAvailable      Boolean  @default(true)
+  availableForDelivery Boolean @default(true)
   prepTimeMin      Int?
   sortOrder        Int      @default(0)
   tags             String[] @default([])

@@ -44,6 +44,17 @@ export async function POST(
     const restaurant = await prisma.restaurant.findUnique({ where: { id: restaurantId } })
     if (!restaurant) throw new AuthError("Restaurant not found", 404)
 
+    const methodAccepted =
+      (data.paymentMethod === "WALLET" && restaurant.acceptsWallet) ||
+      (data.paymentMethod === "CASH" && restaurant.acceptsCash) ||
+      (data.paymentMethod === "ONLINE" && restaurant.acceptsOnline)
+    if (!methodAccepted) {
+      throw new AuthError(
+        `${restaurant.name} does not accept ${data.paymentMethod.toLowerCase()} payments`,
+        422
+      )
+    }
+
     const restaurantActiveCount = await prisma.order.count({
       where: { restaurantId, ...activeOrderWhere() },
     })
@@ -74,6 +85,9 @@ export async function POST(
       const menuItem = menuItemMap.get(item.menuItemId)
       if (!menuItem) throw new AuthError(`Menu item ${item.menuItemId} not found`, 404)
       if (!menuItem.isAvailable) throw new AuthError(`${menuItem.name} is not available`, 400)
+      if (data.orderType === "DELIVERY" && !menuItem.availableForDelivery) {
+        throw new AuthError(`${menuItem.name} is not available for delivery`, 400)
+      }
       const menuCategory = await prisma.category.findUnique({
         where: { id: menuItem.categoryId },
       })

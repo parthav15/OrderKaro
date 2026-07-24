@@ -27,6 +27,7 @@ export const createMenuItemSchema = z.object({
   prepTimeMin: z.number().int().min(1).max(120).optional(),
   sortOrder: z.number().int().min(0).default(0),
   tags: z.array(z.string()).default([]),
+  availableForDelivery: z.boolean().default(true),
 })
 
 export const updateMenuItemSchema = createMenuItemSchema.partial()
