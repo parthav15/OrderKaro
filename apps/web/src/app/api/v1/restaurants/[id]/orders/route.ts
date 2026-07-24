@@ -18,6 +18,9 @@ import {
 } from "@orderkaro/shared"
 import { distanceInKm, roundKm } from "@/lib/geo"
 import { gatewayForRestaurant, currencyForCountry } from "@/lib/payments"
+import type { CheckoutSession } from "@/lib/payments/gateway"
+import { createConnectCheckout } from "@/lib/payments/stripe-connect"
+import { computeOrderFees } from "@/lib/order-fees"
 import { resolveAppUrl } from "@/lib/app-url"
 import { activeOrderWhere } from "@/lib/active-orders"
 
@@ -144,7 +147,9 @@ export async function POST(
       deliveryFee = new Decimal(restaurant.deliveryFee.toString())
     }
 
-    const totalAmount = itemsSubtotal.add(deliveryFee)
+    const orderFees = await computeOrderFees(restaurantId, itemsSubtotal, data.orderType)
+    const totalDeliveryFee = deliveryFee.add(orderFees.deliveryFee)
+    const totalAmount = itemsSubtotal.add(deliveryFee).add(orderFees.total)
 
     let walletTransactionId: string | undefined
 
@@ -193,7 +198,12 @@ export async function POST(
         where: { restaurantId },
       })
       const gateway = gatewayForRestaurant(restaurant)
-      if (!onlinePaymentAccount || !gateway.isReady(onlinePaymentAccount)) {
+      const marketplaceReady =
+        onlinePaymentAccount?.collectionMode === "MARKETPLACE" &&
+        onlinePaymentAccount.provider === "STRIPE" &&
+        Boolean(onlinePaymentAccount.stripeAccountId) &&
+        onlinePaymentAccount.stripeChargesEnabled
+      if (!onlinePaymentAccount || (!marketplaceReady && !gateway.isReady(onlinePaymentAccount))) {
         throw new AuthError(
           `${restaurant.name} has not set up online payments yet. Please choose cash or wallet.`,
           422
@@ -225,7 +235,9 @@ export async function POST(
         deliveryLatitude: data.orderType === "DELIVERY" ? data.deliveryLatitude ?? null : null,
         deliveryLongitude: data.orderType === "DELIVERY" ? data.deliveryLongitude ?? null : null,
         deliveryDistanceKm,
-        deliveryFee: deliveryZoneEnforced ? deliveryFee : null,
+        deliveryFee: totalDeliveryFee.gt(0) ? totalDeliveryFee : null,
+        subtotal: itemsSubtotal,
+        convenienceFee: orderFees.convenienceFee.gt(0) ? orderFees.convenienceFee : null,
         consumerId: user.id,
         status: data.paymentMethod === "ONLINE" ? "AWAITING_PAYMENT" : "PLACED",
         totalAmount,
@@ -255,36 +267,65 @@ export async function POST(
 
     if (data.paymentMethod === "ONLINE" && onlinePaymentAccount) {
       const gateway = gatewayForRestaurant(restaurant)
-      const commissionPercent = new Decimal(restaurant.commissionPercent.toString())
-      const platformFee = gateway.supportsPlatformFee
-        ? totalAmount.mul(commissionPercent).div(100)
-        : new Decimal(0)
-
+      const currency = currencyForCountry(restaurant.country)
       const returnUrl = `${appUrl}/api/v1/payments/return/${order.id}`
       const payer = await prisma.consumer.findUnique({
         where: { id: user.id },
         select: { name: true, phone: true },
       })
 
+      const isMarketplaceStripe =
+        onlinePaymentAccount.collectionMode === "MARKETPLACE" &&
+        onlinePaymentAccount.provider === "STRIPE" &&
+        Boolean(onlinePaymentAccount.stripeAccountId) &&
+        onlinePaymentAccount.stripeChargesEnabled
+
       try {
-        const session = await gateway.createCheckout(onlinePaymentAccount, {
-          orderId: order.id,
-          amount: Number(totalAmount.toFixed(2)),
-          currency: currencyForCountry(restaurant.country),
-          platformFee: Number(platformFee.toFixed(2)),
-          description: `Order #${order.orderNumber} at ${restaurant.name}`,
-          customer: { name: payer?.name ?? "Guest", phone: payer?.phone },
-          successUrl: returnUrl,
-          failureUrl: returnUrl,
-        })
+        let session: CheckoutSession
+        let providerName = gateway.provider
+        let platformFee = new Decimal(0)
+
+        if (isMarketplaceStripe) {
+          providerName = "STRIPE"
+          platformFee = orderFees.platformShare
+          session = await createConnectCheckout({
+            orderId: order.id,
+            amount: Number(totalAmount.toFixed(2)),
+            currency,
+            applicationFee: Number(platformFee.toFixed(2)),
+            description: `Order #${order.orderNumber} at ${restaurant.name}`,
+            destinationAccountId: onlinePaymentAccount.stripeAccountId!,
+            successUrl: returnUrl,
+            failureUrl: returnUrl,
+          })
+        } else {
+          const commissionPercent = new Decimal(restaurant.commissionPercent.toString())
+          platformFee = gateway.supportsPlatformFee
+            ? totalAmount.mul(commissionPercent).div(100)
+            : new Decimal(0)
+          session = await gateway.createCheckout(onlinePaymentAccount, {
+            orderId: order.id,
+            amount: Number(totalAmount.toFixed(2)),
+            currency,
+            platformFee: Number(platformFee.toFixed(2)),
+            description: `Order #${order.orderNumber} at ${restaurant.name}`,
+            customer: { name: payer?.name ?? "Guest", phone: payer?.phone },
+            successUrl: returnUrl,
+            failureUrl: returnUrl,
+          })
+        }
 
         const withPayment = await prisma.order.update({
           where: { id: order.id },
           data: {
-            paymentProvider: gateway.provider,
+            paymentProvider: providerName,
             paymentOrderId: session.providerOrderId,
             paymentRedirectUrl: session.redirectUrl,
             platformFee,
+            ...(isMarketplaceStripe && {
+              restaurantSettlementAmount: totalAmount.sub(platformFee),
+              settlementStatus: "PENDING" as const,
+            }),
           },
           include: { items: true, table: true },
         })
@@ -294,12 +335,12 @@ export async function POST(
           trackingUrl,
           paymentRedirectUrl: session.redirectUrl,
           payment: {
-            provider: gateway.provider,
+            provider: providerName,
             redirectUrl: session.redirectUrl,
             qrUrl: session.qrUrl ?? null,
             upiIntent: session.upiIntent ?? null,
             amount: Number(totalAmount.toFixed(2)),
-            currency: currencyForCountry(restaurant.country),
+            currency,
             pollUrl: `/api/v1/restaurants/${restaurantId}/orders/${order.id}/payment-status`,
             reference: order.id,
             pollBody: {},

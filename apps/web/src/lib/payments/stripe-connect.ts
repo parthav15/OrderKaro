@@ -126,7 +126,8 @@ export async function createConnectCheckout(
       "line_items[0][price_data][currency]": currency,
       "line_items[0][price_data][unit_amount]": toMinorUnits(input.amount, currency),
       "line_items[0][price_data][product_data][name]": input.description,
-      "payment_intent_data[application_fee_amount]": toMinorUnits(input.applicationFee, currency),
+      "payment_intent_data[application_fee_amount]":
+        input.applicationFee > 0 ? toMinorUnits(input.applicationFee, currency) : undefined,
       "payment_intent_data[transfer_data][destination]": input.destinationAccountId,
       "metadata[orderId]": input.orderId,
       customer_email: input.customerEmail,

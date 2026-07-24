@@ -63,6 +63,7 @@ model Restaurant {
   menuViews      MenuView[]
   modelRequests  ModelRequest[]
   paymentAccount RestaurantPaymentAccount?
+  feeConfig      RestaurantFeeConfig?
   wallets        Wallet[]
 
   @@map("Canteen")
@@ -118,6 +119,24 @@ model PlatformConfig {
   minFee                Decimal  @default(0) @db.Decimal(10, 2)
   maxFee                Decimal? @db.Decimal(10, 2)
   updatedAt             DateTime @updatedAt
+}
+
+model RestaurantFeeConfig {
+  id           String     @id @default(uuid())
+  restaurantId String     @unique
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  deliveryFeeEnabled     Boolean        @default(false)
+  deliveryFeeMode        FeeMode        @default(FLAT)
+  deliveryFeeAmount      Decimal        @default(0) @db.Decimal(10, 2)
+  deliveryFeeBeneficiary FeeBeneficiary @default(RESTAURANT)
+
+  convenienceFeeEnabled     Boolean        @default(false)
+  convenienceFeeMode        FeeMode        @default(FLAT)
+  convenienceFeeAmount      Decimal        @default(0) @db.Decimal(10, 2)
+  convenienceFeeBeneficiary FeeBeneficiary @default(RESTAURANT)
+
+  updatedAt DateTime @updatedAt
 }
 
 model Subscription {
@@ -494,6 +513,11 @@ enum SettlementStatus {
 enum FeeMode {
   FLAT
   PERCENT
+}
+
+enum FeeBeneficiary {
+  RESTAURANT
+  PLATFORM
 }
 
 enum PaymentAccountStatus {

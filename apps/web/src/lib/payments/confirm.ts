@@ -1,6 +1,7 @@
 import { Decimal } from "@prisma/client/runtime/library"
 import prisma from "@/lib/prisma"
 import { gatewayFor } from "@/lib/payments"
+import { fetchConnectCheckoutStatus } from "@/lib/payments/stripe-connect"
 
 export type ConfirmOutcome = "PAID" | "PENDING" | "FAILED" | "UNKNOWN"
 
@@ -18,8 +19,17 @@ export async function confirmOrderPayment(orderId: string): Promise<ConfirmOutco
   })
   if (!account) return "UNKNOWN"
 
-  const gateway = gatewayFor(order.paymentProvider)
-  const result = await gateway.fetchStatus(account, order.paymentOrderId, order.paymentTxnId)
+  const isMarketplaceStripe =
+    order.paymentProvider === "STRIPE" &&
+    account.collectionMode === "MARKETPLACE" &&
+    Boolean(account.stripeAccountId)
+  const result = isMarketplaceStripe
+    ? await fetchConnectCheckoutStatus(order.paymentOrderId)
+    : await gatewayFor(order.paymentProvider).fetchStatus(
+        account,
+        order.paymentOrderId,
+        order.paymentTxnId
+      )
 
   if (result.paid) {
     const expected = new Decimal(order.totalAmount.toString())
@@ -48,6 +58,7 @@ export async function confirmOrderPayment(orderId: string): Promise<ConfirmOutco
         paymentStatus: "PAID",
         paidAt: new Date(),
         paymentTxnId: result.providerTxnId,
+        ...(isMarketplaceStripe && { settlementStatus: "SETTLED" as const }),
         ...(order.status === "AWAITING_PAYMENT" && {
           status: "PLACED",
           statusLogs: {
