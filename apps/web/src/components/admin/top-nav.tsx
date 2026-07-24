@@ -12,6 +12,7 @@ import {
   BarChart3,
   CreditCard,
   Banknote,
+  Coins,
   Settings,
   LogOut,
   Store,
@@ -36,6 +37,7 @@ const navItems = [
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/billing", label: "Billing", icon: CreditCard },
   { href: "/admin/payments", label: "Payments", icon: Banknote },
+  { href: "/admin/fees", label: "Fees", icon: Coins },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ]
 

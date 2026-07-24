@@ -7,6 +7,7 @@ import {
   Users,
   Wallet,
   Banknote,
+  Receipt,
   Settings,
   Megaphone,
   ChevronRight,
@@ -38,6 +39,7 @@ const GROUPS: Array<{ title: string; rows: Row[] }> = [
     rows: [
       { label: "Wallet", hint: "Credits & recharge requests", icon: Wallet, href: "/(owner)/wallet" },
       { label: "Payments", hint: "Connect your gateway", icon: Banknote, href: "/(owner)/payments" },
+      { label: "Fees", hint: "Delivery & convenience charges", icon: Receipt, href: "/(owner)/fees" },
     ],
   },
   {

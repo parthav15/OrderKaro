@@ -2,12 +2,14 @@
 
 import { useId } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { Landmark } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useReducedMotionSafe } from "@/hooks/use-reduced-motion-safe"
 import { Card, CardHeader, CardContent } from "@/components/ui/card"
 
 export type FeeMode = "FLAT" | "PERCENT"
+export type FeeBeneficiary = "RESTAURANT" | "PLATFORM"
 
 interface ToggleSwitchProps {
   checked: boolean
@@ -125,6 +127,20 @@ function AmountField({ fieldId, mode, value, onChange, label }: AmountFieldProps
   )
 }
 
+function FeeBeneficiaryNote({ beneficiary }: { beneficiary: FeeBeneficiary }) {
+  return (
+    <div className="flex items-center gap-2 border-t border-line/70 pt-4 text-xs text-muted">
+      <Landmark className="w-3.5 h-3.5 shrink-0 text-muted/70" />
+      <span>
+        Collected by:{" "}
+        <span className="font-semibold text-ink">
+          {beneficiary === "PLATFORM" ? "Vision Menu" : "Your account"}
+        </span>
+      </span>
+    </div>
+  )
+}
+
 interface FeeConfigCardProps {
   id: string
   icon: LucideIcon
@@ -136,6 +152,7 @@ interface FeeConfigCardProps {
   onModeChange: (mode: FeeMode) => void
   amount: string
   onAmountChange: (value: string) => void
+  beneficiary?: FeeBeneficiary
   index?: number
 }
 
@@ -150,6 +167,7 @@ export function FeeConfigCard({
   onModeChange,
   amount,
   onAmountChange,
+  beneficiary,
   index = 0,
 }: FeeConfigCardProps) {
   const reduceMotion = useReducedMotionSafe()
@@ -215,6 +233,11 @@ export function FeeConfigCard({
               </motion.p>
             )}
           </AnimatePresence>
+          {beneficiary && (
+            <div className="mt-4">
+              <FeeBeneficiaryNote beneficiary={beneficiary} />
+            </div>
+          )}
         </CardContent>
       </Card>
     </motion.div>
