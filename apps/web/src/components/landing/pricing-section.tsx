@@ -66,7 +66,7 @@ const containerVariants = {
 }
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 36 },
+  hidden: { y: 36 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE } },
 }
 
@@ -138,8 +138,8 @@ export function PricingSection() {
         </motion.div>
 
         <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+          initial={{ y: 12 }}
+          whileInView={{ y: 0 }}
           viewport={{ once: true, amount: 0.6 }}
           transition={{ duration: 0.6, delay: 0.2, ease: EASE }}
           className="mt-12 text-center text-sm text-muted font-medium"

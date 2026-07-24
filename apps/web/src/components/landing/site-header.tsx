@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion"
+import { motion, AnimatePresence, useScroll, useMotionValueEvent, useReducedMotion } from "framer-motion"
 import { Menu, X } from "lucide-react"
 import { Logo } from "@/components/ui/logo"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
@@ -17,6 +17,7 @@ const NAV_LINKS = [
 export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const reduceMotion = useReducedMotion()
   const { scrollY } = useScroll()
 
   useMotionValueEvent(scrollY, "change", (latest) => {
@@ -32,7 +33,7 @@ export function SiteHeader() {
 
   return (
     <motion.header
-      initial={{ opacity: 0, y: -24 }}
+      initial={{ y: -24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       className={`fixed top-0 inset-x-0 z-50 transition-colors duration-300 ${
@@ -82,9 +83,9 @@ export function SiteHeader() {
             <AnimatePresence mode="wait" initial={false}>
               <motion.span
                 key={mobileOpen ? "close" : "open"}
-                initial={{ rotate: -45, opacity: 0 }}
+                initial={{ rotate: -45 }}
                 animate={{ rotate: 0, opacity: 1 }}
-                exit={{ rotate: 45, opacity: 0 }}
+                exit={{ rotate: 45 }}
                 transition={{ duration: 0.2 }}
               >
                 {mobileOpen ? <X size={18} /> : <Menu size={18} />}
@@ -97,10 +98,10 @@ export function SiteHeader() {
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ height: 0 }}
+            animate={{ height: "auto" }}
+            exit={{ height: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.35, ease: [0.22, 1, 0.36, 1] }}
             className="md:hidden overflow-hidden bg-canvas/95 backdrop-blur-xl border-b border-line"
           >
             <div className="px-6 py-6 flex flex-col gap-5">

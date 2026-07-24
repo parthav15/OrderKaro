@@ -23,7 +23,7 @@ export function SiteFooter() {
   return (
     <footer className="relative border-t border-line px-6 py-16">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.4 }}
         transition={{ duration: 0.7, ease: EASE }}

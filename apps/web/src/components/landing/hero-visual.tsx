@@ -19,7 +19,7 @@ function FloatCard({ parallax, floatDuration, delay, className, children }: Floa
   return (
     <motion.div style={{ y: parallax }} className={className}>
       <motion.div
-        initial={{ opacity: 0, scale: 0.88, y: 36 }}
+        initial={{ scale: 0.88, y: 36 }}
         whileInView={{ opacity: 1, scale: 1, y: 0 }}
         viewport={{ once: true, amount: 0.4 }}
         transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}

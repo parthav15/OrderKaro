@@ -16,7 +16,7 @@ export function SectionHeading({ eyebrow, title, subtitle, align = "center" }: S
   return (
     <div className={`flex flex-col ${wrapperAlignment} max-w-2xl`}>
       <motion.span
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ y: 12 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.6 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -25,7 +25,7 @@ export function SectionHeading({ eyebrow, title, subtitle, align = "center" }: S
         {eyebrow}
       </motion.span>
       <motion.h2
-        initial={{ opacity: 0, y: 22 }}
+        initial={{ y: 22 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.5 }}
         transition={{ duration: 0.65, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
@@ -35,7 +35,7 @@ export function SectionHeading({ eyebrow, title, subtitle, align = "center" }: S
       </motion.h2>
       {subtitle && (
         <motion.p
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.6, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}

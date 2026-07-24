@@ -12,7 +12,7 @@ export function FinalCtaSection() {
     <section className="relative py-20 sm:py-28 px-6">
       <div className="mx-auto max-w-7xl">
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.8, ease: EASE }}
@@ -21,7 +21,7 @@ export function FinalCtaSection() {
           <AuroraBackground />
 
           <motion.span
-            initial={{ opacity: 0, y: 14 }}
+            initial={{ y: 14 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.6 }}
             transition={{ duration: 0.5, ease: EASE }}
@@ -31,7 +31,7 @@ export function FinalCtaSection() {
           </motion.span>
 
           <motion.h2
-            initial={{ opacity: 0, y: 26 }}
+            initial={{ y: 26 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.7, delay: 0.1, ease: EASE }}
@@ -42,7 +42,7 @@ export function FinalCtaSection() {
           </motion.h2>
 
           <motion.p
-            initial={{ opacity: 0, y: 18 }}
+            initial={{ y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.65, delay: 0.2, ease: EASE }}
@@ -53,7 +53,7 @@ export function FinalCtaSection() {
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 18 }}
+            initial={{ y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.65, delay: 0.32, ease: EASE }}

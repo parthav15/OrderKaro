@@ -1,5 +1,6 @@
 "use client"
 
+import { MotionConfig } from "framer-motion"
 import { SiteHeader } from "@/components/landing/site-header"
 import { HeroSection } from "@/components/landing/hero-section"
 import { FeaturesSection } from "@/components/landing/features-section"
@@ -11,17 +12,19 @@ import { SiteFooter } from "@/components/landing/site-footer"
 
 export default function HomePage() {
   return (
-    <div className="relative w-full overflow-x-clip bg-canvas">
-      <SiteHeader />
-      <main>
-        <HeroSection />
-        <FeaturesSection />
-        <HowItWorksSection />
-        <StatsSection />
-        <PricingSection />
-        <FinalCtaSection />
-      </main>
-      <SiteFooter />
-    </div>
+    <MotionConfig reducedMotion="user">
+      <div className="relative w-full overflow-x-clip bg-canvas">
+        <SiteHeader />
+        <main>
+          <HeroSection />
+          <FeaturesSection />
+          <HowItWorksSection />
+          <StatsSection />
+          <PricingSection />
+          <FinalCtaSection />
+        </main>
+        <SiteFooter />
+      </div>
+    </MotionConfig>
   )
 }
