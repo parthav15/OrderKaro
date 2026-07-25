@@ -60,13 +60,6 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
 
   const isConsumerSession = !!accessToken && user?.role === "CONSUMER"
 
-  const { data: walletData } = useQuery({
-    queryKey: ["consumer-wallet", slug, user?.id],
-    queryFn: () => api.get(`/api/v1/consumer/wallet?slug=${slug}`).then((r) => r.data.data),
-    enabled: isConsumerSession,
-  })
-  const walletBalance = walletData?.balance != null ? Number(walletData.balance) : null
-
   useEffect(() => {
     if (!isConsumerSession) setShowIdentifyModal(true)
   }, [isConsumerSession])
@@ -335,14 +328,12 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
               consumerFirstName={consumerFirstName}
               restaurantName={restaurantName}
               tableLabel={tableInfo?.label ?? null}
-              walletBalance={walletBalance}
               closingTime={closingTime}
               isOpen={isOpen}
             />
 
             <MenuStickyHeader
               restaurantName={restaurantName}
-              walletBalance={walletBalance}
               search={search}
               onSearchChange={setSearch}
             >

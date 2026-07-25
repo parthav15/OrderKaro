@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion"
 import type { LucideIcon } from "lucide-react"
-import { QrCode, Box, Wallet, MonitorSmartphone, UtensilsCrossed, BarChart3 } from "lucide-react"
+import { QrCode, Box, Zap, MonitorSmartphone, UtensilsCrossed, BarChart3 } from "lucide-react"
 import { SectionHeading } from "./section-heading"
 
 const EASE = [0.22, 1, 0.36, 1] as const
@@ -27,9 +27,9 @@ const FEATURES: FeatureItem[] = [
     copy: "Let diners rotate and inspect signature dishes in augmented reality before a single item is ordered.",
   },
   {
-    icon: Wallet,
-    title: "Per-restaurant wallet",
-    copy: "Cash, bank transfer or online top-up — balances stay scoped to your restaurant, spendable only with you.",
+    icon: Zap,
+    title: "Instant, secure payments",
+    copy: "Guests pay online with UPI or card, or cash at the counter — no top-ups, no stored balance, just order and go.",
   },
   {
     icon: MonitorSmartphone,

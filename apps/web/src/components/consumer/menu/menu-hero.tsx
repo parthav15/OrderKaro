@@ -2,14 +2,11 @@
 
 import { motion, useScroll, useTransform } from "framer-motion"
 import { useRef } from "react"
-import { Wallet } from "lucide-react"
-import { formatPrice } from "@/lib/utils"
 
 interface MenuHeroProps {
   consumerFirstName: string | null
   restaurantName: string
   tableLabel: string | null
-  walletBalance: number | null
   closingTime: string | null
   isOpen: boolean
 }
@@ -27,7 +24,6 @@ export function MenuHero({
   consumerFirstName,
   restaurantName,
   tableLabel,
-  walletBalance,
   closingTime,
   isOpen,
 }: MenuHeroProps) {
@@ -80,16 +76,6 @@ export function MenuHero({
             <span>{m.label}</span>
           </span>
         ))}
-        {walletBalance !== null && (
-          <>
-            {meta.length > 0 && <span className="text-ink/25">·</span>}
-            <span className="inline-flex items-center gap-1.5 text-ink/75">
-              <Wallet className="w-3.5 h-3.5" strokeWidth={2.2} />
-              <span className="font-semibold">{formatPrice(walletBalance)}</span>
-              <span className="text-ink/40">in wallet</span>
-            </span>
-          </>
-        )}
       </motion.div>
     </motion.header>
   )

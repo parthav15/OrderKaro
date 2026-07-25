@@ -55,7 +55,6 @@ model Restaurant {
   deliveryFee      Decimal @default(0) @db.Decimal(10, 2)
   minOrderValue    Decimal @default(0) @db.Decimal(10, 2)
 
-  acceptsWallet Boolean @default(true)
   acceptsCash   Boolean @default(true)
   acceptsOnline Boolean @default(true)
 
@@ -69,7 +68,6 @@ model Restaurant {
   modelRequests  ModelRequest[]
   paymentAccount RestaurantPaymentAccount?
   feeConfig      RestaurantFeeConfig?
-  wallets        Wallet[]
 
   @@map("Canteen")
 }
@@ -305,7 +303,6 @@ model Consumer {
   passwordHash String?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  wallets      Wallet[]
   orders       Order[]
   deviceTokens DeviceToken[]
 }
@@ -332,38 +329,6 @@ model DeviceToken {
   @@index([consumerId])
 }
 
-model Wallet {
-  id           String              @id @default(uuid())
-  consumerId   String
-  consumer     Consumer            @relation(fields: [consumerId], references: [id], onDelete: Cascade)
-  restaurantId String
-  restaurant   Restaurant          @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  balance      Decimal             @default(0) @db.Decimal(10, 2)
-  updatedAt    DateTime            @updatedAt
-  transactions WalletTransaction[]
-
-  @@unique([consumerId, restaurantId])
-}
-
-model WalletTransaction {
-  id            String                  @id @default(uuid())
-  walletId      String
-  wallet        Wallet                  @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  type          WalletTransactionType
-  amount        Decimal                 @db.Decimal(10, 2)
-  balanceBefore Decimal                 @db.Decimal(10, 2)
-  balanceAfter  Decimal                 @db.Decimal(10, 2)
-  source        WalletTransactionSource
-  description   String?
-  reference     String?
-  approvedBy    String?
-  status        WalletRequestStatus     @default(APPROVED)
-  createdAt     DateTime                @default(now())
-
-  @@index([walletId, createdAt])
-  @@index([status, source])
-}
-
 model Order {
   id                  String           @id @default(uuid())
   orderNumber         Int
@@ -385,7 +350,6 @@ model Order {
   estimatedReadyAt    DateTime?
   paymentStatus       PaymentStatus    @default(PENDING)
   paymentMethod       PaymentMethod
-  walletTransactionId String?
   paymentProvider     PaymentProvider?
   paymentOrderId      String?
   paymentTxnId        String?
@@ -550,25 +514,5 @@ enum PaymentStatus {
 
 enum PaymentMethod {
   CASH
-  WALLET
   ONLINE
-}
-
-enum WalletTransactionType {
-  CREDIT
-  DEBIT
-}
-
-enum WalletTransactionSource {
-  CASH_DEPOSIT
-  BANK_TRANSFER
-  ORDER_PAYMENT
-  REFUND
-  ONLINE
-}
-
-enum WalletRequestStatus {
-  PENDING
-  APPROVED
-  REJECTED
 }

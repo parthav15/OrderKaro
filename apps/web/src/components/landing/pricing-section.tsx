@@ -22,7 +22,7 @@ const PRICING_PLANS = [
       `Up to ${PLANS.FREE.maxMenuItems} menu items`,
       `Up to ${PLANS.FREE.maxTables} tables`,
       "QR ordering, kitchen & counter display",
-      "Wallet payments",
+      "Instant checkout",
     ],
   },
   {

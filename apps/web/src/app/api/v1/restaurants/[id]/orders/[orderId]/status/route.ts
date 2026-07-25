@@ -1,5 +1,4 @@
 import { NextRequest } from "next/server"
-import { Decimal } from "@prisma/client/runtime/library"
 import prisma from "@/lib/prisma"
 import { success, error, handleError, requireRole, parseBody, AuthError } from "@/lib/api-utils"
 import { sendPushToConsumer } from "@/lib/push-notifications"
@@ -38,9 +37,6 @@ export async function PATCH(
     if (data.status === "PICKED_UP" && order.paymentMethod === "CASH") {
       paymentStatusUpdate.paymentStatus = "PAID"
     }
-    if (data.status === "CANCELLED" && order.paymentMethod === "WALLET") {
-      paymentStatusUpdate.paymentStatus = "REFUNDED"
-    }
 
     await prisma.$transaction(async (tx) => {
       await tx.order.update({
@@ -61,42 +57,6 @@ export async function PATCH(
           note: data.note,
         },
       })
-
-      if (
-        data.status === "CANCELLED" &&
-        order.paymentMethod === "WALLET" &&
-        order.paymentStatus === "PAID"
-      ) {
-        const wallet = await tx.wallet.findUnique({
-          where: {
-            consumerId_restaurantId: {
-              consumerId: order.consumerId,
-              restaurantId: order.restaurantId,
-            },
-          },
-        })
-        if (wallet) {
-          const balanceBefore = new Decimal(wallet.balance.toString())
-          const refundAmount = new Decimal(order.totalAmount.toString())
-          const balanceAfter = balanceBefore.add(refundAmount)
-          await tx.wallet.update({
-            where: { id: wallet.id },
-            data: { balance: balanceAfter },
-          })
-          await tx.walletTransaction.create({
-            data: {
-              walletId: wallet.id,
-              type: "CREDIT",
-              amount: refundAmount,
-              balanceBefore,
-              balanceAfter,
-              source: "REFUND",
-              description: `Refund for cancelled order #${order.orderNumber}`,
-              status: "APPROVED",
-            },
-          })
-        }
-      }
     })
 
     const updated = await prisma.order.findUnique({ where: { id: orderId } })

@@ -3,13 +3,12 @@
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { ShoppingBag, Wallet, LogOut } from "lucide-react"
+import { ShoppingBag, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuthStore } from "@/stores/auth"
 
 const navItems = [
   { href: "/orders", label: "Orders", icon: ShoppingBag },
-  { href: "/wallet", label: "Wallet", icon: Wallet },
 ]
 
 export function ConsumerBottomNav() {

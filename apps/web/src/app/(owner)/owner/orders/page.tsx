@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { Search, SlidersHorizontal, ChevronLeft, ChevronRight, X, Banknote, Wallet, ClipboardList, AlertTriangle } from "lucide-react"
+import { Search, SlidersHorizontal, ChevronLeft, ChevronRight, X, Banknote, ClipboardList, AlertTriangle } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -68,7 +68,7 @@ const statusLabels: Record<string, string> = {
 }
 
 const ALL_STATUSES = ["PLACED", "ACCEPTED", "PREPARING", "READY", "PICKED_UP", "CANCELLED"]
-const PAYMENT_METHODS = ["WALLET", "CASH", "CARD"]
+const PAYMENT_METHODS = ["CASH", "ONLINE"]
 const ACTIVE_STATUSES = new Set(["PLACED", "ACCEPTED", "PREPARING", "READY"])
 
 const nextStatus: Record<string, string> = {
@@ -561,11 +561,11 @@ export default function OrderHistory() {
                   className="bg-primary/10 border border-brand-red/20 rounded-xl p-4"
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <Wallet className="w-4 h-4 text-brand-red" />
-                    <span className="text-sm font-bold text-brand-red">Wallet Credit</span>
+                    <Banknote className="w-4 h-4 text-brand-red" />
+                    <span className="text-sm font-bold text-brand-red">Change to Return</span>
                   </div>
                   <p className="text-sm text-muted">
-                    <span className="font-bold text-ink">{formatPrice(change)}</span> change will be added to the customer's wallet
+                    Hand back <span className="font-bold text-ink">{formatPrice(change)}</span> in cash to the customer
                   </p>
                 </motion.div>
               )}
@@ -622,7 +622,7 @@ export default function OrderHistory() {
               </div>
               {cashResult.changeAmount > 0 && (
                 <div className="border-t border-line pt-3 flex justify-between">
-                  <span className="text-muted">Change Added to Wallet</span>
+                  <span className="text-muted">Change to Return</span>
                   <span className="font-bold text-brand-red">{formatPrice(cashResult.changeAmount)}</span>
                 </div>
               )}

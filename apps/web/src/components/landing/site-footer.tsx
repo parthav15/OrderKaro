@@ -34,7 +34,7 @@ export function SiteFooter() {
             <Logo size="md" />
             <p className="mt-4 text-sm text-muted leading-relaxed">
               The premium ordering platform for restaurants — QR menus, AR previews, live kitchen
-              displays and per-restaurant wallets, all in one place.
+              displays and instant checkout, all in one place.
             </p>
           </div>
 

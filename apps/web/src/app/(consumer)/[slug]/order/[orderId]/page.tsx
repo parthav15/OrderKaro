@@ -284,9 +284,6 @@ export default function OrderTrackingPage({
               <Package className="w-8 h-8 text-muted" />
             </div>
             <h2 className="text-xl font-bold text-ink">Order Cancelled</h2>
-            <p className="text-sm text-muted mt-1">
-              {displayOrder.paymentMethod === "WALLET" && "Refund has been credited to your wallet"}
-            </p>
           </motion.div>
         ) : (
           <>

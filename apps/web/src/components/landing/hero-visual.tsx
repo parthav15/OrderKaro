@@ -3,7 +3,7 @@
 import { useRef } from "react"
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion"
 import type { MotionValue } from "framer-motion"
-import { QrCode, Sparkles, Check, Clock, Wallet } from "lucide-react"
+import { QrCode, Sparkles, Check, Clock, Zap } from "lucide-react"
 
 interface FloatCardProps {
   parallax: MotionValue<number>
@@ -47,7 +47,7 @@ const TICKET_ROWS = [
   { label: "Iced Americano", done: false },
 ]
 
-const CHART_BARS = [40, 65, 45, 80, 60, 95]
+const PAYMENT_METHODS = ["UPI", "Card", "Cash"]
 
 export function HeroVisual() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -55,7 +55,7 @@ export function HeroVisual() {
 
   const yMenu = useTransform(scrollYProgress, [0, 1], [30, -50])
   const yKitchen = useTransform(scrollYProgress, [0, 1], [70, -90])
-  const yWallet = useTransform(scrollYProgress, [0, 1], [10, -30])
+  const yPayment = useTransform(scrollYProgress, [0, 1], [10, -30])
 
   return (
     <div ref={containerRef} className="relative h-[420px] sm:h-[480px] lg:h-[560px] w-full max-w-lg mx-auto">
@@ -136,7 +136,7 @@ export function HeroVisual() {
       </FloatCard>
 
       <FloatCard
-        parallax={yWallet}
+        parallax={yPayment}
         floatDuration={7}
         delay={0.5}
         className="absolute left-0 bottom-4 sm:bottom-8 w-[168px] sm:w-[182px] z-10 rotate-6"
@@ -144,18 +144,19 @@ export function HeroVisual() {
         <div className="rounded-2xl bg-ink text-canvas shadow-xl p-3.5">
           <div className="flex items-center justify-between mb-3">
             <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-canvas/55">
-              Wallet
+              Instant pay
             </span>
-            <Wallet size={14} className="text-accent" />
+            <Zap size={14} className="text-accent" />
           </div>
-          <p className="font-heading text-xl font-extrabold">$250</p>
-          <div className="mt-3 flex items-end gap-1 h-10">
-            {CHART_BARS.map((height, i) => (
+          <p className="font-heading text-xl font-extrabold">$44 paid</p>
+          <div className="mt-3 flex flex-wrap items-center gap-1.5">
+            {PAYMENT_METHODS.map((method) => (
               <span
-                key={i}
-                className="flex-1 rounded-full bg-accent/70"
-                style={{ height: `${height}%` }}
-              />
+                key={method}
+                className="rounded-full bg-canvas/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.1em] text-canvas/70"
+              >
+                {method}
+              </span>
             ))}
           </div>
         </div>

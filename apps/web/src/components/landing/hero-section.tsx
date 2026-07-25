@@ -41,7 +41,7 @@ export function HeroSection() {
             transition={{ duration: 0.7, delay: 0.28, ease: EASE }}
             className="mt-7 text-lg text-muted font-medium max-w-xl leading-relaxed"
           >
-            QR ordering, AR 3D menus, live kitchen displays and per-restaurant wallets — one premium
+            QR ordering, AR 3D menus, live kitchen displays and instant checkout — one premium
             platform that keeps every order, and every dollar, with you.
           </motion.p>
 

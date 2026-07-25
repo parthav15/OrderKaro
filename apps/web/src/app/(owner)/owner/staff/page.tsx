@@ -34,7 +34,7 @@ const roleLabel: Record<string, string> = {
 }
 
 const roleDescription: Record<string, string> = {
-  MANAGER: "Can manage staff, view analytics and wallet",
+  MANAGER: "Can manage staff and view analytics",
   KITCHEN: "Can view and update orders on Kitchen Display",
   COUNTER: "Can view and manage pickup counter orders",
 }

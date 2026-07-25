@@ -96,13 +96,6 @@ export interface ConsumerOrder {
   items: { id: string; menuItemId: string; quantity: number; unitPrice: string; menuItem: { name: string } }[]
 }
 
-export interface WalletSummary {
-  id: string
-  balance: string
-  updatedAt: string
-  restaurant: { id: string; name: string; slug: string }
-}
-
 export interface OwnerRestaurant {
   id: string
   name: string

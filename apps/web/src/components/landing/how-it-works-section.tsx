@@ -27,7 +27,7 @@ const STEPS: StepItem[] = [
   {
     icon: CreditCard,
     title: "Order & pay",
-    copy: "Orders and payment land straight on your dashboard — wallet, card or cash.",
+    copy: "Orders and payment land straight on your dashboard — pay online or at the counter, confirmed instantly.",
   },
   {
     icon: ChefHat,

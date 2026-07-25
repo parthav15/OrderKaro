@@ -17,7 +17,6 @@ import {
   ToggleLeft,
   ToggleRight,
   ArrowUpCircle,
-  Wallet,
   Banknote,
   CreditCard,
 } from "lucide-react"
@@ -31,7 +30,6 @@ import { BRAND_COLOR_PRESETS, DEFAULT_BRAND_COLOR, readableTextColor } from "@/l
 import { useReducedMotionSafe } from "@/hooks/use-reduced-motion-safe"
 
 interface PaymentMethodsFormState {
-  acceptsWallet: boolean
   acceptsCash: boolean
   acceptsOnline: boolean
 }
@@ -40,14 +38,8 @@ const PAYMENT_METHOD_FIELDS: {
   key: keyof PaymentMethodsFormState
   label: string
   description: string
-  icon: typeof Wallet
+  icon: typeof Banknote
 }[] = [
-  {
-    key: "acceptsWallet",
-    label: "Wallet",
-    description: "Prepaid balance customers top up and spend at your restaurant",
-    icon: Wallet,
-  },
   {
     key: "acceptsCash",
     label: "Cash",
@@ -181,7 +173,6 @@ export default function SettingsPage() {
   const reduceMotion = useReducedMotionSafe()
 
   const [paymentMethodsForm, setPaymentMethodsForm] = useState<PaymentMethodsFormState>({
-    acceptsWallet: true,
     acceptsCash: true,
     acceptsOnline: true,
   })
@@ -189,7 +180,6 @@ export default function SettingsPage() {
   useEffect(() => {
     if (restaurant) {
       setPaymentMethodsForm({
-        acceptsWallet: restaurant.acceptsWallet ?? true,
         acceptsCash: restaurant.acceptsCash ?? true,
         acceptsOnline: restaurant.acceptsOnline ?? true,
       })
@@ -197,7 +187,6 @@ export default function SettingsPage() {
   }, [restaurant])
 
   const enabledPaymentMethodCount =
-    Number(paymentMethodsForm.acceptsWallet) +
     Number(paymentMethodsForm.acceptsCash) +
     Number(paymentMethodsForm.acceptsOnline)
 
@@ -207,7 +196,7 @@ export default function SettingsPage() {
 
   function togglePaymentMethod(key: keyof PaymentMethodsFormState) {
     setPaymentMethodsForm((prev) => {
-      const count = Number(prev.acceptsWallet) + Number(prev.acceptsCash) + Number(prev.acceptsOnline)
+      const count = Number(prev.acceptsCash) + Number(prev.acceptsOnline)
       if (prev[key] && count === 1) return prev
       return { ...prev, [key]: !prev[key] }
     })
@@ -485,7 +474,7 @@ export default function SettingsPage() {
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-surface-elevated flex items-center justify-center">
-                  <Wallet className="w-5 h-5 text-muted" />
+                  <CreditCard className="w-5 h-5 text-muted" />
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-ink">Payment Methods</h2>

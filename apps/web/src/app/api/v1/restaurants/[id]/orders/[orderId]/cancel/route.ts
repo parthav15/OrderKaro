@@ -1,5 +1,4 @@
 import { NextRequest } from "next/server"
-import { Decimal } from "@prisma/client/runtime/library"
 import prisma from "@/lib/prisma"
 import { success, error, handleError, requireRole, AuthError } from "@/lib/api-utils"
 import { CANCEL_WINDOW_MS } from "@orderkaro/shared"
@@ -34,7 +33,6 @@ export async function POST(
         data: {
           status: "CANCELLED",
           cancelledAt: new Date(),
-          paymentStatus: order.paymentMethod === "WALLET" ? "REFUNDED" : order.paymentStatus,
         },
       })
 
@@ -47,35 +45,6 @@ export async function POST(
           note: "Cancelled by consumer",
         },
       })
-
-      if (order.paymentMethod === "WALLET" && order.paymentStatus === "PAID") {
-        const wallet = await tx.wallet.findUnique({
-          where: {
-            consumerId_restaurantId: { consumerId: user.id, restaurantId: order.restaurantId },
-          },
-        })
-        if (wallet) {
-          const balanceBefore = new Decimal(wallet.balance.toString())
-          const refundAmount = new Decimal(order.totalAmount.toString())
-          const balanceAfter = balanceBefore.add(refundAmount)
-          await tx.wallet.update({
-            where: { id: wallet.id },
-            data: { balance: balanceAfter },
-          })
-          await tx.walletTransaction.create({
-            data: {
-              walletId: wallet.id,
-              type: "CREDIT",
-              amount: refundAmount,
-              balanceBefore,
-              balanceAfter,
-              source: "REFUND",
-              description: `Refund for cancelled order #${order.orderNumber}`,
-              status: "APPROVED",
-            },
-          })
-        }
-      }
     })
 
     return success({ message: "Order cancelled successfully" })

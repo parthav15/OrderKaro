@@ -11,18 +11,7 @@ export const STAFF_ROLES = ["MANAGER", "KITCHEN", "COUNTER"] as const
 
 export const PAYMENT_STATUSES = ["PENDING", "PAID", "REFUNDED"] as const
 
-export const PAYMENT_METHODS = ["CASH", "WALLET"] as const
-
-export const WALLET_TRANSACTION_TYPES = ["CREDIT", "DEBIT"] as const
-
-export const WALLET_TRANSACTION_SOURCES = [
-  "CASH_DEPOSIT",
-  "BANK_TRANSFER",
-  "ORDER_PAYMENT",
-  "REFUND",
-] as const
-
-export const WALLET_REQUEST_STATUSES = ["PENDING", "APPROVED", "REJECTED"] as const
+export const PAYMENT_METHODS = ["CASH", "ONLINE"] as const
 
 export const CUSTOMIZATION_TYPES = ["SINGLE_SELECT", "MULTI_SELECT"] as const
 

@@ -29,7 +29,6 @@ export async function GET(
         deliveryRadiusKm: true,
         deliveryFee: true,
         minOrderValue: true,
-        acceptsWallet: true,
         acceptsCash: true,
         acceptsOnline: true,
         latitude: true,

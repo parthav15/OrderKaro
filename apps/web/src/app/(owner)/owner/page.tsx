@@ -9,7 +9,6 @@ import {
   Clock,
   TrendingUp,
   Banknote,
-  Wallet,
   CheckCircle2,
   Flame,
   PackageCheck,
@@ -499,14 +498,15 @@ export default function AdminDashboard() {
                 className="bg-primary/10 border border-primary/20 rounded-xl p-4"
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <Wallet size={16} className="text-primary" />
-                  <span className="text-sm font-bold text-primary">Wallet Credit</span>
+                  <Banknote size={16} className="text-primary" />
+                  <span className="text-sm font-bold text-primary">Change to Return</span>
                 </div>
                 <p className="text-sm text-muted">
+                  Hand back{" "}
                   <span className="font-bold text-ink">
                     {formatPrice(changeAmount)}
                   </span>{" "}
-                  will be added to the customer&apos;s wallet
+                  in cash to the customer
                 </p>
               </motion.div>
             )}
@@ -566,20 +566,12 @@ export default function AdminDashboard() {
                 <span className="font-bold">{formatPrice(cashResult.amountReceived)}</span>
               </div>
               {cashResult.changeAmount > 0 && (
-                <>
-                  <div className="border-t border-line pt-2.5 flex justify-between">
-                    <span className="text-muted">Change credited to Wallet</span>
-                    <span className="font-bold text-primary">
-                      {formatPrice(cashResult.changeAmount)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted">New Wallet Balance</span>
-                    <span className="font-bold">
-                      {formatPrice(cashResult.newWalletBalance)}
-                    </span>
-                  </div>
-                </>
+                <div className="border-t border-line pt-2.5 flex justify-between">
+                  <span className="text-muted">Change to Return</span>
+                  <span className="font-bold text-primary">
+                    {formatPrice(cashResult.changeAmount)}
+                  </span>
+                </div>
               )}
             </div>
 

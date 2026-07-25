@@ -25,20 +25,11 @@ export async function GET(
         name: true,
         phone: true,
         createdAt: true,
-        wallets: {
-          where: { restaurantId },
-          select: { balance: true },
-        },
       },
       orderBy: { name: "asc" },
     })
 
-    return success({
-      consumers: consumers.map(({ wallets, ...c }) => ({
-        ...c,
-        wallet: { balance: wallets[0]?.balance ?? "0" },
-      })),
-    })
+    return success({ consumers })
   } catch (err) {
     return handleError(err)
   }

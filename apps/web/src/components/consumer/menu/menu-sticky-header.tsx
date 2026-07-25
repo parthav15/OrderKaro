@@ -2,13 +2,11 @@
 
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import { Search, Wallet, X } from "lucide-react"
-import { formatPrice } from "@/lib/utils"
+import { Search, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface MenuStickyHeaderProps {
   restaurantName: string
-  walletBalance: number | null
   search: string
   onSearchChange: (value: string) => void
   children?: React.ReactNode
@@ -16,7 +14,6 @@ interface MenuStickyHeaderProps {
 
 export function MenuStickyHeader({
   restaurantName,
-  walletBalance,
   search,
   onSearchChange,
   children,
@@ -107,17 +104,6 @@ export function MenuStickyHeader({
             </span>
           )}
         </div>
-
-        {walletBalance !== null && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="hidden sm:inline-flex items-center gap-1.5 bg-ink text-canvas rounded-full px-3 py-1.5"
-          >
-            <Wallet className="w-3.5 h-3.5" strokeWidth={2.2} />
-            <span className="text-xs font-bold tabular-nums">{formatPrice(walletBalance)}</span>
-          </motion.div>
-        )}
       </div>
 
       {children}

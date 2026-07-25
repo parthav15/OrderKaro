@@ -13,7 +13,6 @@ export const createRestaurantSchema = z.object({
   openingTime: z.string().regex(/^\d{2}:\d{2}$/),
   closingTime: z.string().regex(/^\d{2}:\d{2}$/),
   avgPrepTime: z.number().int().min(1).max(120).default(15),
-  acceptsWallet: z.boolean().default(true),
   acceptsCash: z.boolean().default(true),
   acceptsOnline: z.boolean().default(true),
 })
@@ -22,11 +21,10 @@ export const updateRestaurantSchema = createRestaurantSchema.partial()
 
 export const paymentMethodsSchema = z
   .object({
-    acceptsWallet: z.boolean(),
     acceptsCash: z.boolean(),
     acceptsOnline: z.boolean(),
   })
-  .refine((v) => v.acceptsWallet || v.acceptsCash || v.acceptsOnline, {
+  .refine((v) => v.acceptsCash || v.acceptsOnline, {
     message: "At least one payment method must stay enabled",
   })
 

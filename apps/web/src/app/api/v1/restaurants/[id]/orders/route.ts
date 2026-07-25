@@ -45,7 +45,6 @@ export async function POST(
     if (!restaurant) throw new AuthError("Restaurant not found", 404)
 
     const methodAccepted =
-      (data.paymentMethod === "WALLET" && restaurant.acceptsWallet) ||
       (data.paymentMethod === "CASH" && restaurant.acceptsCash) ||
       (data.paymentMethod === "ONLINE" && restaurant.acceptsOnline)
     if (!methodAccepted) {
@@ -166,44 +165,6 @@ export async function POST(
     const totalDeliveryFee = deliveryFee.add(orderFees.deliveryFee)
     const totalAmount = itemsSubtotal.add(deliveryFee).add(orderFees.total)
 
-    let walletTransactionId: string | undefined
-
-    if (data.paymentMethod === "WALLET") {
-      const wallet = await prisma.wallet.findUnique({
-        where: { consumerId_restaurantId: { consumerId: user.id, restaurantId } },
-      })
-      if (!wallet) throw new AuthError("No wallet balance at this restaurant", 400)
-      if (new Decimal(wallet.balance.toString()).lt(totalAmount))
-        throw new AuthError("Insufficient wallet balance", 400)
-
-      const walletTx = await prisma.$transaction(async (tx) => {
-        const w = await tx.wallet.findUnique({
-          where: { consumerId_restaurantId: { consumerId: user.id, restaurantId } },
-        })
-        if (!w) throw new AuthError("Wallet not found", 404)
-        const balanceBefore = new Decimal(w.balance.toString())
-        if (balanceBefore.lt(totalAmount)) throw new AuthError("Insufficient wallet balance", 400)
-        const balanceAfter = balanceBefore.sub(totalAmount)
-        await tx.wallet.update({
-          where: { id: w.id },
-          data: { balance: balanceAfter },
-        })
-        return tx.walletTransaction.create({
-          data: {
-            walletId: w.id,
-            type: "DEBIT",
-            amount: totalAmount,
-            balanceBefore,
-            balanceAfter,
-            source: "ORDER_PAYMENT",
-            description: `Payment for order at ${restaurant.name}`,
-            status: "APPROVED",
-          },
-        })
-      })
-      walletTransactionId = walletTx.id
-    }
-
     let onlinePaymentAccount: Awaited<
       ReturnType<typeof prisma.restaurantPaymentAccount.findUnique>
     > = null
@@ -222,7 +183,7 @@ export async function POST(
             Boolean(onlinePaymentAccount.cashfreeVendorId)))
       if (!onlinePaymentAccount || (!marketplaceReady && !gateway.isReady(onlinePaymentAccount))) {
         throw new AuthError(
-          `${restaurant.name} has not set up online payments yet. Please choose cash or wallet.`,
+          `${restaurant.name} has not set up online payments yet. Please choose cash.`,
           422
         )
       }
@@ -260,8 +221,7 @@ export async function POST(
         totalAmount,
         specialInstructions: data.specialInstructions,
         paymentMethod: data.paymentMethod,
-        paymentStatus: data.paymentMethod === "WALLET" ? "PAID" : "PENDING",
-        walletTransactionId: walletTransactionId ?? null,
+        paymentStatus: "PENDING",
         idempotencyKey: data.idempotencyKey,
         trackingToken,
         items: {

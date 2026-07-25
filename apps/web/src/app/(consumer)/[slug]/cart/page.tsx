@@ -8,7 +8,6 @@ import {
   Minus,
   Plus,
   Trash2,
-  Wallet,
   Banknote,
   ShoppingCart,
   ShoppingBag,
@@ -25,16 +24,14 @@ import { useAuthStore } from "@/stores/auth"
 import { Button } from "@/components/ui/button"
 import { cn, formatPrice, generateUUID } from "@/lib/utils"
 import api from "@/lib/api"
-import { useQueryClient } from "@tanstack/react-query"
 import { load } from "@cashfreepayments/cashfree-js"
 import { toast } from "sonner"
 import { requestNotificationPermission, getNotificationPermission, isNotificationSupported } from "@/lib/pwa"
-import { useWalletRecharge } from "@/hooks/use-wallet-recharge"
 import { useReducedMotionSafe } from "@/hooks/use-reduced-motion-safe"
 import { StorefrontTheme } from "@/components/consumer/storefront-theme"
 
 type OrderType = "DINE_IN" | "TAKEAWAY" | "DELIVERY"
-type PaymentMethod = "CASH" | "WALLET" | "ONLINE"
+type PaymentMethod = "CASH" | "ONLINE"
 
 interface GatewaySession {
   provider?: string
@@ -92,7 +89,6 @@ interface StorefrontConfig {
   minOrderValue?: string
   hasLocation?: boolean
   onlinePaymentEnabled?: boolean
-  acceptsWallet?: boolean
   acceptsCash?: boolean
   acceptsOnline?: boolean
 }
@@ -103,24 +99,19 @@ const FULFILLMENT_OPTIONS: Array<{ value: OrderType; label: string; icon: typeof
   { value: "DELIVERY", label: "Delivery", icon: Bike },
 ]
 
-const PAYMENT_METHOD_META: Record<PaymentMethod, { label: string; icon: typeof Wallet }> = {
-  WALLET: { label: "Wallet", icon: Wallet },
-  CASH: { label: "Cash", icon: Banknote },
-  ONLINE: { label: "Pay online", icon: Smartphone },
+const PAYMENT_METHOD_META: Record<PaymentMethod, { label: string; sub: string; icon: typeof Banknote }> = {
+  ONLINE: { label: "Pay online", sub: "UPI · Card", icon: Smartphone },
+  CASH: { label: "Cash", sub: "At the counter", icon: Banknote },
 }
 
 export default function CartPage({ params }: { params: { slug: string } }) {
   const router = useRouter()
-  const queryClient = useQueryClient()
   const { items, removeItem, updateQuantity, clearCart, getTotal, restaurantId, tableId } = useCartStore()
   const user = useAuthStore((s) => s.user)
   const reducedMotion = useReducedMotionSafe()
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("WALLET")
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("ONLINE")
   const [specialInstructions, setSpecialInstructions] = useState("")
   const [loading, setLoading] = useState(false)
-  const [walletBalance, setWalletBalance] = useState<number | null>(null)
-  const { recharging, recharge } = useWalletRecharge()
-  const [processing, setProcessing] = useState(false)
 
   const [orderType, setOrderType] = useState<OrderType>("TAKEAWAY")
   const [pickedTableId, setPickedTableId] = useState("")
@@ -134,7 +125,6 @@ export default function CartPage({ params }: { params: { slug: string } }) {
   const fixedTable = !!tableId
   const tableLabel = tables.find((t) => t.id === tableId)?.label
 
-  const acceptsWallet = storefront?.acceptsWallet !== false
   const acceptsCash = storefront?.acceptsCash !== false
   const acceptsOnline = storefront?.acceptsOnline !== false
   const onlinePaymentAvailable = acceptsOnline && Boolean(storefront?.onlinePaymentEnabled)
@@ -143,9 +133,8 @@ export default function CartPage({ params }: { params: { slug: string } }) {
     deliveryZoneActive && orderType === "DELIVERY" ? Number(storefront?.deliveryFee ?? 0) : 0
 
   const availablePaymentMethods: PaymentMethod[] = []
-  if (acceptsWallet) availablePaymentMethods.push("WALLET")
-  if (acceptsCash) availablePaymentMethods.push("CASH")
   if (onlinePaymentAvailable) availablePaymentMethods.push("ONLINE")
+  if (acceptsCash) availablePaymentMethods.push("CASH")
 
   const deliveryRestrictedItems =
     orderType === "DELIVERY" ? items.filter((item) => item.availableForDelivery === false) : []
@@ -153,24 +142,8 @@ export default function CartPage({ params }: { params: { slug: string } }) {
 
   const itemsTotal = getTotal()
   const total = itemsTotal + deliveryFeeAmount
-  const shortfall = Math.max(0, Math.ceil(total - (walletBalance ?? 0)))
-  const walletInsufficient =
-    paymentMethod === "WALLET" && walletBalance !== null && walletBalance < total
-
-  async function loadBalance() {
-    try {
-      const { data } = await api.get(`/api/v1/consumer/wallet?slug=${params.slug}`)
-      setWalletBalance(Number(data.data.balance))
-    } catch (err) {
-      const status = (err as { response?: { status?: number } }).response?.status
-      if (status === 401) {
-        router.replace(`/${params.slug}/menu`)
-      }
-    }
-  }
 
   useEffect(() => {
-    loadBalance()
     api
       .get(`/api/v1/public/restaurant/${params.slug}/menu`)
       .then((r) => {
@@ -178,21 +151,6 @@ export default function CartPage({ params }: { params: { slug: string } }) {
         setStorefront(r.data.data.restaurant ?? null)
       })
       .catch(() => {})
-
-    if (typeof window !== "undefined") {
-      const topup = new URLSearchParams(window.location.search).get("topup")
-      if (topup === "paid") {
-        toast.success("Wallet topped up")
-        setPaymentMethod("WALLET")
-        loadBalance()
-        queryClient.invalidateQueries({ queryKey: ["consumer-wallet"] })
-      } else if (topup === "failed" || topup === "invalid") {
-        toast.error("Top-up did not complete")
-      } else if (topup === "pending") {
-        toast("Top-up is still processing")
-      }
-      if (topup) window.history.replaceState({}, "", window.location.pathname)
-    }
   }, [params.slug])
 
   useEffect(() => {
@@ -200,7 +158,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
     setPaymentMethod((current) =>
       availablePaymentMethods.includes(current) ? current : availablePaymentMethods[0] ?? current
     )
-  }, [storefront, acceptsWallet, acceptsCash, onlinePaymentAvailable])
+  }, [storefront, acceptsCash, onlinePaymentAvailable])
 
   function handleUseMyLocation() {
     if (!navigator.geolocation) {
@@ -229,30 +187,6 @@ export default function CartPage({ params }: { params: { slug: string } }) {
       },
       { enableHighAccuracy: true, timeout: 10000 }
     )
-  }
-
-  async function handleTopUp() {
-    if (shortfall <= 0 || !restaurantId) return
-    const session = await recharge(restaurantId, shortfall)
-    if (!session) return
-    setProcessing(true)
-    try {
-      const outcome = await driveGatewayCheckout(session)
-      if (outcome === "REDIRECTED") return
-      if (outcome.status === "PAID") {
-        if (typeof outcome.data?.balance !== "undefined") {
-          setWalletBalance(Number(outcome.data.balance))
-        }
-        loadBalance()
-        queryClient.invalidateQueries({ queryKey: ["consumer-wallet"] })
-        setPaymentMethod("WALLET")
-        toast.success("Wallet topped up")
-      } else {
-        toast.error("Top-up not completed. You can try again.")
-      }
-    } finally {
-      setProcessing(false)
-    }
   }
 
   async function handlePlaceOrder() {
@@ -646,7 +580,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
         className="px-4 space-y-3"
       >
         <h3 className="font-semibold text-sm">Payment Method</h3>
-        <div className="flex gap-3">
+        <div className={cn("grid gap-3", availablePaymentMethods.length > 1 ? "grid-cols-2" : "grid-cols-1")}>
           <AnimatePresence initial={false} mode="popLayout">
             {availablePaymentMethods.map((method) => {
               const meta = PAYMENT_METHOD_META[method]
@@ -660,22 +594,48 @@ export default function CartPage({ params }: { params: { slug: string } }) {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.94 }}
                   transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                  whileTap={{ scale: 0.96 }}
+                  whileTap={{ scale: 0.97 }}
                   onClick={() => setPaymentMethod(method)}
                   className={cn(
-                    "relative flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border text-sm font-medium overflow-hidden transition-colors",
-                    active ? "border-brand-red text-brand-red" : "border-line text-ink"
+                    "relative flex flex-col items-start gap-3 p-4 rounded-2xl border overflow-hidden transition-colors",
+                    active ? "border-brand-red" : "border-line"
                   )}
                 >
                   {active && (
                     <motion.span
                       layoutId="payment-method-active"
-                      className="absolute inset-0 bg-primary/10"
+                      className="absolute inset-0 bg-primary/[0.06]"
                       transition={reducedMotion ? { duration: 0 } : { type: "spring", stiffness: 380, damping: 32 }}
                     />
                   )}
-                  <Icon className="relative w-5 h-5" />
-                  <span className="relative">{meta.label}</span>
+                  <span
+                    className={cn(
+                      "relative flex h-10 w-10 items-center justify-center rounded-xl transition-colors",
+                      active ? "bg-primary text-white" : "bg-surface-elevated text-muted"
+                    )}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <span className="relative flex flex-col items-start text-left">
+                    <span className={cn("text-sm font-bold", active ? "text-brand-red" : "text-ink")}>
+                      {meta.label}
+                    </span>
+                    <span className="text-[11px] font-medium text-muted">{meta.sub}</span>
+                  </span>
+                  <AnimatePresence>
+                    {active && (
+                      <motion.span
+                        key="check"
+                        initial={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.4 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.4 }}
+                        transition={reducedMotion ? { duration: 0 } : { type: "spring", stiffness: 500, damping: 24 }}
+                        className="absolute right-3 top-3 text-brand-red"
+                      >
+                        <CheckCircle2 className="h-4 w-4" />
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
                 </motion.button>
               )
             })}
@@ -695,25 +655,17 @@ export default function CartPage({ params }: { params: { slug: string } }) {
               payment is confirmed.
             </motion.p>
           )}
-          {paymentMethod === "WALLET" && (
-            <motion.div
-              key="wallet-note"
+          {paymentMethod === "CASH" && (
+            <motion.p
+              key="cash-note"
               initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
               transition={{ duration: 0.2 }}
-              className="flex items-center justify-between text-sm px-1"
+              className="text-xs text-muted px-1"
             >
-              <span className="text-muted">
-                Wallet balance:{" "}
-                <span className="font-semibold text-ink">
-                  {walletBalance === null ? "…" : formatPrice(walletBalance)}
-                </span>
-              </span>
-              {walletInsufficient && (
-                <span className="text-brand-red font-medium">Short by {formatPrice(shortfall)}</span>
-              )}
-            </motion.div>
+              Pay with cash when you collect your order at the counter.
+            </motion.p>
           )}
         </AnimatePresence>
       </motion.div>
@@ -767,14 +719,9 @@ export default function CartPage({ params }: { params: { slug: string } }) {
           <Button className="w-full" size="lg" disabled>
             Place Order
           </Button>
-        ) : walletInsufficient ? (
-          <Button className="w-full" size="lg" loading={recharging || processing} onClick={handleTopUp}>
-            <Wallet className="w-4 h-4" />
-            Add {formatPrice(shortfall)} to wallet
-          </Button>
         ) : (
           <Button className="w-full" size="lg" loading={loading} onClick={handlePlaceOrder}>
-            Place Order
+            {paymentMethod === "ONLINE" ? `Pay ${formatPrice(total)}` : "Place Order"}
           </Button>
         )}
       </motion.div>

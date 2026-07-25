@@ -31,72 +31,11 @@ export async function POST(
     }
 
     const changeAmount = amountReceived.sub(totalAmount)
-    let newWalletBalance: Decimal | null = null
-    let walletCredited = false
 
-    await prisma.$transaction(async (tx) => {
-      await tx.order.update({
-        where: { id: orderId },
-        data: { paymentStatus: "PAID" },
-      })
-
-      if (changeAmount.gt(new Decimal(0))) {
-        let wallet = await tx.wallet.findUnique({
-          where: {
-            consumerId_restaurantId: {
-              consumerId: order.consumer.id,
-              restaurantId: order.restaurantId,
-            },
-          },
-        })
-
-        if (!wallet) {
-          wallet = await tx.wallet.create({
-            data: {
-              consumerId: order.consumer.id,
-              restaurantId: order.restaurantId,
-              balance: new Decimal(0),
-            },
-          })
-        }
-
-        const balanceBefore = new Decimal(wallet.balance.toString())
-        const balanceAfter = balanceBefore.add(changeAmount)
-
-        await tx.wallet.update({
-          where: { id: wallet.id },
-          data: { balance: balanceAfter },
-        })
-
-        await tx.walletTransaction.create({
-          data: {
-            walletId: wallet.id,
-            type: "CREDIT",
-            amount: changeAmount,
-            balanceBefore,
-            balanceAfter,
-            source: "CASH_DEPOSIT",
-            description: `Change from cash payment for order #${order.orderNumber}`,
-            status: "APPROVED",
-          },
-        })
-
-        newWalletBalance = balanceAfter
-        walletCredited = true
-      }
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { paymentStatus: "PAID" },
     })
-
-    if (walletCredited && newWalletBalance === null) {
-      const w = await prisma.wallet.findUnique({
-        where: {
-          consumerId_restaurantId: {
-            consumerId: order.consumer.id,
-            restaurantId: order.restaurantId,
-          },
-        },
-      })
-      newWalletBalance = w ? new Decimal(w.balance.toString()) : new Decimal(0)
-    }
 
     return success({
       orderId: order.id,
@@ -104,8 +43,6 @@ export async function POST(
       orderAmount: Number(totalAmount),
       amountReceived: Number(amountReceived),
       changeAmount: Number(changeAmount),
-      walletCredited,
-      newWalletBalance: newWalletBalance === null ? null : Number(newWalletBalance),
       consumerName: order.consumer.name,
     })
   } catch (err) {
