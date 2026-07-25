@@ -20,7 +20,7 @@ function OtpBoxes({
 }: {
   value: string
   onChange: (v: string) => void
-  onComplete: () => void
+  onComplete: (value: string) => void
 }) {
   const ref = useRef<TextInput>(null)
   const { colors } = useTheme()
@@ -38,11 +38,14 @@ function OtpBoxes({
         onChangeText={(t) => {
           const next = t.replace(/\D/g, "").slice(0, 6)
           onChange(next)
-          if (next.length === 6) onComplete()
+          if (next.length === 6) onComplete(next)
         }}
         keyboardType="number-pad"
         maxLength={6}
         caretHidden
+        textContentType="oneTimeCode"
+        autoComplete="sms-otp"
+        importantForAutofill="yes"
         className="absolute w-full h-full opacity-0"
       />
       {Array.from({ length: 6 }).map((_, i) => {
@@ -110,12 +113,13 @@ export default function DinerEntry() {
     }
   }
 
-  async function verify() {
-    if (!/^\d{6}$/.test(code)) return
+  async function verify(submitted?: string) {
+    const value = submitted ?? code
+    if (!/^\d{6}$/.test(value)) return
     setLoading(true)
     setError("")
     try {
-      await verifyOtp(name.trim(), phone, code)
+      await verifyOtp(name.trim(), phone, value)
       registerForPushNotifications()
       router.replace("/(diner)/discover")
     } catch (e) {
@@ -223,7 +227,7 @@ export default function DinerEntry() {
                   title="Verify & continue"
                   loading={loading}
                   disabled={code.length !== 6}
-                  onPress={verify}
+                  onPress={() => verify()}
                 />
               </View>
 

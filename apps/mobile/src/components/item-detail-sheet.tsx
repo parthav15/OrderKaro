@@ -88,6 +88,7 @@ export function ItemDetailSheet({
       quantity,
       imageUrl: item.imageUrl,
       isVeg: item.isVeg,
+      availableForDelivery: item.availableForDelivery,
       selectedOptions,
     })
     onClose()

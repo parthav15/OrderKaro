@@ -4,7 +4,8 @@ import { useRouter } from "expo-router"
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { SafeAreaView } from "react-native-safe-area-context"
 import * as Haptics from "expo-haptics"
-import { ArrowLeft, X } from "lucide-react-native"
+import * as Linking from "expo-linking"
+import { ArrowLeft, User, Phone, X } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
 import { ownerApi } from "@/lib/owner-api"
@@ -123,6 +124,7 @@ export default function OrderHistory() {
   const [status, setStatus] = useState("")
   const [payment, setPayment] = useState("")
   const [detail, setDetail] = useState<HistoryOrder | null>(null)
+  const detailPhone = detail?.consumer?.phone
 
   const key = ["owner-history", rid, status, payment]
 
@@ -217,30 +219,53 @@ export default function OrderHistory() {
             </View>
           ) : (
             <View className="gap-2.5">
-              {orders.map((order) => (
-                <Pressable
-                  key={order.id}
-                  onPress={() => setDetail(order)}
-                  className="bg-surface rounded-2xl border border-line p-4 flex-row items-center justify-between"
-                >
-                  <View className="flex-1">
-                    <View className="flex-row items-center gap-2 mb-0.5">
-                      <Text variant="title" className="text-base">
-                        #{order.orderNumber}
-                      </Text>
+              {orders.map((order) => {
+                const consumerPhone = order.consumer?.phone
+                return (
+                  <Pressable
+                    key={order.id}
+                    onPress={() => setDetail(order)}
+                    className="bg-surface rounded-2xl border border-line p-4 flex-row items-center justify-between"
+                  >
+                    <View className="flex-1 pr-3">
+                      <View className="flex-row items-center gap-2 mb-0.5">
+                        <Text variant="title" className="text-base">
+                          #{order.orderNumber}
+                        </Text>
+                        <Text variant="muted" className="text-xs">
+                          {order.table?.label ?? order.orderType.replace("_", "-")}
+                        </Text>
+                      </View>
+                      <View className="flex-row items-center gap-3 flex-wrap mb-0.5">
+                        <View className="flex-row items-center gap-1">
+                          <User size={11} color={colors.muted} />
+                          <Text variant="label" className="text-xs">
+                            {order.consumer?.name ?? "Guest"}
+                          </Text>
+                        </View>
+                        {consumerPhone ? (
+                          <Pressable
+                            onPress={() => Linking.openURL(`tel:${consumerPhone}`)}
+                            hitSlop={8}
+                            className="flex-row items-center gap-1"
+                          >
+                            <Phone size={10} color={colors.muted} />
+                            <Text variant="muted" className="text-xs">
+                              {consumerPhone}
+                            </Text>
+                          </Pressable>
+                        ) : null}
+                      </View>
                       <Text variant="muted" className="text-xs">
-                        {order.table?.label ?? order.orderType.replace("_", "-")}
+                        {dateLabel(order.placedAt)} · {STATUS_LABEL[order.status]}
                       </Text>
                     </View>
-                    <Text variant="muted" className="text-xs">
-                      {dateLabel(order.placedAt)} · {STATUS_LABEL[order.status]}
+                    <Text variant="price" className="text-base">
+                      {money(order.totalAmount)}
                     </Text>
-                  </View>
-                  <Text variant="price" className="text-base">
-                    {money(order.totalAmount)}
-                  </Text>
-                </Pressable>
-              ))}
+                  </Pressable>
+                )
+              })}
 
               {hasNextPage ? (
                 <View className="mt-3">
@@ -298,12 +323,26 @@ export default function OrderHistory() {
                   </View>
                 </View>
 
-                {detail.consumer?.name || detail.consumer?.phone ? (
-                  <Text variant="muted" className="text-sm mb-4">
-                    {detail.consumer?.name}
-                    {detail.consumer?.phone ? ` · ${detail.consumer.phone}` : ""}
-                  </Text>
-                ) : null}
+                <View className="flex-row items-center justify-between gap-3 flex-wrap bg-canvas border border-line rounded-2xl px-4 py-3 mb-4">
+                  <View className="flex-row items-center gap-2">
+                    <User size={16} color={colors.muted} />
+                    <Text variant="title" className="text-sm">
+                      {detail.consumer?.name ?? "Guest"}
+                    </Text>
+                  </View>
+                  {detailPhone ? (
+                    <Pressable
+                      onPress={() => Linking.openURL(`tel:${detailPhone}`)}
+                      hitSlop={8}
+                      className="flex-row items-center gap-1.5"
+                    >
+                      <Phone size={14} color={colors.muted} />
+                      <Text variant="label" className="text-sm">
+                        {detailPhone}
+                      </Text>
+                    </Pressable>
+                  ) : null}
+                </View>
 
                 <ScrollView className="max-h-72 mb-4">
                   {detail.items.map((it) => (

@@ -13,7 +13,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { MotiView } from "moti"
 import { SafeAreaView } from "react-native-safe-area-context"
 import * as Haptics from "expo-haptics"
-import { Clock, Receipt, Banknote, X } from "lucide-react-native"
+import * as Linking from "expo-linking"
+import { Clock, Receipt, Banknote, User, Phone, X } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
 import { ownerApi } from "@/lib/owner-api"
@@ -167,6 +168,7 @@ export default function OwnerOrders() {
                 const canCancel = order.status === "PLACED"
                 const canCollect =
                   order.paymentMethod === "CASH" && order.paymentStatus !== "PAID"
+                const consumerPhone = order.consumer?.phone
                 return (
                   <MotiView
                     key={order.id}
@@ -193,6 +195,32 @@ export default function OwnerOrders() {
                         </Text>
                       </View>
                     </View>
+
+                    <MotiView
+                      from={{ opacity: 0, translateX: -6 }}
+                      animate={{ opacity: 1, translateX: 0 }}
+                      transition={{ type: "timing", duration: 220, delay: 80 }}
+                      className="flex-row items-center gap-3 flex-wrap mb-3"
+                    >
+                      <View className="flex-row items-center gap-1.5">
+                        <User size={13} color={colors.muted} />
+                        <Text variant="title" className="text-sm">
+                          {order.consumer?.name ?? "Guest"}
+                        </Text>
+                      </View>
+                      {consumerPhone ? (
+                        <Pressable
+                          onPress={() => Linking.openURL(`tel:${consumerPhone}`)}
+                          hitSlop={8}
+                          className="flex-row items-center gap-1"
+                        >
+                          <Phone size={12} color={colors.muted} />
+                          <Text variant="muted" className="text-xs">
+                            {consumerPhone}
+                          </Text>
+                        </Pressable>
+                      ) : null}
+                    </MotiView>
 
                     <View className="mb-4">
                       {order.items.map((it) => (

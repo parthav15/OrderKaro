@@ -14,7 +14,7 @@ import { useRouter } from "expo-router"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { SafeAreaView } from "react-native-safe-area-context"
 import * as Haptics from "expo-haptics"
-import { ArrowLeft, Plus, Trash2, X } from "lucide-react-native"
+import { ArrowLeft, Calendar, Clock, Plus, Trash2, X } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
 import { ownerApi } from "@/lib/owner-api"
@@ -28,6 +28,35 @@ interface Announcement {
   expiresAt: string | null
 }
 
+function isExpired(a: Announcement) {
+  return !!a.expiresAt && new Date(a.expiresAt) < new Date()
+}
+
+function formatExpiry(iso: string) {
+  const d = new Date(iso)
+  return (
+    d.toLocaleDateString("en-IN", { day: "numeric", month: "short" }) +
+    " · " +
+    d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+  )
+}
+
+function splitLocalDateTime(iso: string) {
+  const d = new Date(iso)
+  const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate()
+  ).padStart(2, "0")}`
+  const time = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`
+  return { date, time }
+}
+
+function combineToIso(date: string, time: string) {
+  if (!date.trim()) return undefined
+  const parsed = new Date(`${date.trim()}T${time.trim() || "00:00"}`)
+  if (isNaN(parsed.getTime())) return undefined
+  return parsed.toISOString()
+}
+
 export default function OwnerAnnouncements() {
   const router = useRouter()
   const { colors } = useTheme()
@@ -39,6 +68,8 @@ export default function OwnerAnnouncements() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [message, setMessage] = useState("")
   const [active, setActive] = useState(true)
+  const [expiryDate, setExpiryDate] = useState("")
+  const [expiryTime, setExpiryTime] = useState("")
 
   const { data, isLoading } = useQuery({
     queryKey: ["owner-announcements", rid],
@@ -51,7 +82,9 @@ export default function OwnerAnnouncements() {
 
   const save = useMutation({
     mutationFn: () => {
-      const body = { message: message.trim(), isActive: active }
+      const body: Record<string, unknown> = { message: message.trim(), isActive: active }
+      const expiresAt = combineToIso(expiryDate, expiryTime)
+      if (expiresAt) body.expiresAt = expiresAt
       return editingId
         ? ownerApi.put(`/api/v1/restaurants/${rid}/announcements/${editingId}`, body)
         : ownerApi.post(`/api/v1/restaurants/${rid}/announcements`, body)
@@ -79,12 +112,22 @@ export default function OwnerAnnouncements() {
     setEditingId(null)
     setMessage("")
     setActive(true)
+    setExpiryDate("")
+    setExpiryTime("")
     setOpen(true)
   }
   function openEdit(a: Announcement) {
     setEditingId(a.id)
     setMessage(a.message)
     setActive(a.isActive)
+    if (a.expiresAt) {
+      const { date, time } = splitLocalDateTime(a.expiresAt)
+      setExpiryDate(date)
+      setExpiryTime(time)
+    } else {
+      setExpiryDate("")
+      setExpiryTime("")
+    }
     setOpen(true)
   }
   function close() {
@@ -139,8 +182,16 @@ export default function OwnerAnnouncements() {
                         {a.message}
                       </Text>
                       <Text variant="muted" className="text-xs mt-1">
-                        {a.isActive ? "Live on your menu" : "Hidden"}
+                        {!a.isActive ? "Hidden" : isExpired(a) ? "Expired" : "Live on your menu"}
                       </Text>
+                      {a.expiresAt ? (
+                        <View className="flex-row items-center gap-1 mt-1">
+                          <Calendar size={11} color={colors.muted} />
+                          <Text variant="muted" className="text-[11px]">
+                            Expires {formatExpiry(a.expiresAt)}
+                          </Text>
+                        </View>
+                      ) : null}
                     </Pressable>
                     <Switch
                       value={a.isActive}
@@ -189,6 +240,35 @@ export default function OwnerAnnouncements() {
                 multiline
                 className="min-h-24 rounded-2xl bg-canvas border border-line px-5 py-4 text-ink font-sans-medium text-base mb-4"
               />
+
+              <Text variant="muted" className="text-xs uppercase tracking-widest mb-1.5">
+                Expiry date & time (optional)
+              </Text>
+              <View className="flex-row gap-3 mb-2">
+                <View className="flex-1 flex-row items-center gap-2 h-14 rounded-2xl bg-canvas border border-line px-4">
+                  <Calendar size={15} color={colors.muted} />
+                  <TextInput
+                    value={expiryDate}
+                    onChangeText={(t) => setExpiryDate(t.replace(/[^\d-]/g, ""))}
+                    placeholder="YYYY-MM-DD"
+                    placeholderTextColor={colors.muted}
+                    className="flex-1 text-ink font-sans-medium text-base"
+                  />
+                </View>
+                <View className="w-28 flex-row items-center gap-2 h-14 rounded-2xl bg-canvas border border-line px-4">
+                  <Clock size={15} color={colors.muted} />
+                  <TextInput
+                    value={expiryTime}
+                    onChangeText={(t) => setExpiryTime(t.replace(/[^\d:]/g, ""))}
+                    placeholder="HH:MM"
+                    placeholderTextColor={colors.muted}
+                    className="flex-1 text-ink font-sans-medium text-base"
+                  />
+                </View>
+              </View>
+              <Text variant="muted" className="text-xs mb-5">
+                Leave blank to keep it active indefinitely
+              </Text>
 
               <View className="flex-row items-center justify-between mb-5">
                 <Text variant="body" className="text-base">

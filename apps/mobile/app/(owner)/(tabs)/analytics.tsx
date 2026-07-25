@@ -31,13 +31,37 @@ interface CategoryRevenue {
   revenue: number
   orders: number
 }
+interface PeakHour {
+  hour: number
+  orders: number
+}
+interface MenuViewsTimelineDay {
+  date: string
+  views: number
+  visitors: number
+}
 interface MenuViewsData {
   days: number
   totalViews: number
   uniqueVisitors: number
   orders: number
   conversionRate: number
+  timeline: MenuViewsTimelineDay[]
   topItems: { menuItemId: string; name: string; views: number }[]
+}
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const rows: T[][] = []
+  for (let i = 0; i < items.length; i += size) rows.push(items.slice(i, i + size))
+  return rows
+}
+
+function hexToRgba(hex: string, alpha: number) {
+  const value = hex.replace("#", "")
+  const r = parseInt(value.slice(0, 2), 16)
+  const g = parseInt(value.slice(2, 4), 16)
+  const b = parseInt(value.slice(4, 6), 16)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
 function money(v: string | number) {
@@ -91,6 +115,12 @@ export default function OwnerAnalytics() {
     enabled: !!rid,
   })
 
+  const { data: peakHours } = useQuery({
+    queryKey: ["owner-an-peak-hours", rid],
+    queryFn: () => ownerApi.get<PeakHour[]>(`/api/v1/restaurants/${rid}/analytics/peak-hours`),
+    enabled: !!rid,
+  })
+
   const { data: views, error: viewsError, isLoading: viewsLoading } = useQuery({
     queryKey: ["owner-an-views", rid, viewDays],
     queryFn: () =>
@@ -102,6 +132,9 @@ export default function OwnerAnalytics() {
 
   const revenueMax = Math.max(1, ...(revenue ?? []).map((d) => Number(d.revenue)))
   const catMax = Math.max(1, ...(catRevenue ?? []).map((c) => Number(c.revenue)))
+  const hourMax = Math.max(1, ...(peakHours ?? []).map((h) => h.orders))
+  const dailyViewsMax = Math.max(1, ...(views?.timeline ?? []).map((d) => d.views))
+  const hourRows = chunk(peakHours ?? [], 6)
 
   const KPIS = [
     { label: "Today's orders", value: summary ? String(summary.todayOrders) : "—" },
@@ -227,6 +260,42 @@ export default function OwnerAnalytics() {
           </Section>
         ) : null}
 
+        {peakHours && peakHours.length > 0 ? (
+          <Section title="Peak hours">
+            <View className="bg-surface rounded-3xl border border-line p-5">
+              <View className="gap-1.5">
+                {hourRows.map((row, rowIndex) => (
+                  <View key={rowIndex} className="flex-row gap-1.5">
+                    {row.map((h) => {
+                      const intensity = hourMax > 0 ? h.orders / hourMax : 0
+                      const opacity = h.orders > 0 ? Math.max(0.15, intensity) : 0.06
+                      const isBusy = intensity > 0.6
+                      return (
+                        <View
+                          key={h.hour}
+                          className="flex-1 aspect-square rounded-xl items-center justify-center"
+                          style={{ backgroundColor: hexToRgba(colors.primary, opacity) }}
+                        >
+                          <Text
+                            variant="label"
+                            className="text-xs"
+                            style={{ color: isBusy ? colors.primary : colors.muted }}
+                          >
+                            {h.hour}
+                          </Text>
+                        </View>
+                      )
+                    })}
+                  </View>
+                ))}
+              </View>
+              <Text variant="muted" className="text-[11px] text-center mt-3">
+                Numbers = hour of day (0–23) · darker means busier
+              </Text>
+            </View>
+          </Section>
+        ) : null}
+
         <Section title="Menu views">
           {viewsLocked ? (
             <View className="bg-surface rounded-3xl border border-line p-6 items-center">
@@ -293,6 +362,32 @@ export default function OwnerAnalytics() {
                       </Text>
                     </View>
                   </View>
+
+                  {views.timeline && views.timeline.length > 0 ? (
+                    <View
+                      className="flex-row items-end justify-between gap-1.5 mb-5"
+                      style={{ height: 110 }}
+                    >
+                      {views.timeline.map((d) => {
+                        const h = Math.max(4, (d.views / dailyViewsMax) * 82)
+                        return (
+                          <View key={d.date} className="flex-1 items-center">
+                            <Text variant="muted" className="text-[9px] mb-1">
+                              {d.views > 0 ? d.views : ""}
+                            </Text>
+                            <View
+                              style={{ height: h }}
+                              className="w-full rounded-t-lg bg-accent"
+                            />
+                            <Text variant="muted" className="text-[9px] mt-1">
+                              {dayLabel(d.date)}
+                            </Text>
+                          </View>
+                        )
+                      })}
+                    </View>
+                  ) : null}
+
                   {views.topItems?.slice(0, 5).map((t) => (
                     <View key={t.menuItemId} className="flex-row justify-between py-1.5">
                       <Text variant="body" className="text-sm flex-1" numberOfLines={1}>

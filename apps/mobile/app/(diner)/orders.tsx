@@ -6,7 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import { ArrowLeft, Receipt, ChevronRight, RotateCcw } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { api } from "@/lib/api"
-import { useCart } from "@/stores/cart"
+import { useCart, type SelectedOption } from "@/stores/cart"
 import { useTheme } from "@/theme/theme-provider"
 import type { ConsumerOrder, OrderStatus } from "@/lib/types"
 
@@ -48,17 +48,20 @@ export default function Orders() {
   function orderAgain(order: ConsumerOrder) {
     clear()
     setContext(order.restaurantId, order.restaurant.slug, null)
-    order.items.forEach((it) =>
+    order.items.forEach((it) => {
+      const raw = it as unknown as { selectedOptions?: SelectedOption[] }
+      const selectedOptions = raw.selectedOptions ?? []
+      const optionsPrice = selectedOptions.reduce((sum, opt) => sum + Number(opt.priceAdjustment), 0)
       addLine({
         menuItemId: it.menuItemId,
         name: it.menuItem.name,
-        basePrice: Number(it.unitPrice),
+        basePrice: Number(it.unitPrice) - optionsPrice,
         quantity: it.quantity,
         imageUrl: null,
         isVeg: true,
-        selectedOptions: [],
+        selectedOptions,
       })
-    )
+    })
     router.push({ pathname: "/(diner)/r/[slug]/cart", params: { slug: order.restaurant.slug } })
   }
 
@@ -69,6 +72,13 @@ export default function Orders() {
         params: { slug: order.restaurant.slug, token: order.trackingToken },
       })
     }
+  }
+
+  function openOrderDetail(order: ConsumerOrder) {
+    router.push({
+      pathname: "/(diner)/r/[slug]/order/[orderId]",
+      params: { slug: order.restaurant.slug, orderId: order.id },
+    })
   }
 
   return (
@@ -108,53 +118,55 @@ export default function Orders() {
                 from={{ opacity: 0, translateY: 12 }}
                 animate={{ opacity: 1, translateY: 0 }}
                 transition={{ type: "spring", damping: 20, stiffness: 200, delay: i * 40 }}
-                className="bg-surface rounded-3xl border border-line p-5"
+                className="bg-surface rounded-3xl border border-line overflow-hidden"
               >
-                <View className="flex-row items-center justify-between mb-2">
-                  <View className="flex-row items-center gap-2">
-                    <Text variant="title" className="text-base">
-                      {order.restaurant.name}
+                <Pressable onPress={() => openOrderDetail(order)} className="p-5">
+                  <View className="flex-row items-center justify-between mb-2">
+                    <View className="flex-row items-center gap-2">
+                      <Text variant="title" className="text-base">
+                        {order.restaurant.name}
+                      </Text>
+                    </View>
+                    <Text
+                      className="text-xs font-sans-bold uppercase tracking-wide"
+                      style={{ color: statusColor(order.status, colors) }}
+                    >
+                      {STATUS_LABEL[order.status]}
                     </Text>
                   </View>
-                  <Text
-                    className="text-xs font-sans-bold uppercase tracking-wide"
-                    style={{ color: statusColor(order.status, colors) }}
-                  >
-                    {STATUS_LABEL[order.status]}
+                  <Text variant="muted" className="text-sm mb-3">
+                    #{order.orderNumber} · {formatDate(order.placedAt)}
                   </Text>
-                </View>
-                <Text variant="muted" className="text-sm mb-3">
-                  #{order.orderNumber} · {formatDate(order.placedAt)}
-                </Text>
-                <Text variant="body" className="text-sm mb-3" numberOfLines={2}>
-                  {order.items.map((it) => `${it.quantity}× ${it.menuItem.name}`).join(", ")}
-                </Text>
-                <View className="flex-row items-center justify-between pt-3 border-t border-line">
-                  <Text variant="price" className="text-lg">
-                    ₹{Number(order.totalAmount)}
+                  <Text variant="body" className="text-sm mb-3" numberOfLines={2}>
+                    {order.items.map((it) => `${it.quantity}× ${it.menuItem.name}`).join(", ")}
                   </Text>
-                  <View className="flex-row items-center gap-2">
-                    <Pressable
-                      onPress={() => orderAgain(order)}
-                      className="flex-row items-center gap-1.5 rounded-full border border-line px-3.5 py-2"
-                    >
-                      <RotateCcw size={14} color={colors.ink} />
-                      <Text variant="label" className="text-sm">
-                        Order again
-                      </Text>
-                    </Pressable>
-                    {order.trackingToken && LIVE.includes(order.status) ? (
+                  <View className="flex-row items-center justify-between pt-3 border-t border-line">
+                    <Text variant="price" className="text-lg">
+                      ₹{Number(order.totalAmount)}
+                    </Text>
+                    <View className="flex-row items-center gap-2">
                       <Pressable
-                        onPress={() => openOrder(order)}
-                        style={{ backgroundColor: colors.primary }}
-                        className="flex-row items-center gap-1 rounded-full px-3.5 py-2"
+                        onPress={() => orderAgain(order)}
+                        className="flex-row items-center gap-1.5 rounded-full border border-line px-3.5 py-2"
                       >
-                        <Text className="font-sans-semibold text-sm" style={{ color: colors.onPrimary }}>Track</Text>
-                        <ChevronRight size={14} color="#FFF7F3" />
+                        <RotateCcw size={14} color={colors.ink} />
+                        <Text variant="label" className="text-sm">
+                          Order again
+                        </Text>
                       </Pressable>
-                    ) : null}
+                      {order.trackingToken && LIVE.includes(order.status) ? (
+                        <Pressable
+                          onPress={() => openOrder(order)}
+                          style={{ backgroundColor: colors.primary }}
+                          className="flex-row items-center gap-1 rounded-full px-3.5 py-2"
+                        >
+                          <Text className="font-sans-semibold text-sm" style={{ color: colors.onPrimary }}>Track</Text>
+                          <ChevronRight size={14} color="#FFF7F3" />
+                        </Pressable>
+                      ) : null}
+                    </View>
                   </View>
-                </View>
+                </Pressable>
               </MotiView>
             ))}
           </View>

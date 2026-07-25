@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import {
   View,
   ScrollView,
@@ -8,13 +8,15 @@ import {
   Modal,
   TextInput,
   Image,
+  Share,
 } from "react-native"
 import { useRouter } from "expo-router"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { MotiView, AnimatePresence } from "moti"
 import { SafeAreaView } from "react-native-safe-area-context"
 import QRCode from "react-native-qrcode-svg"
 import * as Haptics from "expo-haptics"
-import { ArrowLeft, Plus, QrCode, Trash2, X } from "lucide-react-native"
+import { ArrowLeft, Pencil, Plus, QrCode, Share2, Trash2, X } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
 import { ownerApi } from "@/lib/owner-api"
@@ -30,6 +32,8 @@ interface Table {
   isActive: boolean
 }
 
+type QrTab = "code" | "poster" | "share"
+
 export default function OwnerTables() {
   const router = useRouter()
   const { colors } = useTheme()
@@ -41,7 +45,13 @@ export default function OwnerTables() {
   const [label, setLabel] = useState("")
   const [section, setSection] = useState("")
   const [qrTable, setQrTable] = useState<Table | null>(null)
+  const [qrTab, setQrTab] = useState<QrTab>("code")
   const [anywhereOpen, setAnywhereOpen] = useState(false)
+
+  const [editTable, setEditTable] = useState<Table | null>(null)
+  const [editLabel, setEditLabel] = useState("")
+  const [editSection, setEditSection] = useState("")
+  const [editActive, setEditActive] = useState(true)
 
   const { data: tables, isLoading } = useQuery({
     queryKey: ["owner-tables", rid],
@@ -87,6 +97,47 @@ export default function OwnerTables() {
       setQrTable(null)
     },
   })
+
+  const update = useMutation({
+    mutationFn: () =>
+      ownerApi.put(`/api/v1/restaurants/${rid}/tables/${editTable!.id}`, {
+        label: editLabel.trim(),
+        section: editSection.trim() || null,
+        isActive: editActive,
+      }),
+    onSuccess: () => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      queryClient.invalidateQueries({ queryKey: ["owner-tables", rid] })
+      setEditTable(null)
+    },
+  })
+
+  function openEdit(t: Table) {
+    setEditTable(t)
+    setEditLabel(t.label)
+    setEditSection(t.section ?? "")
+    setEditActive(t.isActive)
+  }
+
+  function openQr(t: Table) {
+    setQrTab("code")
+    setQrTable(t)
+  }
+
+  function shareTable(t: Table, url?: string) {
+    if (!url) return
+    Share.share({
+      message: `${restaurant?.name ?? "Order"} · Scan to order at ${t.label}\n${url}`,
+      url,
+    })
+  }
+
+  const sectionSuggestions = useMemo(() => {
+    const names = (tables ?? [])
+      .map((t) => t.section)
+      .filter((s): s is string => !!s && s.trim().length > 0)
+    return Array.from(new Set(names))
+  }, [tables])
 
   const menuUrl = restaurant ? `${WEB_BASE}/${restaurant.slug}` : ""
 
@@ -152,7 +203,7 @@ export default function OwnerTables() {
                   key={t.id}
                   className="bg-surface rounded-2xl border border-line p-4 flex-row items-center gap-3"
                 >
-                  <View className="flex-1">
+                  <Pressable onPress={() => openEdit(t)} className="flex-1">
                     <Text variant="title" className="text-base">
                       {t.label}
                     </Text>
@@ -161,9 +212,15 @@ export default function OwnerTables() {
                         {t.section}
                       </Text>
                     ) : null}
-                  </View>
+                  </Pressable>
                   <Pressable
-                    onPress={() => setQrTable(t)}
+                    onPress={() => openEdit(t)}
+                    className="w-10 h-10 rounded-xl bg-canvas border border-line items-center justify-center"
+                  >
+                    <Pencil size={16} color={colors.ink} />
+                  </Pressable>
+                  <Pressable
+                    onPress={() => openQr(t)}
                     className="w-10 h-10 rounded-xl bg-canvas border border-line items-center justify-center"
                   >
                     <QrCode size={17} color={colors.ink} />
@@ -220,6 +277,85 @@ export default function OwnerTables() {
       </Modal>
 
       <Modal
+        visible={!!editTable}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setEditTable(null)}
+      >
+        <Pressable
+          onPress={() => setEditTable(null)}
+          className="flex-1 bg-black/60 items-center justify-center px-6"
+        >
+          <Pressable className="w-full bg-surface rounded-3xl border border-line p-6">
+            <View className="flex-row items-center justify-between mb-5">
+              <Text variant="heading" className="text-xl">
+                Edit table
+              </Text>
+              <Pressable onPress={() => setEditTable(null)}>
+                <X size={20} color={colors.muted} />
+              </Pressable>
+            </View>
+            <TextInput
+              value={editLabel}
+              onChangeText={setEditLabel}
+              placeholder="Label (e.g. T1, Patio 3)"
+              placeholderTextColor={colors.muted}
+              className="h-14 rounded-2xl bg-canvas border border-line px-5 text-ink font-sans-medium text-base mb-3"
+            />
+            <TextInput
+              value={editSection}
+              onChangeText={setEditSection}
+              placeholder="Section (optional)"
+              placeholderTextColor={colors.muted}
+              className="h-14 rounded-2xl bg-canvas border border-line px-5 text-ink font-sans-medium text-base mb-3"
+            />
+            {sectionSuggestions.length > 0 ? (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ gap: 6 }}
+                className="mb-4"
+              >
+                {sectionSuggestions.map((s) => (
+                  <Pressable
+                    key={s}
+                    onPress={() => setEditSection(s)}
+                    className="h-8 px-3 rounded-full items-center justify-center bg-canvas border border-line"
+                  >
+                    <Text variant="label" className="text-xs">
+                      {s}
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            ) : null}
+            <View className="flex-row items-center justify-between bg-canvas rounded-2xl border border-line px-5 h-14 mb-5">
+              <View>
+                <Text variant="title" className="text-sm">
+                  Active
+                </Text>
+                <Text variant="muted" className="text-xs">
+                  Inactive tables are hidden from QR scans
+                </Text>
+              </View>
+              <Switch
+                value={editActive}
+                onValueChange={setEditActive}
+                trackColor={{ false: colors.line, true: colors.primary }}
+                thumbColor="#FFF7F3"
+              />
+            </View>
+            <Button
+              title="Save changes"
+              loading={update.isPending}
+              disabled={!editLabel.trim()}
+              onPress={() => update.mutate()}
+            />
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      <Modal
         visible={!!qrTable}
         transparent
         animationType="fade"
@@ -230,7 +366,7 @@ export default function OwnerTables() {
           className="flex-1 bg-black/60 items-center justify-center px-6"
         >
           <Pressable className="w-full bg-surface rounded-3xl border border-line p-6 items-center">
-            <View className="flex-row items-center justify-between w-full mb-5">
+            <View className="flex-row items-center justify-between w-full mb-4">
               <Text variant="heading" className="text-xl">
                 {qrTable?.label}
               </Text>
@@ -239,26 +375,141 @@ export default function OwnerTables() {
               </Pressable>
             </View>
 
-            <View className="w-56 h-56 bg-white rounded-2xl items-center justify-center mb-4">
-              {qrData?.qrDataUrl ? (
-                <Image
-                  source={{ uri: qrData.qrDataUrl }}
-                  style={{ width: 208, height: 208 }}
-                  resizeMode="contain"
-                />
-              ) : (
-                <ActivityIndicator color="#141110" />
-              )}
+            <View className="flex-row bg-canvas rounded-2xl border border-line p-1 mb-5 w-full">
+              {(["code", "poster", "share"] as QrTab[]).map((tab) => (
+                <Pressable
+                  key={tab}
+                  onPress={() => setQrTab(tab)}
+                  className={`flex-1 h-9 rounded-xl items-center justify-center ${
+                    qrTab === tab ? "bg-surface" : ""
+                  }`}
+                >
+                  <Text
+                    variant="label"
+                    className="text-[11px] uppercase tracking-widest"
+                    style={{ color: qrTab === tab ? colors.ink : colors.muted }}
+                  >
+                    {tab}
+                  </Text>
+                </Pressable>
+              ))}
             </View>
-            {qrData?.url ? (
-              <Text variant="muted" className="text-xs text-center mb-5" numberOfLines={1}>
-                {qrData.url}
-              </Text>
-            ) : null}
+
+            <AnimatePresence>
+              {qrTab === "code" ? (
+                <MotiView
+                  key="code"
+                  from={{ opacity: 0, translateY: 6 }}
+                  animate={{ opacity: 1, translateY: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="w-full items-center"
+                >
+                  <View className="w-56 h-56 bg-white rounded-2xl items-center justify-center mb-4">
+                    {qrData?.qrDataUrl ? (
+                      <Image
+                        source={{ uri: qrData.qrDataUrl }}
+                        style={{ width: 208, height: 208 }}
+                        resizeMode="contain"
+                      />
+                    ) : (
+                      <ActivityIndicator color="#141110" />
+                    )}
+                  </View>
+                  {qrData?.url ? (
+                    <Text variant="muted" className="text-xs text-center mb-2" numberOfLines={1}>
+                      {qrData.url}
+                    </Text>
+                  ) : null}
+                </MotiView>
+              ) : null}
+
+              {qrTab === "poster" ? (
+                <MotiView
+                  key="poster"
+                  from={{ opacity: 0, translateY: 6 }}
+                  animate={{ opacity: 1, translateY: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="w-full items-center mb-2"
+                >
+                  <View className="w-full rounded-2xl bg-canvas border border-line p-5 items-center">
+                    <View className="w-full flex-row items-center gap-2.5 mb-6">
+                      <View className="w-1 h-7 rounded-full bg-primary" />
+                      <View>
+                        <Text variant="heading" className="text-base">
+                          Vision Menu
+                        </Text>
+                        <Text variant="muted" className="text-[10px]" numberOfLines={1}>
+                          {restaurant?.name}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text variant="display" className="text-2xl text-center mb-1">
+                      Scan to Order
+                    </Text>
+                    <Text variant="muted" className="text-xs text-center mb-6">
+                      No queue. No wait. Just scan.
+                    </Text>
+                    <View className="w-40 h-40 bg-white rounded-2xl border border-ink items-center justify-center mb-6">
+                      {qrData?.qrDataUrl ? (
+                        <Image
+                          source={{ uri: qrData.qrDataUrl }}
+                          style={{ width: 136, height: 136 }}
+                          resizeMode="contain"
+                        />
+                      ) : (
+                        <ActivityIndicator color="#141110" />
+                      )}
+                    </View>
+                    <Text variant="title" className="text-xl mb-1">
+                      {qrTable?.label}
+                    </Text>
+                    {qrTable?.section ? (
+                      <Text variant="muted" className="text-[10px] tracking-[3px] uppercase mb-5">
+                        {qrTable.section}
+                      </Text>
+                    ) : (
+                      <View className="mb-5" />
+                    )}
+                    <View className="w-full h-px bg-primary mb-2" />
+                    <Text variant="muted" className="text-[10px]">
+                      Powered by Vision Menu
+                    </Text>
+                  </View>
+                </MotiView>
+              ) : null}
+
+              {qrTab === "share" ? (
+                <MotiView
+                  key="share"
+                  from={{ opacity: 0, translateY: 6 }}
+                  animate={{ opacity: 1, translateY: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="w-full mb-2"
+                >
+                  <View className="w-full bg-canvas border border-line rounded-2xl p-4 mb-4">
+                    <View className="flex-row items-center gap-1.5 mb-1.5">
+                      <Share2 size={12} color={colors.muted} />
+                      <Text variant="muted" className="text-[10px] uppercase tracking-widest">
+                        Direct URL
+                      </Text>
+                    </View>
+                    <Text variant="body" className="text-sm" numberOfLines={2}>
+                      {qrData?.url ?? "—"}
+                    </Text>
+                  </View>
+                  <Button
+                    title="Share table link"
+                    variant="outline"
+                    disabled={!qrData?.url}
+                    onPress={() => qrTable && shareTable(qrTable, qrData?.url)}
+                  />
+                </MotiView>
+              ) : null}
+            </AnimatePresence>
 
             <Pressable
               onPress={() => qrTable && remove.mutate(qrTable.id)}
-              className="flex-row items-center justify-center gap-2 h-11"
+              className="flex-row items-center justify-center gap-2 h-11 mt-3"
             >
               <Trash2 size={15} color={colors.danger} />
               <Text variant="label" className="text-sm text-danger">

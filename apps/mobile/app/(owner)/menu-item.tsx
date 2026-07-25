@@ -12,7 +12,7 @@ import { useRouter, useLocalSearchParams } from "expo-router"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { SafeAreaView } from "react-native-safe-area-context"
 import * as Haptics from "expo-haptics"
-import { ArrowLeft, Trash2 } from "lucide-react-native"
+import { ArrowLeft, Truck, Trash2 } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
 import { ownerApi } from "@/lib/owner-api"
@@ -50,6 +50,9 @@ export default function MenuItemEditor() {
   const [description, setDescription] = useState(existing?.item.description ?? "")
   const [price, setPrice] = useState(existing ? String(Math.round(Number(existing.item.price))) : "")
   const [isVeg, setIsVeg] = useState(existing?.item.isVeg ?? true)
+  const [availableForDelivery, setAvailableForDelivery] = useState(
+    existing?.item.availableForDelivery ?? true
+  )
   const [tags, setTags] = useState(existing?.item.tags.join(", ") ?? "")
   const [imageUrl, setImageUrl] = useState(existing?.item.imageUrl ?? "")
   const [error, setError] = useState("")
@@ -66,6 +69,7 @@ export default function MenuItemEditor() {
         description: description.trim(),
         price: priceNum,
         isVeg,
+        availableForDelivery,
         tags: tags
           .split(",")
           .map((t) => t.trim())
@@ -196,6 +200,21 @@ export default function MenuItemEditor() {
                 value={isVeg}
                 onValueChange={setIsVeg}
                 trackColor={{ false: colors.line, true: colors.success }}
+                thumbColor="#FFF7F3"
+              />
+            </View>
+
+            <View className="flex-row items-center justify-between bg-surface rounded-2xl border border-line px-5 h-14">
+              <View className="flex-row items-center gap-2.5">
+                <Truck size={16} color={colors.muted} />
+                <Text variant="title" className="text-base">
+                  Available for delivery
+                </Text>
+              </View>
+              <Switch
+                value={availableForDelivery}
+                onValueChange={setAvailableForDelivery}
+                trackColor={{ false: colors.line, true: colors.primary }}
                 thumbColor="#FFF7F3"
               />
             </View>

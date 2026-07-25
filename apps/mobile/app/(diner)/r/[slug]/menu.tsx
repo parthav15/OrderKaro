@@ -12,9 +12,11 @@ import { useLocalSearchParams, useRouter } from "expo-router"
 import { useQuery } from "@tanstack/react-query"
 import { MotiView } from "moti"
 import { Image } from "expo-image"
+import * as Haptics from "expo-haptics"
 import {
   ArrowLeft,
   Plus,
+  Check,
   Box,
   ShoppingBag,
   Search,
@@ -40,6 +42,7 @@ export default function MenuScreen() {
   const router = useRouter()
   const { colors } = useTheme()
   const setContext = useCart((s) => s.setContext)
+  const addLine = useCart((s) => s.addLine)
   const itemCount = useCart((s) => s.itemCount())
   const subtotal = useCart((s) => s.subtotal())
 
@@ -49,9 +52,11 @@ export default function MenuScreen() {
   const [veg, setVeg] = useState<VegFilter>("ALL")
   const [arOnly, setArOnly] = useState(false)
   const [activeCat, setActiveCat] = useState<string>("")
+  const [justAdded, setJustAdded] = useState<string | null>(null)
 
   const scrollRef = useRef<ScrollView>(null)
   const offsets = useRef<Record<string, number>>({})
+  const addedTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["menu", slug],
@@ -116,6 +121,29 @@ export default function MenuScreen() {
     const y = offsets.current[id]
     if (y != null) scrollRef.current?.scrollTo({ y: Math.max(0, y - 8), animated: true })
   }
+
+  function quickAdd(item: MenuItem) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    addLine({
+      menuItemId: item.id,
+      name: item.name,
+      basePrice: Number(item.price),
+      quantity: 1,
+      imageUrl: item.imageUrl,
+      isVeg: item.isVeg,
+      selectedOptions: [],
+      availableForDelivery: item.availableForDelivery,
+    })
+    setJustAdded(item.id)
+    if (addedTimer.current) clearTimeout(addedTimer.current)
+    addedTimer.current = setTimeout(() => setJustAdded(null), 900)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (addedTimer.current) clearTimeout(addedTimer.current)
+    }
+  }, [])
 
   if (isError) {
     return (
@@ -329,11 +357,31 @@ export default function MenuScreen() {
                         <View className="flex-1 bg-surface-elevated" />
                       )}
                       <Pressable
-                        onPress={() => setSelected(item)}
+                        onPress={() =>
+                          item.customizations.length > 0 ? setSelected(item) : quickAdd(item)
+                        }
                         style={{ backgroundColor: brand }}
                         className="absolute bottom-2 right-2 w-9 h-9 rounded-full items-center justify-center"
                       >
-                        <Plus size={18} color="#FFF7F3" strokeWidth={2.6} />
+                        {justAdded === item.id ? (
+                          <MotiView
+                            key="check"
+                            from={{ scale: 0.4, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ type: "spring", damping: 14, stiffness: 260 }}
+                          >
+                            <Check size={18} color="#FFF7F3" strokeWidth={2.8} />
+                          </MotiView>
+                        ) : (
+                          <MotiView
+                            key="plus"
+                            from={{ scale: 0.4, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ type: "spring", damping: 14, stiffness: 260 }}
+                          >
+                            <Plus size={18} color="#FFF7F3" strokeWidth={2.6} />
+                          </MotiView>
+                        )}
                       </Pressable>
                     </View>
                   </View>

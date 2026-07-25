@@ -11,13 +11,20 @@ import {
 import { useRouter } from "expo-router"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { SafeAreaView } from "react-native-safe-area-context"
+import { MotiView } from "moti"
 import * as Haptics from "expo-haptics"
-import { ArrowLeft, Lock } from "lucide-react-native"
+import { ArrowLeft, Lock, Banknote, CreditCard } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
 import { ownerApi, OwnerApiError } from "@/lib/owner-api"
 import { useOwnerRestaurant } from "@/lib/use-owner-restaurant"
 import { useTheme } from "@/theme/theme-provider"
+import type { OwnerRestaurant } from "@/lib/types"
+
+interface OwnerRestaurantWithPayments extends OwnerRestaurant {
+  acceptsCash?: boolean
+  acceptsOnline?: boolean
+}
 
 const COLOR_PRESETS = ["#A31D33", "#BE2540", "#A9822B", "#1F6F54", "#2B4C7E", "#6B3FA0"]
 
@@ -66,11 +73,68 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   )
 }
 
+function PaymentMethodRow({
+  icon: Icon,
+  label,
+  description,
+  value,
+  disabled,
+  onValueChange,
+  delay,
+}: {
+  icon: typeof Banknote
+  label: string
+  description: string
+  value: boolean
+  disabled: boolean
+  onValueChange: (next: boolean) => void
+  delay: number
+}) {
+  const { colors } = useTheme()
+  return (
+    <MotiView
+      from={{ opacity: 0, translateX: -8 }}
+      animate={{ opacity: 1, translateX: 0 }}
+      transition={{ type: "timing", duration: 240, delay }}
+      className="flex-row items-center justify-between gap-3 py-3.5"
+    >
+      <View className="flex-row items-center gap-3 flex-1 pr-3">
+        <View className="w-10 h-10 rounded-xl bg-canvas items-center justify-center">
+          <Icon size={17} color={colors.muted} />
+        </View>
+        <View className="flex-1">
+          <Text variant="title" className="text-sm">
+            {label}
+          </Text>
+          <Text variant="muted" className="text-xs">
+            {description}
+          </Text>
+        </View>
+      </View>
+      <View className="items-end gap-1">
+        <Switch
+          value={value}
+          onValueChange={onValueChange}
+          disabled={disabled}
+          trackColor={{ false: colors.line, true: colors.primary }}
+          thumbColor="#FFF7F3"
+        />
+        {disabled ? (
+          <Text variant="muted" className="text-[10px]">
+            Must stay on
+          </Text>
+        ) : null}
+      </View>
+    </MotiView>
+  )
+}
+
 export default function OwnerSettings() {
   const router = useRouter()
   const { colors } = useTheme()
   const queryClient = useQueryClient()
-  const { restaurant } = useOwnerRestaurant()
+  const { restaurant: rawRestaurant } = useOwnerRestaurant()
+  const restaurant = rawRestaurant as OwnerRestaurantWithPayments | undefined
   const rid = restaurant?.id
 
   const [name, setName] = useState("")
@@ -81,6 +145,10 @@ export default function OwnerSettings() {
 
   const [primaryColor, setPrimaryColor] = useState("#A31D33")
   const [themeMode, setThemeMode] = useState<"LIGHT" | "DARK">("LIGHT")
+
+  const [acceptsCash, setAcceptsCash] = useState(true)
+  const [acceptsOnline, setAcceptsOnline] = useState(true)
+  const [paymentMethodsError, setPaymentMethodsError] = useState("")
 
   const [deliveryEnabled, setDeliveryEnabled] = useState(false)
   const [latitude, setLatitude] = useState("")
@@ -100,6 +168,8 @@ export default function OwnerSettings() {
     setAvgPrepTime(restaurant.avgPrepTime != null ? String(restaurant.avgPrepTime) : "")
     setPrimaryColor(restaurant.primaryColor ?? "#A31D33")
     setThemeMode(restaurant.themeMode ?? "LIGHT")
+    setAcceptsCash(restaurant.acceptsCash ?? true)
+    setAcceptsOnline(restaurant.acceptsOnline ?? true)
     setDeliveryEnabled(!!restaurant.deliveryEnabled)
     setLatitude(restaurant.latitude != null ? String(restaurant.latitude) : "")
     setLongitude(restaurant.longitude != null ? String(restaurant.longitude) : "")
@@ -128,6 +198,28 @@ export default function OwnerSettings() {
         avgPrepTime: Number(avgPrepTime) || 15,
       }),
     onSuccess: done,
+  })
+
+  const enabledPaymentMethodCount = Number(acceptsCash) + Number(acceptsOnline)
+  const cashIsLastEnabled = acceptsCash && enabledPaymentMethodCount === 1
+  const onlineIsLastEnabled = acceptsOnline && enabledPaymentMethodCount === 1
+
+  function toggleAcceptsCash(next: boolean) {
+    if (!next && enabledPaymentMethodCount === 1 && acceptsCash) return
+    setAcceptsCash(next)
+  }
+  function toggleAcceptsOnline(next: boolean) {
+    if (!next && enabledPaymentMethodCount === 1 && acceptsOnline) return
+    setAcceptsOnline(next)
+  }
+
+  const savePaymentMethods = useMutation({
+    mutationFn: () => ownerApi.put(`/api/v1/restaurants/${rid}`, { acceptsCash, acceptsOnline }),
+    onSuccess: () => {
+      setPaymentMethodsError("")
+      done()
+    },
+    onError: (e) => setPaymentMethodsError((e as Error).message || "Could not save"),
   })
 
   const saveBrand = useMutation({
@@ -212,6 +304,44 @@ export default function OwnerSettings() {
             />
             <View className="mt-2">
               <Button title="Save profile" loading={saveBasic.isPending} onPress={() => saveBasic.mutate()} />
+            </View>
+          </Section>
+
+          <Section title="Payment methods">
+            <View>
+              <PaymentMethodRow
+                icon={Banknote}
+                label="Cash"
+                description="Paid in person, collected by your counter staff"
+                value={acceptsCash}
+                disabled={cashIsLastEnabled}
+                onValueChange={toggleAcceptsCash}
+                delay={0}
+              />
+              <View className="h-px bg-line" />
+              <PaymentMethodRow
+                icon={CreditCard}
+                label="Online"
+                description="Card, UPI and net banking through your payment gateway"
+                value={acceptsOnline}
+                disabled={onlineIsLastEnabled}
+                onValueChange={toggleAcceptsOnline}
+                delay={60}
+              />
+            </View>
+
+            {paymentMethodsError ? (
+              <Text className="text-danger font-sans-medium text-sm mt-3">
+                {paymentMethodsError}
+              </Text>
+            ) : null}
+
+            <View className="mt-4">
+              <Button
+                title="Save payment methods"
+                loading={savePaymentMethods.isPending}
+                onPress={() => savePaymentMethods.mutate()}
+              />
             </View>
           </Section>
 

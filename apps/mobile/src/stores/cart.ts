@@ -18,6 +18,7 @@ export interface CartLine {
   isVeg: boolean
   selectedOptions: SelectedOption[]
   notes?: string
+  availableForDelivery?: boolean
 }
 
 interface CartState {

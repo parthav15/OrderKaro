@@ -24,6 +24,7 @@ export interface MenuItem {
   imageUrl: string | null
   isVeg: boolean
   isAvailable: boolean
+  availableForDelivery: boolean
   tags: string[]
   model3dUrl: string | null
   model3dUsdzUrl?: string | null
@@ -54,6 +55,8 @@ export interface Restaurant {
   hasLocation: boolean
   arEnabled: boolean
   onlinePaymentEnabled: boolean
+  acceptsCash: boolean
+  acceptsOnline: boolean
 }
 
 export interface MenuResponse {
@@ -93,6 +96,7 @@ export interface ConsumerOrder {
   trackingToken: string | null
   restaurantId: string
   restaurant: { name: string; slug: string }
+  table: { label: string } | null
   items: { id: string; menuItemId: string; quantity: number; unitPrice: string; menuItem: { name: string } }[]
 }
 
@@ -128,6 +132,7 @@ export interface ActiveOrder {
   placedAt: string
   items: { id: string; quantity: number; menuItem: { name: string } }[]
   table: { label: string } | null
+  consumer: { name: string; phone: string } | null
 }
 
 export interface AnalyticsSummary {

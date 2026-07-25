@@ -44,7 +44,14 @@
         }
       ],
       "./plugins/without-push-entitlement.js",
-      "./plugins/with-development-team.js"
+      "./plugins/with-development-team.js",
+      "expo-audio",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Vision Menu to use your location to set your delivery address."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
