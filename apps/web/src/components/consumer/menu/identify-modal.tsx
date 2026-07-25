@@ -85,7 +85,7 @@ function CodeField({
 }: {
   value: string
   onChange: (v: string) => void
-  onComplete: () => void
+  onComplete: (value: string) => void
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const cells = Array.from({ length: 6 })
@@ -107,7 +107,7 @@ function CodeField({
         onChange={(e) => {
           const next = e.target.value.replace(/\D/g, "").slice(0, 6)
           onChange(next)
-          if (next.length === 6) onComplete()
+          if (next.length === 6) onComplete(next)
         }}
         inputMode="numeric"
         autoComplete="one-time-code"
@@ -178,8 +178,9 @@ export function IdentifyModal({ isOpen, restaurantName, onVerified }: IdentifyMo
     }
   }
 
-  async function verifyCode() {
-    if (!/^\d{6}$/.test(code)) {
+  async function verifyCode(submitted?: string) {
+    const value = submitted ?? code
+    if (!/^\d{6}$/.test(value)) {
       setError("Enter the 6-digit code")
       return
     }
@@ -189,7 +190,7 @@ export function IdentifyModal({ isOpen, restaurantName, onVerified }: IdentifyMo
       const { data } = await api.post("/api/v1/public/otp/verify", {
         phone,
         name: name.trim(),
-        code,
+        code: value,
       })
       onVerified(data.data as VerifiedResult)
     } catch (err: any) {
