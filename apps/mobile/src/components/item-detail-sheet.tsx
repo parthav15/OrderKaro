@@ -2,9 +2,10 @@ import { useMemo, useState } from "react"
 import { View, Modal, Pressable, ScrollView } from "react-native"
 import { MotiView, AnimatePresence } from "moti"
 import { Easing } from "react-native-reanimated"
-import { X, Minus, Plus, Check, Box } from "lucide-react-native"
+import { X, Minus, Plus, Check, Scan } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
+import { arSupported, launchArOnTable } from "@/components/ar-viewer"
 import { useTheme } from "@/theme/theme-provider"
 import { useCart, type SelectedOption } from "@/stores/cart"
 import type { MenuItem } from "@/lib/types"
@@ -13,12 +14,10 @@ export function ItemDetailSheet({
   item,
   brand,
   onClose,
-  onViewAr,
 }: {
   item: MenuItem | null
   brand: string
   onClose: () => void
-  onViewAr: (item: MenuItem) => void
 }) {
   const { colors } = useTheme()
   const addLine = useCart((s) => s.addLine)
@@ -132,14 +131,25 @@ export function ItemDetailSheet({
                   </Text>
                 ) : null}
 
-                {item.model3dUrl ? (
-                  <Pressable
-                    onPress={() => onViewAr(item)}
-                    className="flex-row items-center gap-2 self-start rounded-full border border-accent/40 px-4 py-2 mb-6"
+                {arSupported(item) ? (
+                  <MotiView
+                    from={{ opacity: 0, translateY: 8 }}
+                    animate={{ opacity: 1, translateY: 0 }}
+                    transition={{ type: "timing", duration: 260, delay: 120, easing: Easing.out(Easing.cubic) }}
+                    className="self-start mb-6"
                   >
-                    <Box size={16} color={colors.accent} />
-                    <Text className="text-accent font-sans-semibold text-sm">View in 3D</Text>
-                  </Pressable>
+                    <Pressable
+                      onPress={() => launchArOnTable(item)}
+                      style={({ pressed }) => ({
+                        opacity: pressed ? 0.85 : 1,
+                        transform: [{ scale: pressed ? 0.97 : 1 }],
+                      })}
+                      className="flex-row items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-4 py-2.5"
+                    >
+                      <Scan size={16} color={colors.accent} />
+                      <Text className="text-accent font-sans-semibold text-sm">View on your table</Text>
+                    </Pressable>
+                  </MotiView>
                 ) : null}
 
                 {item.customizations.map((c) => (

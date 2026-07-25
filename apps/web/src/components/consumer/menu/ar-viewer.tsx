@@ -15,6 +15,8 @@ type ModelViewerAttributes = DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTML
   "shadow-intensity"?: string
   "touch-action"?: string
   "ios-src"?: string
+  reveal?: string
+  loading?: string
 }
 
 const ModelViewer = "model-viewer" as unknown as FC<ModelViewerAttributes>
@@ -112,18 +114,26 @@ export function ArViewer({
               alt={itemName}
               ar
               ar-modes="webxr scene-viewer quick-look"
-              camera-controls
-              auto-rotate
-              shadow-intensity="1"
-              touch-action="pan-y"
+              reveal="manual"
+              loading="eager"
+              touch-action="none"
               style={{ width: "100%", height: "100%", backgroundColor: "transparent" }}
             >
+              {!posterUrl && (
+                <div
+                  slot="poster"
+                  className="w-full h-full flex flex-col items-center justify-center gap-4 bg-gradient-to-b from-brand-black to-neutral-900"
+                >
+                  <Box className="w-14 h-14 text-white/25" />
+                  <span className="text-white/50 text-sm font-semibold tracking-wide">{itemName}</span>
+                </div>
+              )}
               <button
                 slot="ar-button"
                 style={{ backgroundColor: "rgb(var(--brand-red))" }}
-                className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-full px-6 py-3.5 text-white font-bold text-sm shadow-xl"
+                className="absolute bottom-6 left-1/2 -translate-x-1/2 inline-flex items-center gap-2.5 rounded-full px-7 py-4 text-white font-bold text-[15px] shadow-2xl shadow-brand-red/40 ring-1 ring-white/20 transition-transform active:scale-95"
               >
-                <Scan className="w-4 h-4" />
+                <Scan className="w-5 h-5" />
                 View on your table
               </button>
             </ModelViewer>
@@ -131,7 +141,7 @@ export function ArViewer({
         </div>
 
         <p className="text-center text-neutral-500 text-xs pb-6 px-6">
-          Drag to rotate. On a phone, tap &ldquo;View on your table&rdquo; to place this dish in AR — AR needs an iPhone or Android device.
+          Tap &ldquo;View on your table&rdquo; to place {itemName} in your space — AR works on iPhone &amp; Android.
         </p>
       </motion.div>
     </AnimatePresence>

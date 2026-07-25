@@ -310,7 +310,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-6xl mx-auto">
       <div className="flex items-start justify-between mb-8">
         <div>
           <div className="flex items-center gap-3 mb-1">
@@ -334,6 +334,7 @@ export default function SettingsPage() {
         )}
       </div>
 
+      <div className="lg:columns-2 lg:gap-6 [&>form]:mb-6 [&>form]:break-inside-avoid">
       <form
         onSubmit={(e) => {
           e.preventDefault()
@@ -963,6 +964,7 @@ export default function SettingsPage() {
           </Card>
         </motion.div>
       </form>
+      </div>
     </div>
   )
 }

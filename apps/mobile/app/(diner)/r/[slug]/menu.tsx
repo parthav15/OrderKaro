@@ -27,7 +27,6 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
 import { ItemDetailSheet } from "@/components/item-detail-sheet"
-import { ArViewer } from "@/components/ar-viewer"
 import { api } from "@/lib/api"
 import { useCart } from "@/stores/cart"
 import { useTheme } from "@/theme/theme-provider"
@@ -47,7 +46,6 @@ export default function MenuScreen() {
   const subtotal = useCart((s) => s.subtotal())
 
   const [selected, setSelected] = useState<MenuItem | null>(null)
-  const [arItem, setArItem] = useState<MenuItem | null>(null)
   const [search, setSearch] = useState("")
   const [veg, setVeg] = useState<VegFilter>("ALL")
   const [arOnly, setArOnly] = useState(false)
@@ -419,21 +417,7 @@ export default function MenuScreen() {
         item={selected}
         brand={brand}
         onClose={() => setSelected(null)}
-        onViewAr={(item) => {
-          setSelected(null)
-          setArItem(item)
-        }}
       />
-
-      {arItem?.model3dUrl ? (
-        <ArViewer
-          modelUrl={arItem.model3dUrl}
-          usdzUrl={arItem.model3dUsdzUrl}
-          posterUrl={arItem.model3dPosterUrl}
-          itemName={arItem.name}
-          onClose={() => setArItem(null)}
-        />
-      ) : null}
     </SafeAreaView>
   )
 }
