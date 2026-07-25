@@ -15,6 +15,9 @@ export const createRestaurantSchema = z.object({
   avgPrepTime: z.number().int().min(1).max(120).default(15),
   acceptsCash: z.boolean().default(true),
   acceptsOnline: z.boolean().default(true),
+  acceptsDineIn: z.boolean().default(true),
+  acceptsTakeaway: z.boolean().default(true),
+  acceptsDelivery: z.boolean().default(true),
 })
 
 export const updateRestaurantSchema = createRestaurantSchema.partial()
@@ -29,6 +32,18 @@ export const paymentMethodsSchema = z
   })
 
 export type PaymentMethodsInput = z.infer<typeof paymentMethodsSchema>
+
+export const orderingMethodsSchema = z
+  .object({
+    acceptsDineIn: z.boolean(),
+    acceptsTakeaway: z.boolean(),
+    acceptsDelivery: z.boolean(),
+  })
+  .refine((v) => v.acceptsDineIn || v.acceptsTakeaway || v.acceptsDelivery, {
+    message: "At least one ordering method must stay enabled",
+  })
+
+export type OrderingMethodsInput = z.infer<typeof orderingMethodsSchema>
 
 export const brandingSchema = z.object({
   primaryColor: z

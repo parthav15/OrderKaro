@@ -58,6 +58,10 @@ model Restaurant {
   acceptsCash   Boolean @default(true)
   acceptsOnline Boolean @default(true)
 
+  acceptsDineIn   Boolean @default(true)
+  acceptsTakeaway Boolean @default(true)
+  acceptsDelivery Boolean @default(true)
+
   staff          Staff[]
   categories     Category[]
   tables         Table[]

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { View, ScrollView, Pressable, ActivityIndicator } from "react-native"
-import { useRouter } from "expo-router"
+import { useRouter, type Href } from "expo-router"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { MotiView } from "moti"
 import { SafeAreaView } from "react-native-safe-area-context"
@@ -30,6 +30,8 @@ import { Card } from "@/components/ui/card"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { ownerApi } from "@/lib/owner-api"
 import { getOwnerToken, ownerSignOut } from "@/lib/owner-auth"
+import { staffApi } from "@/lib/staff-api"
+import { getStaffProfile, staffSignOut } from "@/lib/staff-auth"
 import { useTheme } from "@/theme/theme-provider"
 import type { OwnerRestaurant, ActiveOrder, OrderStatus } from "@/lib/types"
 import { STALE_ORDER_MINUTES } from "@orderkaro/shared"
@@ -343,7 +345,10 @@ export default function KitchenBoard() {
   const router = useRouter()
   const { colors } = useTheme()
   const queryClient = useQueryClient()
-  const [authed, setAuthed] = useState<boolean | null>(null)
+  const [board, setBoard] = useState<
+    { api: typeof ownerApi; rid: string | null; signOut: () => Promise<void> } | null
+  >(null)
+  const [unauth, setUnauth] = useState(false)
   const [mode, setMode] = useState<Mode>("KITCHEN")
   const [soundEnabled, setSoundEnabled] = useState(true)
   const seen = useRef<Set<string>>(new Set())
@@ -351,7 +356,22 @@ export default function KitchenBoard() {
   const [, forceRerender] = useState(0)
 
   useEffect(() => {
-    getOwnerToken().then((t) => setAuthed(!!t))
+    ;(async () => {
+      const staff = await getStaffProfile()
+      if (staff) {
+        setBoard({ api: staffApi, rid: staff.restaurantId, signOut: staffSignOut })
+        return
+      }
+      const ownerTok = await getOwnerToken()
+      if (ownerTok) {
+        const rests = await ownerApi
+          .get<OwnerRestaurant[]>("/api/v1/restaurants")
+          .catch(() => [] as OwnerRestaurant[])
+        setBoard({ api: ownerApi, rid: rests?.[0]?.id ?? null, signOut: ownerSignOut })
+        return
+      }
+      setUnauth(true)
+    })()
   }, [])
 
   useEffect(() => {
@@ -359,16 +379,11 @@ export default function KitchenBoard() {
     return () => clearInterval(id)
   }, [])
 
-  const { data: restaurants } = useQuery({
-    queryKey: ["owner-restaurants"],
-    queryFn: () => ownerApi.get<OwnerRestaurant[]>("/api/v1/restaurants"),
-    enabled: authed === true,
-  })
-  const rid = restaurants?.[0]?.id
+  const rid = board?.rid ?? null
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ["kitchen-active", rid],
-    queryFn: () => ownerApi.get<ActiveOrder[]>(`/api/v1/restaurants/${rid}/orders/active`),
+    queryFn: () => board!.api.get<ActiveOrder[]>(`/api/v1/restaurants/${rid}/orders/active`),
     enabled: !!rid,
     refetchInterval: 10000,
   })
@@ -393,14 +408,14 @@ export default function KitchenBoard() {
 
   const advance = useMutation({
     mutationFn: ({ orderId, to }: { orderId: string; to: OrderStatus }) =>
-      ownerApi.patch(`/api/v1/restaurants/${rid}/orders/${orderId}/status`, { status: to }),
+      board!.api.patch(`/api/v1/restaurants/${rid}/orders/${orderId}/status`, { status: to }),
     onSuccess: () => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
       queryClient.invalidateQueries({ queryKey: ["kitchen-active", rid] })
     },
   })
 
-  if (authed === false) {
+  if (unauth) {
     return (
       <Screen>
         <View className="pt-1 pb-1">
@@ -420,16 +435,16 @@ export default function KitchenBoard() {
               Kitchen & counter
             </Text>
             <Text variant="muted" className="text-base leading-relaxed mb-6">
-              Sign in with your restaurant account to open the live board on this device.
+              Sign in with your staff account (kitchen or counter) to open the live board on this device.
             </Text>
-            <Button title="Sign in" onPress={() => router.replace("/(owner)")} />
+            <Button title="Staff sign in" onPress={() => router.replace("/(kitchen)/login" as Href)} />
           </Card>
         </View>
       </Screen>
     )
   }
 
-  if (authed === null || isLoading) {
+  if (!board || isLoading) {
     return (
       <SafeAreaView className="flex-1 bg-canvas items-center justify-center">
         <ActivityIndicator color={colors.primary} />
@@ -507,8 +522,9 @@ export default function KitchenBoard() {
           <ThemeToggle />
           <Pressable
             onPress={async () => {
-              await ownerSignOut()
-              setAuthed(false)
+              await board?.signOut()
+              setBoard(null)
+              setUnauth(true)
             }}
             className="w-11 h-11 rounded-full bg-surface border border-line items-center justify-center"
           >

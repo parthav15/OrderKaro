@@ -91,6 +91,9 @@ interface StorefrontConfig {
   onlinePaymentEnabled?: boolean
   acceptsCash?: boolean
   acceptsOnline?: boolean
+  acceptsDineIn?: boolean
+  acceptsTakeaway?: boolean
+  acceptsDelivery?: boolean
 }
 
 const FULFILLMENT_OPTIONS: Array<{ value: OrderType; label: string; icon: typeof Utensils }> = [
@@ -136,6 +139,20 @@ export default function CartPage({ params }: { params: { slug: string } }) {
   if (onlinePaymentAvailable) availablePaymentMethods.push("ONLINE")
   if (acceptsCash) availablePaymentMethods.push("CASH")
 
+  const acceptsDineIn = storefront?.acceptsDineIn !== false
+  const acceptsTakeaway = storefront?.acceptsTakeaway !== false
+  const acceptsDelivery = storefront?.acceptsDelivery !== false
+
+  const fulfillmentAvailability: Record<OrderType, boolean> = {
+    DINE_IN: acceptsDineIn,
+    TAKEAWAY: acceptsTakeaway,
+    DELIVERY: acceptsDelivery,
+  }
+
+  const availableFulfillmentOptions = FULFILLMENT_OPTIONS.filter(
+    (option) => fulfillmentAvailability[option.value]
+  )
+
   const deliveryRestrictedItems =
     orderType === "DELIVERY" ? items.filter((item) => item.availableForDelivery === false) : []
   const hasDeliveryRestrictedItems = deliveryRestrictedItems.length > 0
@@ -159,6 +176,15 @@ export default function CartPage({ params }: { params: { slug: string } }) {
       availablePaymentMethods.includes(current) ? current : availablePaymentMethods[0] ?? current
     )
   }, [storefront, acceptsCash, onlinePaymentAvailable])
+
+  useEffect(() => {
+    if (!storefront || fixedTable) return
+    setOrderType((current) =>
+      availableFulfillmentOptions.some((option) => option.value === current)
+        ? current
+        : availableFulfillmentOptions[0]?.value ?? current
+    )
+  }, [storefront, acceptsDineIn, acceptsTakeaway, acceptsDelivery, fixedTable])
 
   function handleUseMyLocation() {
     if (!navigator.geolocation) {
@@ -423,31 +449,37 @@ export default function CartPage({ params }: { params: { slug: string } }) {
         ) : (
           <>
             <div className="flex gap-2">
-              {FULFILLMENT_OPTIONS.map((m) => {
-                const active = orderType === m.value
-                return (
-                  <motion.button
-                    key={m.value}
-                    layout
-                    whileTap={{ scale: 0.96 }}
-                    onClick={() => setOrderType(m.value)}
-                    className={cn(
-                      "relative flex-1 flex flex-col items-center gap-1 p-3 rounded-xl border text-xs font-semibold overflow-hidden transition-colors",
-                      active ? "border-brand-red text-brand-red" : "border-line text-ink"
-                    )}
-                  >
-                    {active && (
-                      <motion.span
-                        layoutId="fulfillment-active"
-                        className="absolute inset-0 bg-primary/10"
-                        transition={reducedMotion ? { duration: 0 } : { type: "spring", stiffness: 380, damping: 32 }}
-                      />
-                    )}
-                    <m.icon className="relative w-5 h-5" />
-                    <span className="relative">{m.label}</span>
-                  </motion.button>
-                )
-              })}
+              <AnimatePresence initial={false} mode="popLayout">
+                {availableFulfillmentOptions.map((m) => {
+                  const active = orderType === m.value
+                  return (
+                    <motion.button
+                      key={m.value}
+                      layout
+                      initial={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      whileTap={{ scale: 0.96 }}
+                      onClick={() => setOrderType(m.value)}
+                      className={cn(
+                        "relative flex-1 flex flex-col items-center gap-1 p-3 rounded-xl border text-xs font-semibold overflow-hidden transition-colors",
+                        active ? "border-brand-red text-brand-red" : "border-line text-ink"
+                      )}
+                    >
+                      {active && (
+                        <motion.span
+                          layoutId="fulfillment-active"
+                          className="absolute inset-0 bg-primary/10"
+                          transition={reducedMotion ? { duration: 0 } : { type: "spring", stiffness: 380, damping: 32 }}
+                        />
+                      )}
+                      <m.icon className="relative w-5 h-5" />
+                      <span className="relative">{m.label}</span>
+                    </motion.button>
+                  )
+                })}
+              </AnimatePresence>
             </div>
             {orderType === "DINE_IN" && (
               <select

@@ -54,6 +54,17 @@ export async function POST(
       )
     }
 
+    const fulfillmentAccepted =
+      (data.orderType === "DINE_IN" && restaurant.acceptsDineIn) ||
+      (data.orderType === "TAKEAWAY" && restaurant.acceptsTakeaway) ||
+      (data.orderType === "DELIVERY" && restaurant.acceptsDelivery)
+    if (!fulfillmentAccepted) {
+      throw new AuthError(
+        `${restaurant.name} is not accepting ${data.orderType.replace("_", " ").toLowerCase()} orders right now`,
+        422
+      )
+    }
+
     const restaurantActiveCount = await prisma.order.count({
       where: { restaurantId, ...activeOrderWhere() },
     })

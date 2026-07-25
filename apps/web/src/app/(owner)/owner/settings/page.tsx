@@ -19,6 +19,9 @@ import {
   ArrowUpCircle,
   Banknote,
   CreditCard,
+  Utensils,
+  ShoppingBag,
+  Bike,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -51,6 +54,38 @@ const PAYMENT_METHOD_FIELDS: {
     label: "Online",
     description: "Card, UPI and net banking through your payment gateway",
     icon: CreditCard,
+  },
+]
+
+interface OrderingMethodsFormState {
+  acceptsDineIn: boolean
+  acceptsTakeaway: boolean
+  acceptsDelivery: boolean
+}
+
+const ORDERING_METHOD_FIELDS: {
+  key: keyof OrderingMethodsFormState
+  label: string
+  description: string
+  icon: typeof Utensils
+}[] = [
+  {
+    key: "acceptsDineIn",
+    label: "Dine-in",
+    description: "Customers order from a table and eat at your restaurant",
+    icon: Utensils,
+  },
+  {
+    key: "acceptsTakeaway",
+    label: "Takeaway",
+    description: "Customers order ahead and collect it at the counter",
+    icon: ShoppingBag,
+  },
+  {
+    key: "acceptsDelivery",
+    label: "Delivery",
+    description: "Orders are delivered to the customer's location",
+    icon: Bike,
   },
 ]
 
@@ -209,6 +244,49 @@ export default function SettingsPage() {
       toast.success("Payment methods saved successfully")
     },
     onError: (err: any) => toast.error(err.response?.data?.error || "Failed to save payment methods"),
+  })
+
+  const [orderingMethodsForm, setOrderingMethodsForm] = useState<OrderingMethodsFormState>({
+    acceptsDineIn: true,
+    acceptsTakeaway: true,
+    acceptsDelivery: true,
+  })
+
+  useEffect(() => {
+    if (restaurant) {
+      setOrderingMethodsForm({
+        acceptsDineIn: restaurant.acceptsDineIn ?? true,
+        acceptsTakeaway: restaurant.acceptsTakeaway ?? true,
+        acceptsDelivery: restaurant.acceptsDelivery ?? true,
+      })
+    }
+  }, [restaurant])
+
+  const enabledOrderingMethodCount =
+    Number(orderingMethodsForm.acceptsDineIn) +
+    Number(orderingMethodsForm.acceptsTakeaway) +
+    Number(orderingMethodsForm.acceptsDelivery)
+
+  function isLastEnabledOrderingMethod(key: keyof OrderingMethodsFormState) {
+    return orderingMethodsForm[key] && enabledOrderingMethodCount === 1
+  }
+
+  function toggleOrderingMethod(key: keyof OrderingMethodsFormState) {
+    setOrderingMethodsForm((prev) => {
+      const count =
+        Number(prev.acceptsDineIn) + Number(prev.acceptsTakeaway) + Number(prev.acceptsDelivery)
+      if (prev[key] && count === 1) return prev
+      return { ...prev, [key]: !prev[key] }
+    })
+  }
+
+  const updateOrderingMethods = useMutation({
+    mutationFn: (data: OrderingMethodsFormState) => api.put(`/api/v1/restaurants/${restaurantId}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["restaurants"] })
+      toast.success("Ordering methods saved successfully")
+    },
+    onError: (err: any) => toast.error(err.response?.data?.error || "Failed to save ordering methods"),
   })
 
   function useCurrentLocation() {
@@ -535,6 +613,89 @@ export default function SettingsPage() {
 
               <Button type="submit" className="w-full" loading={updatePaymentMethods.isPending}>
                 <CheckCircle2 className="w-5 h-5" /> Save Payment Methods
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </form>
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          updateOrderingMethods.mutate(orderingMethodsForm)
+        }}
+        className="mt-6"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reduceMotion ? 0.01 : 0.3, delay: reduceMotion ? 0 : 0.24 }}
+        >
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-surface-elevated flex items-center justify-center">
+                  <Utensils className="w-5 h-5 text-muted" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-ink">Ordering Methods</h2>
+                  <p className="text-sm text-muted">Choose how customers can receive their order</p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="divide-y divide-line">
+                {ORDERING_METHOD_FIELDS.map((field, idx) => {
+                  const Icon = field.icon
+                  const isLast = isLastEnabledOrderingMethod(field.key)
+                  return (
+                    <motion.div
+                      key={field.key}
+                      initial={{ opacity: 0, x: reduceMotion ? 0 : -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{
+                        duration: reduceMotion ? 0.01 : 0.25,
+                        delay: reduceMotion ? 0 : 0.05 * idx,
+                      }}
+                      className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-9 h-9 rounded-xl bg-surface-elevated flex items-center justify-center shrink-0">
+                          <Icon className="w-4 h-4 text-muted" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-ink">{field.label}</p>
+                          <p className="text-xs text-muted">{field.description}</p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-1.5 shrink-0">
+                        <ToggleSwitch
+                          checked={orderingMethodsForm[field.key]}
+                          onChange={() => toggleOrderingMethod(field.key)}
+                          ariaLabel={`Toggle ${field.label} orders`}
+                          disabled={isLast}
+                        />
+                        <AnimatePresence>
+                          {isLast && (
+                            <motion.p
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ duration: reduceMotion ? 0.01 : 0.2 }}
+                              className="max-w-[8.5rem] overflow-hidden text-right text-[11px] leading-tight text-muted"
+                            >
+                              At least one must stay on
+                            </motion.p>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </motion.div>
+                  )
+                })}
+              </div>
+
+              <Button type="submit" className="w-full" loading={updateOrderingMethods.isPending}>
+                <CheckCircle2 className="w-5 h-5" /> Save Ordering Methods
               </Button>
             </CardContent>
           </Card>

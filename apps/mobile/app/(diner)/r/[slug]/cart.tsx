@@ -81,6 +81,15 @@ export default function CartScreen() {
   if (onlineAvailable) availablePayments.push("ONLINE")
   if (cashAvailable) availablePayments.push("CASH")
 
+  const acceptsDineIn = restaurant?.acceptsDineIn !== false
+  const acceptsTakeaway = restaurant?.acceptsTakeaway !== false
+  const acceptsDelivery = restaurant?.acceptsDelivery !== false
+  const fulfillmentAvailable: Record<Fulfillment, boolean> = {
+    TAKEAWAY: acceptsTakeaway,
+    DINE_IN: acceptsDineIn,
+    DELIVERY: acceptsDelivery,
+  }
+
   const deliveryZoneActive = Boolean(restaurant?.deliveryEnabled && restaurant?.hasLocation)
   const deliveryRestrictedItems =
     fulfillment === "DELIVERY" ? lines.filter((l) => l.availableForDelivery === false) : []
@@ -112,14 +121,23 @@ export default function CartScreen() {
   }, [menu, onlineAvailable, cashAvailable])
 
   useEffect(() => {
+    if (!menu || storeTableId) return
+    const order: Fulfillment[] = ["TAKEAWAY", "DINE_IN", "DELIVERY"]
+    setFulfillment((current) =>
+      fulfillmentAvailable[current] ? current : order.find((k) => fulfillmentAvailable[k]) ?? current
+    )
+  }, [menu, acceptsDineIn, acceptsTakeaway, acceptsDelivery, storeTableId])
+
+  useEffect(() => {
     setOrderError(null)
   }, [fulfillment])
 
-  const FULFILL: { key: Fulfillment; label: string; Icon: typeof Utensils }[] = [
+  const ALL_FULFILL: { key: Fulfillment; label: string; Icon: typeof Utensils }[] = [
     { key: "TAKEAWAY", label: "Takeaway", Icon: ShoppingBag },
     { key: "DINE_IN", label: "Dine-in", Icon: Utensils },
     { key: "DELIVERY", label: "Delivery", Icon: Bike },
   ]
+  const FULFILL = ALL_FULFILL.filter((f) => fulfillmentAvailable[f.key])
 
   async function requestLocation() {
     setLocationMessage(null)

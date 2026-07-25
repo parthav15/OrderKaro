@@ -57,6 +57,9 @@ export interface Restaurant {
   onlinePaymentEnabled: boolean
   acceptsCash: boolean
   acceptsOnline: boolean
+  acceptsDineIn: boolean
+  acceptsTakeaway: boolean
+  acceptsDelivery: boolean
 }
 
 export interface MenuResponse {
