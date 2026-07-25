@@ -1,8 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import { motion } from "framer-motion"
-import { Search, X } from "lucide-react"
+import { Search, X, Receipt } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface MenuStickyHeaderProps {
@@ -104,6 +105,17 @@ export function MenuStickyHeader({
             </span>
           )}
         </div>
+
+        <motion.div whileTap={{ scale: 0.94 }} className="shrink-0">
+          <Link
+            href="/orders"
+            aria-label="My orders"
+            className="flex items-center gap-1.5 h-10 px-3.5 rounded-full bg-ink/[0.04] hover:bg-ink/[0.08] text-ink transition-colors"
+          >
+            <Receipt className="w-4 h-4" strokeWidth={2.2} />
+            <span className="hidden sm:inline text-sm font-semibold">Orders</span>
+          </Link>
+        </motion.div>
       </div>
 
       {children}
