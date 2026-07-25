@@ -7,6 +7,16 @@ const nextConfig = {
     ],
   },
   serverExternalPackages: ["@prisma/client", "bcryptjs"],
+  async headers() {
+    return [
+      {
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+        ],
+      },
+    ]
+  },
   async rewrites() {
     return [
       { source: "/api/v1/canteens/:path*", destination: "/api/v1/restaurants/:path*" },

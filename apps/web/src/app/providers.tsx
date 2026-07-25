@@ -5,7 +5,6 @@ import { useState, useEffect } from "react"
 import { ThemeProvider } from "next-themes"
 import { Toaster } from "sonner"
 import { PwaInstallBanner } from "@/components/consumer/pwa-install-banner"
-import { registerServiceWorker } from "@/lib/pwa"
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -18,14 +17,18 @@ export function Providers({ children }: { children: React.ReactNode }) {
   )
 
   useEffect(() => {
-    if (process.env.NODE_ENV === "production") {
-      registerServiceWorker()
-      return
-    }
+    if (typeof window === "undefined") return
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
         .getRegistrations()
         .then((regs) => regs.forEach((r) => r.unregister()))
+        .catch(() => {})
+    }
+    if ("caches" in window) {
+      caches
+        .keys()
+        .then((keys) => keys.forEach((key) => caches.delete(key)))
+        .catch(() => {})
     }
   }, [])
 

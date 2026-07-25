@@ -1,14 +1,3 @@
-export function registerServiceWorker() {
-  if (typeof window === "undefined") return
-  if (!("serviceWorker" in navigator)) return
-
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/sw.js", { scope: "/" })
-      .catch(() => {})
-  })
-}
-
 export async function requestNotificationPermission(): Promise<NotificationPermission> {
   if (typeof window === "undefined") return "denied"
   if (!("Notification" in window)) return "denied"
