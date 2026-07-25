@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { Search, SlidersHorizontal, ChevronLeft, ChevronRight, X, Banknote, ClipboardList, AlertTriangle } from "lucide-react"
+import { Search, SlidersHorizontal, ChevronLeft, ChevronRight, X, Banknote, ClipboardList, AlertTriangle, User, Phone } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -36,6 +36,7 @@ interface Order {
   orderType?: string
   deliveryLocation?: string | null
   table?: { label: string } | null
+  consumer?: { name: string; phone: string }
   items: OrderItem[]
 }
 
@@ -338,6 +339,29 @@ export default function OrderHistory() {
                               {statusLabels[order.status] || order.status}
                             </span>
                           </div>
+                          <motion.div
+                            initial={{ opacity: 0, x: -6 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.1, duration: 0.25 }}
+                            className="flex items-center gap-3 mt-1.5 flex-wrap"
+                          >
+                            <span className="inline-flex items-center gap-1.5">
+                              <User className="w-4 h-4 text-muted" />
+                              <span className="text-sm font-bold text-ink">
+                                {order.consumer?.name ?? "Guest"}
+                              </span>
+                            </span>
+                            {order.consumer?.phone && (
+                              <a
+                                href={`tel:${order.consumer.phone}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="inline-flex items-center gap-1 text-sm font-semibold text-muted hover:text-primary transition-colors"
+                              >
+                                <Phone className="w-3.5 h-3.5" />
+                                {order.consumer.phone}
+                              </a>
+                            )}
+                          </motion.div>
                           <p className="text-sm text-muted mt-1">
                             {orderDestinationLabel(order)} · {formatTime(order.placedAt)}
                           </p>
@@ -415,6 +439,29 @@ export default function OrderHistory() {
                 {selectedOrder.paymentStatus}
               </Badge>
             </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center justify-between gap-3 bg-surface-elevated rounded-xl px-4 py-3 flex-wrap"
+            >
+              <span className="inline-flex items-center gap-2">
+                <User className="w-5 h-5 text-muted" />
+                <span className="text-lg font-bold text-ink">
+                  {selectedOrder.consumer?.name ?? "Guest"}
+                </span>
+              </span>
+              {selectedOrder.consumer?.phone && (
+                <a
+                  href={`tel:${selectedOrder.consumer.phone}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-primary transition-colors"
+                >
+                  <Phone className="w-4 h-4" />
+                  {selectedOrder.consumer.phone}
+                </a>
+              )}
+            </motion.div>
 
             <div className="bg-surface-elevated rounded-xl p-4 space-y-1.5 text-sm">
               <p className="text-muted"><span className="font-semibold text-ink">Destination:</span> {orderDestinationLabel(selectedOrder)}</p>

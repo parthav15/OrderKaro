@@ -16,6 +16,8 @@ import {
   CheckCircle2,
   Flame,
   PackageCheck,
+  User,
+  Phone,
 } from "lucide-react"
 import api from "@/lib/api"
 import { connectSocket, realtimeEnabled } from "@/lib/socket"
@@ -148,6 +150,30 @@ function OrderCard({
           </span>
           <UrgencyBadge placedAt={order.placedAt} />
         </div>
+
+        <motion.div
+          initial={{ opacity: 0, x: -6 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1, duration: 0.25 }}
+          className="flex items-center justify-between gap-2 mb-3 flex-wrap"
+        >
+          <span className="inline-flex items-center gap-2">
+            <User className="w-5 h-5 text-muted shrink-0" />
+            <span className="text-lg font-bold text-ink">
+              {order.consumer?.name ?? "Guest"}
+            </span>
+          </span>
+          {order.consumer?.phone && (
+            <a
+              href={`tel:${order.consumer.phone}`}
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex items-center gap-1 text-sm font-semibold text-muted hover:text-primary transition-colors"
+            >
+              <Phone className="w-4 h-4" />
+              {order.consumer.phone}
+            </a>
+          )}
+        </motion.div>
 
         <div className="flex items-center gap-2 mb-4">
           <TableProperties className="w-5 h-5 text-muted shrink-0" />

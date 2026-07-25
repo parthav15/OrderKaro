@@ -9,6 +9,8 @@ import {
   CheckCircle2,
   LogOut,
   HandshakeIcon,
+  User,
+  Phone,
 } from "lucide-react"
 import api from "@/lib/api"
 import { connectSocket, realtimeEnabled } from "@/lib/socket"
@@ -26,6 +28,7 @@ interface ReadyOrder {
   orderType?: string
   deliveryLocation?: string | null
   table?: { label?: string | null } | null
+  consumer?: { name: string; phone: string } | null
   items: Array<{
     id: string
     quantity: number
@@ -175,6 +178,30 @@ export default function CounterDisplay() {
                     >
                       #{order.orderNumber}
                     </motion.span>
+
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.15, duration: 0.3 }}
+                      className="flex flex-col items-center gap-1.5 mb-4"
+                    >
+                      <span className="inline-flex items-center gap-2">
+                        <User className="w-6 h-6 text-muted" />
+                        <span className="text-2xl font-extrabold text-ink">
+                          {order.consumer?.name ?? "Guest"}
+                        </span>
+                      </span>
+                      {order.consumer?.phone && (
+                        <a
+                          href={`tel:${order.consumer.phone}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center gap-1.5 text-base font-bold text-muted hover:text-primary transition-colors"
+                        >
+                          <Phone className="w-4 h-4" />
+                          {order.consumer.phone}
+                        </a>
+                      )}
+                    </motion.div>
 
                     <span className="text-base font-bold text-muted uppercase tracking-wide mb-5">
                       {orderDestinationLabel(order)}

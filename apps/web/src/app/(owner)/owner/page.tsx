@@ -15,6 +15,8 @@ import {
   CircleCheck,
   X,
   ChevronDown,
+  User,
+  Phone,
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -337,6 +339,29 @@ export default function AdminDashboard() {
                                   </span>
                                 )}
                             </div>
+                            <motion.div
+                              initial={{ opacity: 0, x: -6 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.1, duration: 0.25 }}
+                              className="flex items-center gap-3 mb-1.5 flex-wrap"
+                            >
+                              <span className="inline-flex items-center gap-1.5">
+                                <User size={15} className="text-muted" />
+                                <span className="text-sm font-bold text-ink">
+                                  {order.consumer?.name ?? "Guest"}
+                                </span>
+                              </span>
+                              {order.consumer?.phone && (
+                                <a
+                                  href={`tel:${order.consumer.phone}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="inline-flex items-center gap-1 text-sm font-semibold text-muted hover:text-primary transition-colors"
+                                >
+                                  <Phone size={13} />
+                                  {order.consumer.phone}
+                                </a>
+                              )}
+                            </motion.div>
                             <p className="text-sm text-muted font-medium">
                               {order.table?.label ? `${order.table.label} · ` : ""}
                               {order.items?.length} item{order.items?.length !== 1 ? "s" : ""}

@@ -23,6 +23,7 @@ export async function GET(
           },
         },
         table: { select: { label: true } },
+        consumer: { select: { name: true, phone: true } },
       },
       orderBy: { placedAt: "asc" },
     })
