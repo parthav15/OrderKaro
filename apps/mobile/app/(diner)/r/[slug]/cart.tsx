@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { View, ScrollView, Pressable, TextInput, KeyboardAvoidingView, Platform } from "react-native"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { useQuery } from "@tanstack/react-query"
@@ -11,7 +11,6 @@ import {
   Utensils,
   Bike,
   Banknote,
-  Wallet as WalletIcon,
   Smartphone,
 } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
@@ -23,7 +22,7 @@ import { useTheme } from "@/theme/theme-provider"
 import type { MenuResponse, PaymentSession } from "@/lib/types"
 
 type Fulfillment = "TAKEAWAY" | "DINE_IN" | "DELIVERY"
-type Payment = "CASH" | "WALLET" | "ONLINE"
+type Payment = "CASH" | "ONLINE"
 
 function idempotencyKey() {
   return `vm-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
@@ -39,7 +38,7 @@ export default function CartScreen() {
   const [fulfillment, setFulfillment] = useState<Fulfillment>(
     storeTableId ? "DINE_IN" : "TAKEAWAY"
   )
-  const [payment, setPayment] = useState<Payment>("CASH")
+  const [payment, setPayment] = useState<Payment>("ONLINE")
   const [tableId, setTableId] = useState<string | null>(storeTableId)
   const [deliveryLocation, setDeliveryLocation] = useState("")
   const [instructions, setInstructions] = useState("")
@@ -54,16 +53,12 @@ export default function CartScreen() {
     enabled: !!slug,
   })
 
-  const { data: wallet } = useQuery({
-    queryKey: ["wallet", slug],
-    queryFn: () => api.get<{ balance: string }>(`/api/v1/consumer/wallet?slug=${slug}`, true),
-    enabled: !!slug,
-  })
-
   const onlineEnabled = menu?.restaurant.onlinePaymentEnabled
-  const walletBalance = Number(wallet?.balance ?? 0)
   const total = subtotal()
-  const walletShort = payment === "WALLET" && walletBalance < total
+
+  useEffect(() => {
+    if (menu && !onlineEnabled) setPayment("CASH")
+  }, [menu, onlineEnabled])
 
   const FULFILL: { key: Fulfillment; label: string; Icon: typeof Utensils }[] = [
     { key: "TAKEAWAY", label: "Takeaway", Icon: ShoppingBag },
@@ -252,18 +247,6 @@ export default function CartScreen() {
           Payment
         </Text>
         <View className="gap-2">
-          <PaymentOption
-            active={payment === "CASH"}
-            onPress={() => setPayment("CASH")}
-            Icon={Banknote}
-            label="Cash"
-          />
-          <PaymentOption
-            active={payment === "WALLET"}
-            onPress={() => setPayment("WALLET")}
-            Icon={WalletIcon}
-            label={`Wallet · ₹${walletBalance}`}
-          />
           {onlineEnabled ? (
             <PaymentOption
               active={payment === "ONLINE"}
@@ -272,13 +255,13 @@ export default function CartScreen() {
               label="Pay online (UPI / card)"
             />
           ) : null}
+          <PaymentOption
+            active={payment === "CASH"}
+            onPress={() => setPayment("CASH")}
+            Icon={Banknote}
+            label="Cash"
+          />
         </View>
-        {walletShort ? (
-          <Text className="text-danger font-sans-medium text-sm mt-3">
-            Wallet is short by ₹{total - walletBalance}. Top up from the wallet tab or pick another
-            method.
-          </Text>
-        ) : null}
       </ScrollView>
 
       <View className="px-5 pb-10 pt-3 border-t border-line bg-canvas">
@@ -294,7 +277,6 @@ export default function CartScreen() {
           title="Place order"
           loading={placing}
           disabled={
-            walletShort ||
             (fulfillment === "DINE_IN" && !tableId) ||
             (fulfillment === "DELIVERY" && !deliveryLocation.trim())
           }

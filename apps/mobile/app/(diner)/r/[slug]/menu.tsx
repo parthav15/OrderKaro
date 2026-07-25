@@ -17,7 +17,6 @@ import {
   Plus,
   Box,
   ShoppingBag,
-  Wallet as WalletIcon,
   Search,
   Leaf,
   X,
@@ -155,12 +154,6 @@ export default function MenuScreen() {
         <Text variant="muted" className="text-sm flex-1">
           Open until {data.restaurant.closingTime}
         </Text>
-        <Pressable
-          onPress={() => router.push({ pathname: "/(diner)/r/[slug]/wallet", params: { slug } })}
-          className="w-10 h-10 rounded-full bg-surface border border-line items-center justify-center"
-        >
-          <WalletIcon size={18} color={colors.accent} />
-        </Pressable>
       </View>
 
       <View className="px-5 pb-2">

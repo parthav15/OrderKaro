@@ -33,7 +33,6 @@ interface CashResult {
   orderAmount: string
   amountReceived: string
   changeAmount: string
-  newWalletBalance: string
 }
 
 function money(v: string | number) {
@@ -348,8 +347,7 @@ export default function OwnerOrders() {
             {cashResult && Number(cashResult.changeAmount) > 0 ? (
               <View className="w-full bg-canvas rounded-2xl border border-line p-4 mb-5">
                 <Text variant="body" className="text-base text-center">
-                  Return {money(cashResult.changeAmount)} change, or it was credited to their
-                  wallet (new balance {money(cashResult.newWalletBalance)}).
+                  Return {money(cashResult.changeAmount)} change to the customer.
                 </Text>
               </View>
             ) : null}

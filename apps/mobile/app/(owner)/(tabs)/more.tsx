@@ -5,7 +5,6 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import {
   QrCode,
   Users,
-  Wallet,
   Banknote,
   Receipt,
   Settings,
@@ -37,7 +36,6 @@ const GROUPS: Array<{ title: string; rows: Row[] }> = [
   {
     title: "Money",
     rows: [
-      { label: "Wallet", hint: "Credits & recharge requests", icon: Wallet, href: "/(owner)/wallet" },
       { label: "Payments", hint: "Connect your gateway", icon: Banknote, href: "/(owner)/payments" },
       { label: "Fees", hint: "Delivery & convenience charges", icon: Receipt, href: "/(owner)/fees" },
     ],

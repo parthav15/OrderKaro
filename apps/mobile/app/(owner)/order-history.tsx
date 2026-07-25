@@ -39,7 +39,6 @@ const STATUS_FILTERS: Array<{ label: string; value: string }> = [
 
 const PAYMENT_FILTERS: Array<{ label: string; value: string }> = [
   { label: "Any pay", value: "" },
-  { label: "Wallet", value: "WALLET" },
   { label: "Cash", value: "CASH" },
   { label: "Online", value: "ONLINE" },
 ]
