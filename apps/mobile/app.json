@@ -42,7 +42,9 @@
           "resizeMode": "contain",
           "backgroundColor": "#141110"
         }
-      ]
+      ],
+      "./plugins/without-push-entitlement.js",
+      "./plugins/with-development-team.js"
     ],
     "experiments": {
       "typedRoutes": true
