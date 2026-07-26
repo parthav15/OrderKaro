@@ -24,8 +24,15 @@ Three interfaces in one Next.js app:
 
 ```
 apps/web/         → Next.js app — UI (all 3 interfaces) + API routes (src/app/api/v1/**)
+apps/mobile/      → Expo / React Native app (SDK 54, expo-router, NativeWind, Moti) — diner / owner / kitchen, same @orderkaro/shared + same /api/v1 backend
 packages/shared/  → Shared Zod schemas, types, constants
 ```
+
+## Web ↔ mobile parity (ALWAYS keep both in sync)
+
+**There are TWO front-ends — the Next.js web app (`apps/web`) and the Expo mobile app (`apps/mobile`) — and they must not drift.** Almost every consumer/owner/kitchen feature exists on BOTH, so when building a feature or fix, plan for both from the start (they share `@orderkaro/shared` and the same `/api/v1` backend, so a backend/schema change usually needs UI on both sides).
+
+**Before starting any feature or fix, ASK the user whether it's needed on _both_, _mobile only_, or _web only_** — then implement it everywhere it's needed in the same pass. Never silently ship one side and leave the other behind; that is exactly how gaps form. (Known intentional exception: the mobile app must NEVER sell SaaS subscriptions — billing/plan upgrades stay web-only per Apple IAP rule 3.1.1.)
 
 ## Design Rules (STRICTLY ENFORCED)
 
