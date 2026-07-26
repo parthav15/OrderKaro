@@ -5,10 +5,21 @@ import * as maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
 const WINE_HEX = "#A31D33"
-const MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty"
+const MAPTILER_KEY = process.env.NEXT_PUBLIC_MAPTILER_KEY ?? ""
 const MIN_RADIUS_KM = 0.1
 const LOCAL_EPSILON = 0.000001
 const DEFAULT_CENTER: [number, number] = [78.9629, 20.5937]
+
+function isDarkTheme() {
+  if (typeof document === "undefined") return false
+  const root = document.documentElement
+  return root.getAttribute("data-theme") === "dark" || root.classList.contains("dark")
+}
+
+function styleUrl(dark: boolean) {
+  const style = dark ? "streets-v2-dark" : "streets-v2"
+  return `https://api.maptiler.com/maps/${style}/style.json?key=${MAPTILER_KEY}`
+}
 
 function metersPerDegree(lat: number) {
   return {
@@ -56,18 +67,23 @@ export function DeliveryMap({ latitude, longitude, radiusKm, onChange }: Deliver
   const mapRef = useRef<maplibregl.Map | null>(null)
   const markerRef = useRef<maplibregl.Marker | null>(null)
   const readyRef = useRef(false)
+  const firstFitRef = useRef(false)
+  const darkRef = useRef(false)
   const onChangeRef = useRef(onChange)
   const lastEmittedRef = useRef<{ lat: number; lng: number } | null>(null)
+  const propsRef = useRef({ latitude, longitude, radiusKm })
   onChangeRef.current = onChange
+  propsRef.current = { latitude, longitude, radiusKm }
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
     const startLng = Number.isFinite(longitude) ? longitude : DEFAULT_CENTER[0]
     const startLat = Number.isFinite(latitude) ? latitude : DEFAULT_CENTER[1]
+    darkRef.current = isDarkTheme()
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: MAP_STYLE,
+      style: styleUrl(darkRef.current),
       center: [startLng, startLat],
       zoom: 12,
       attributionControl: false,
@@ -92,32 +108,57 @@ export function DeliveryMap({ latitude, longitude, radiusKm, onChange }: Deliver
       onChangeRef.current(lat, lng)
     })
 
-    map.on("load", () => {
-      const effectiveRadius = Math.max(radiusKm, MIN_RADIUS_KM)
-      map.addSource("delivery-radius", { type: "geojson", data: radiusPolygon(startLat, startLng, effectiveRadius) })
-      map.addLayer({
-        id: "delivery-radius-fill",
-        type: "fill",
-        source: "delivery-radius",
-        paint: { "fill-color": WINE_HEX, "fill-opacity": 0.12 },
-      })
-      map.addLayer({
-        id: "delivery-radius-line",
-        type: "line",
-        source: "delivery-radius",
-        paint: { "line-color": WINE_HEX, "line-width": 2.5, "line-opacity": 0.9 },
-      })
+    const applyRadius = () => {
+      const current = propsRef.current
+      const clat = Number.isFinite(current.latitude) ? current.latitude : startLat
+      const clng = Number.isFinite(current.longitude) ? current.longitude : startLng
+      const rad = Math.max(current.radiusKm, MIN_RADIUS_KM)
+      const data = radiusPolygon(clat, clng, rad)
+      const existing = map.getSource("delivery-radius") as maplibregl.GeoJSONSource | undefined
+      if (existing) {
+        existing.setData(data)
+      } else {
+        map.addSource("delivery-radius", { type: "geojson", data })
+        map.addLayer({
+          id: "delivery-radius-fill",
+          type: "fill",
+          source: "delivery-radius",
+          paint: { "fill-color": WINE_HEX, "fill-opacity": 0.12 },
+        })
+        map.addLayer({
+          id: "delivery-radius-line",
+          type: "line",
+          source: "delivery-radius",
+          paint: { "line-color": WINE_HEX, "line-width": 2.5, "line-opacity": 0.9 },
+        })
+      }
       readyRef.current = true
-      map.fitBounds(radiusBounds(startLat, startLng, effectiveRadius), { padding: 46, duration: 0, maxZoom: 15 })
+      if (!firstFitRef.current) {
+        firstFitRef.current = true
+        map.fitBounds(radiusBounds(clat, clng, rad), { padding: 46, duration: 0, maxZoom: 15 })
+      }
+    }
+
+    map.on("load", applyRadius)
+
+    const observer = new MutationObserver(() => {
+      const nextDark = isDarkTheme()
+      if (nextDark === darkRef.current) return
+      darkRef.current = nextDark
+      map.setStyle(styleUrl(nextDark))
+      map.once("styledata", applyRadius)
     })
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "class"] })
 
     mapRef.current = map
     markerRef.current = marker
     return () => {
+      observer.disconnect()
       map.remove()
       mapRef.current = null
       markerRef.current = null
       readyRef.current = false
+      firstFitRef.current = false
     }
   }, [])
 
