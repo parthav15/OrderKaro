@@ -337,6 +337,12 @@ export default function SettingsPage() {
     onError: (err: any) => toast.error(err.response?.data?.error || "Failed to save notifications"),
   })
 
+  const { data: smsUsage } = useQuery({
+    queryKey: ["sms-usage", restaurantId],
+    queryFn: () => api.get(`/api/v1/restaurants/${restaurantId}/sms/usage`).then((r) => r.data.data),
+    enabled: !!restaurantId,
+  })
+
   function useCurrentLocation() {
     if (!navigator.geolocation) {
       toast.error("Geolocation is not supported by your browser")
@@ -776,6 +782,21 @@ export default function SettingsPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-5">
+              {smsUsage && (smsUsage.totalSent > 0 || smsUsage.pendingAmount > 0) && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-surface-elevated p-3">
+                    <p className="text-xs text-muted">Texts sent</p>
+                    <p className="text-lg font-bold text-ink tabular-nums">{smsUsage.totalSent}</p>
+                  </div>
+                  <div className="rounded-xl bg-surface-elevated p-3">
+                    <p className="text-xs text-muted">Due this cycle</p>
+                    <p className="text-lg font-bold text-brand-red tabular-nums">
+                      ₹{Number(smsUsage.pendingAmount).toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {restaurant && !restaurant.smsEnabled && (
                 <div className="flex items-start gap-2 rounded-xl bg-surface-elevated p-3">
                   <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-gold" />
