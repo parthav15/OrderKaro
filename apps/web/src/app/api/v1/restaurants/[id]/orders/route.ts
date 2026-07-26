@@ -372,7 +372,7 @@ export async function POST(
     const smsCallbackUrl = `${appUrl}/api/v1/sms/status`
     const itemCount = orderItemsData.reduce((n, i) => n + i.quantity, 0)
 
-    if (restaurant.smsEnabled && restaurant.notifyOrderPlaced) {
+    if ((restaurant.smsEnabled || restaurant.whatsappEnabled) && restaurant.notifyOrderPlaced) {
       const consumer = await prisma.consumer.findUnique({
         where: { id: user.id },
         select: { name: true, phone: true },
@@ -392,7 +392,7 @@ export async function POST(
       })
     }
 
-    if (restaurant.smsEnabled && restaurant.notifyOwnerNewOrder) {
+    if ((restaurant.smsEnabled || restaurant.whatsappEnabled) && restaurant.notifyOwnerNewOrder) {
       const owner = await prisma.owner.findUnique({
         where: { id: restaurant.ownerId },
         select: { phone: true },

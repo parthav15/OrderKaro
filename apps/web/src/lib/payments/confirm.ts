@@ -84,7 +84,7 @@ export async function confirmOrderPayment(orderId: string): Promise<ConfirmOutco
       },
     })
 
-    if (justPlaced && order.restaurant.smsEnabled) {
+    if (justPlaced && (order.restaurant.smsEnabled || order.restaurant.whatsappEnabled)) {
       const r = order.restaurant
       const smsCallbackUrl = process.env.NEXT_PUBLIC_APP_URL
         ? `${process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")}/api/v1/sms/status`

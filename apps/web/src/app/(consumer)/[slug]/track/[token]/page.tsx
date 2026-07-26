@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion"
 import { useQuery } from "@tanstack/react-query"
-import { CheckCircle, Clock, ChefHat, Bell, ShoppingBag, ChevronRight } from "lucide-react"
+import { CheckCircle, Clock, ChefHat, Bell, ShoppingBag } from "lucide-react"
 import api from "@/lib/api"
 import { formatPrice, orderDestinationLabel } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -168,16 +168,11 @@ export default function TrackOrderPage({
         </AnimatePresence>
 
         {order.whatsappOptIn && !isPickedUp && order.status !== "CANCELLED" && (
-          <motion.a
-            href={`https://wa.me/${order.whatsappOptIn.number}?text=${encodeURIComponent(order.whatsappOptIn.message)}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05, type: "spring", stiffness: 260, damping: 22 }}
-            whileHover={{ y: -3 }}
-            whileTap={{ scale: 0.985 }}
-            className="group relative block overflow-hidden rounded-2xl border border-[#25D366]/30 bg-gradient-to-br from-[#25D366]/[0.12] to-[#128C7E]/[0.05] p-5"
+            className="relative overflow-hidden rounded-2xl border border-[#25D366]/30 bg-gradient-to-br from-[#25D366]/[0.12] to-[#128C7E]/[0.05] p-5"
           >
             <motion.span
               aria-hidden
@@ -201,20 +196,13 @@ export default function TrackOrderPage({
                 <WhatsAppGlyph className="h-6 w-6 text-white" />
               </motion.span>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-extrabold text-ink">Get updates on WhatsApp</p>
+                <p className="text-sm font-extrabold text-ink">You&apos;ll get updates on WhatsApp</p>
                 <p className="mt-0.5 text-xs text-muted">
-                  Free, instant order updates — right in your chats.
+                  We&apos;ll message you here as your order moves.
                 </p>
               </div>
-              <motion.span
-                animate={{ x: [0, 4, 0] }}
-                transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
-                className="shrink-0 text-[#128C7E]"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </motion.span>
             </div>
-          </motion.a>
+          </motion.div>
         )}
 
         <motion.div
