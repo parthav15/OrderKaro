@@ -1,12 +1,14 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 
 const WINE_PIN_HEX = "#A31D33"
 const MIN_EFFECTIVE_RADIUS_KM = 0.1
 const LOCAL_EPSILON = 0.000001
+const MIN_ZOOM = 3
+const MAX_ZOOM = 18
 
 const winePinIcon = L.divIcon({
   className: "",
@@ -29,6 +31,7 @@ export function DeliveryMap({ latitude, longitude, radiusKm, onChange }: Deliver
   const circleRef = useRef<L.Circle | null>(null)
   const onChangeRef = useRef(onChange)
   const lastEmittedRef = useRef<{ lat: number; lng: number } | null>(null)
+  const [zoom, setZoom] = useState(13)
   onChangeRef.current = onChange
 
   useEffect(() => {
@@ -38,6 +41,10 @@ export function DeliveryMap({ latitude, longitude, radiusKm, onChange }: Deliver
     const map = L.map(containerRef.current, {
       center: [startLat, startLng],
       zoom: 13,
+      minZoom: MIN_ZOOM,
+      maxZoom: MAX_ZOOM,
+      zoomSnap: 0.25,
+      zoomControl: false,
       scrollWheelZoom: false,
       attributionControl: true,
     })
@@ -64,9 +71,11 @@ export function DeliveryMap({ latitude, longitude, radiusKm, onChange }: Deliver
       lastEmittedRef.current = { lat, lng }
       onChangeRef.current(lat, lng)
     })
+    map.on("zoom", () => setZoom(map.getZoom()))
     mapRef.current = map
     markerRef.current = marker
     circleRef.current = circle
+    setZoom(map.getZoom())
     const sizeTimer = setTimeout(() => map.invalidateSize(), 60)
     return () => {
       clearTimeout(sizeTimer)
@@ -98,10 +107,32 @@ export function DeliveryMap({ latitude, longitude, radiusKm, onChange }: Deliver
     }
   }, [latitude, longitude, radiusKm])
 
+  const handleZoomInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const next = Number(event.target.value)
+    setZoom(next)
+    mapRef.current?.setZoom(next, { animate: false })
+  }
+
   return (
-    <div
-      ref={containerRef}
-      className="h-80 w-full overflow-hidden rounded-xl border border-line shadow-sm"
-    />
+    <div className="relative h-80 w-full">
+      <div ref={containerRef} className="h-full w-full overflow-hidden rounded-xl border border-line shadow-sm" />
+      <div className="pointer-events-auto absolute left-3 top-3 z-10 flex h-44 w-10 flex-col items-center justify-between rounded-full border border-line bg-surface/85 py-3 shadow-md backdrop-blur">
+        <span className="select-none text-sm font-semibold leading-none text-muted">+</span>
+        <div className="relative flex flex-1 items-center justify-center">
+          <input
+            type="range"
+            aria-label="Zoom"
+            min={MIN_ZOOM}
+            max={MAX_ZOOM}
+            step={0.25}
+            value={zoom}
+            onChange={handleZoomInput}
+            style={{ width: "108px", transform: "rotate(-90deg)", accentColor: WINE_PIN_HEX }}
+            className="cursor-pointer"
+          />
+        </div>
+        <span className="select-none text-base font-semibold leading-none text-muted">−</span>
+      </div>
+    </div>
   )
 }
