@@ -75,6 +75,7 @@ export const SMS_RESTAURANT_SELECT = {
   name: true,
   smsEnabled: true,
   smsMarginPercent: true,
+  whatsappEnabled: true,
   notifyOrderPlaced: true,
   notifyOrderAccepted: true,
   notifyOrderPreparing: true,
@@ -83,3 +84,56 @@ export const SMS_RESTAURANT_SELECT = {
   notifyOrderCancelled: true,
   notifyOwnerNewOrder: true,
 } as const
+
+export interface WhatsAppTemplate {
+  name: string
+  text: string
+  variables: (ctx: SmsContext) => Record<string, string>
+}
+
+export const WHATSAPP_TEMPLATES: Record<SmsNotificationKey, WhatsAppTemplate> = {
+  ORDER_PLACED: {
+    name: "vm_order_placed",
+    text: "Hi {{1}}, your order #{{2}} at {{3}} is confirmed. We'll keep you updated right here. — Vision Menu",
+    variables: (c) => ({ "1": c.customerName || "there", "2": String(c.orderNumber), "3": c.restaurantName }),
+  },
+  ORDER_ACCEPTED: {
+    name: "vm_order_accepted",
+    text: "Good news! {{1}} has accepted your order #{{2}} and will start preparing it shortly.",
+    variables: (c) => ({ "1": c.restaurantName, "2": String(c.orderNumber) }),
+  },
+  ORDER_PREPARING: {
+    name: "vm_order_preparing",
+    text: "Your order #{{1}} at {{2}} is now being prepared. Hang tight!",
+    variables: (c) => ({ "1": String(c.orderNumber), "2": c.restaurantName }),
+  },
+  ORDER_READY: {
+    name: "vm_order_ready",
+    text: "Your order #{{1}} from {{2}} is ready for {{3}}!",
+    variables: (c) => ({
+      "1": String(c.orderNumber),
+      "2": c.restaurantName,
+      "3": c.orderType === "DELIVERY" ? "delivery" : "pickup",
+    }),
+  },
+  ORDER_COMPLETED: {
+    name: "vm_order_completed",
+    text: "Order #{{1}} at {{2}} is complete. Thanks for ordering — see you again soon!",
+    variables: (c) => ({ "1": String(c.orderNumber), "2": c.restaurantName }),
+  },
+  ORDER_CANCELLED: {
+    name: "vm_order_cancelled",
+    text: "Your order #{{1}} at {{2}} has been cancelled. Please reach out to us with any questions.",
+    variables: (c) => ({ "1": String(c.orderNumber), "2": c.restaurantName }),
+  },
+  OWNER_NEW_ORDER: {
+    name: "vm_owner_new_order",
+    text: "New order #{{1}} ({{2}}) at {{3}} — Rs {{4}}. Open Vision Menu to accept.",
+    variables: (c) => ({
+      "1": String(c.orderNumber),
+      "2": orderTypeLabel(c.orderType),
+      "3": c.restaurantName,
+      "4": c.total || "-",
+    }),
+  },
+}

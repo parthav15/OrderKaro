@@ -64,6 +64,7 @@ model Restaurant {
 
   smsEnabled       Boolean @default(false)
   smsMarginPercent Decimal @default(0) @db.Decimal(5, 2)
+  whatsappEnabled  Boolean @default(false)
 
   notifyOrderPlaced    Boolean @default(false)
   notifyOrderAccepted  Boolean @default(false)
@@ -159,12 +160,16 @@ model RestaurantFeeConfig {
 }
 
 model SmsSettings {
-  id                   String   @id @default("singleton")
-  enabled              Boolean  @default(false)
-  baseCostPerSegment   Decimal  @default(7) @db.Decimal(10, 4)
-  defaultMarginPercent Decimal  @default(0) @db.Decimal(5, 2)
-  currency             String   @default("INR")
-  updatedAt            DateTime @updatedAt
+  id                     String   @id @default("singleton")
+  enabled                Boolean  @default(false)
+  baseCostPerSegment     Decimal  @default(7) @db.Decimal(10, 4)
+  defaultMarginPercent   Decimal  @default(0) @db.Decimal(5, 2)
+  currency               String   @default("INR")
+  whatsappEnabled        Boolean  @default(false)
+  whatsappSender         String?
+  whatsappCostPerMessage Decimal  @default(0.15) @db.Decimal(10, 4)
+  whatsappTemplates      Json?
+  updatedAt              DateTime @updatedAt
 }
 
 model SmsMessage {
@@ -173,6 +178,7 @@ model SmsMessage {
   restaurant    Restaurant       @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   orderId       String?
   template      String
+  channel       NotificationChannel @default(SMS)
   toPhone       String
   body          String
   segments      Int              @default(1)
@@ -580,4 +586,10 @@ enum SmsBillingState {
   PENDING
   BILLED
   VOID
+}
+
+enum NotificationChannel {
+  WHATSAPP
+  SMS
+  PUSH
 }

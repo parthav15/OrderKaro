@@ -35,3 +35,19 @@ export async function computeSmsCharge(
     currency: settings.currency,
   }
 }
+
+export async function computeWhatsAppCharge(
+  marginPercent: Decimal | number | string
+): Promise<SmsCharge> {
+  const settings = await getSmsSettings()
+  const cost = new Decimal(settings.whatsappCostPerMessage.toString()).toDecimalPlaces(4)
+  const pct = new Decimal(marginPercent.toString())
+  const sell = cost.mul(pct.div(100).add(1)).toDecimalPlaces(4)
+  return {
+    costAmount: cost,
+    sellAmount: sell,
+    marginAmount: sell.sub(cost),
+    marginPercent: pct,
+    currency: settings.currency,
+  }
+}
