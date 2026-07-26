@@ -24,6 +24,7 @@ import { createCashfreeSplitCheckout } from "@/lib/payments/cashfree-vendor"
 import { computeOrderFees } from "@/lib/order-fees"
 import { resolveAppUrl } from "@/lib/app-url"
 import { activeOrderWhere } from "@/lib/active-orders"
+import { dispatchSms } from "@/lib/sms/dispatch"
 
 export async function POST(
   request: NextRequest,
@@ -366,6 +367,50 @@ export async function POST(
         })
         throw paymentError
       }
+    }
+
+    const smsCallbackUrl = `${appUrl}/api/v1/sms/status`
+    const itemCount = orderItemsData.reduce((n, i) => n + i.quantity, 0)
+
+    if (restaurant.smsEnabled && restaurant.notifyOrderPlaced) {
+      const consumer = await prisma.consumer.findUnique({
+        where: { id: user.id },
+        select: { name: true, phone: true },
+      })
+      await dispatchSms({
+        restaurant,
+        key: "ORDER_PLACED",
+        toPhone: consumer?.phone,
+        context: {
+          restaurantName: restaurant.name,
+          orderNumber: order.orderNumber,
+          orderType: order.orderType,
+          customerName: consumer?.name,
+        },
+        orderId: order.id,
+        statusCallbackUrl: smsCallbackUrl,
+      })
+    }
+
+    if (restaurant.smsEnabled && restaurant.notifyOwnerNewOrder) {
+      const owner = await prisma.owner.findUnique({
+        where: { id: restaurant.ownerId },
+        select: { phone: true },
+      })
+      await dispatchSms({
+        restaurant,
+        key: "OWNER_NEW_ORDER",
+        toPhone: owner?.phone,
+        context: {
+          restaurantName: restaurant.name,
+          orderNumber: order.orderNumber,
+          orderType: order.orderType,
+          itemCount,
+          total: totalAmount.toFixed(2),
+        },
+        orderId: order.id,
+        statusCallbackUrl: smsCallbackUrl,
+      })
     }
 
     return created({ ...order, trackingUrl })

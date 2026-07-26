@@ -18,6 +18,13 @@ export const createRestaurantSchema = z.object({
   acceptsDineIn: z.boolean().default(true),
   acceptsTakeaway: z.boolean().default(true),
   acceptsDelivery: z.boolean().default(true),
+  notifyOrderPlaced: z.boolean().default(false),
+  notifyOrderAccepted: z.boolean().default(false),
+  notifyOrderPreparing: z.boolean().default(false),
+  notifyOrderReady: z.boolean().default(false),
+  notifyOrderCompleted: z.boolean().default(false),
+  notifyOrderCancelled: z.boolean().default(false),
+  notifyOwnerNewOrder: z.boolean().default(false),
 })
 
 export const updateRestaurantSchema = createRestaurantSchema.partial()

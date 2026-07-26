@@ -2,6 +2,9 @@ import { NextRequest } from "next/server"
 import prisma from "@/lib/prisma"
 import { success, error, handleError, requireRole, parseBody, AuthError } from "@/lib/api-utils"
 import { sendPushToConsumer } from "@/lib/push-notifications"
+import { dispatchSms } from "@/lib/sms/dispatch"
+import { ORDER_STATUS_SMS, SMS_RESTAURANT_SELECT } from "@/lib/sms/templates"
+import { resolveAppUrl } from "@/lib/app-url"
 import { updateOrderStatusSchema, ORDER_STATUS_FLOW } from "@orderkaro/shared"
 
 export async function PATCH(
@@ -16,6 +19,10 @@ export async function PATCH(
 
     const order = await prisma.order.findFirst({
       where: { id: orderId, restaurantId },
+      include: {
+        restaurant: { select: SMS_RESTAURANT_SELECT },
+        consumer: { select: { name: true, phone: true } },
+      },
     })
 
     if (!order) return error("Order not found", 404)
@@ -61,7 +68,25 @@ export async function PATCH(
 
     const updated = await prisma.order.findUnique({ where: { id: orderId } })
 
-    if (data.status === "READY") {
+    const smsKey = ORDER_STATUS_SMS[data.status]
+    let smsSent = false
+    if (smsKey) {
+      smsSent = await dispatchSms({
+        restaurant: order.restaurant,
+        key: smsKey,
+        toPhone: order.consumer.phone,
+        context: {
+          restaurantName: order.restaurant.name,
+          orderNumber: order.orderNumber,
+          orderType: order.orderType,
+          customerName: order.consumer.name,
+        },
+        orderId,
+        statusCallbackUrl: `${resolveAppUrl(request)}/api/v1/sms/status`,
+      })
+    }
+
+    if (data.status === "READY" && !smsSent) {
       sendPushToConsumer(
         order.consumerId,
         "Order Ready!",
@@ -70,7 +95,7 @@ export async function PATCH(
       )
     }
 
-    if (data.status === "CANCELLED") {
+    if (data.status === "CANCELLED" && !smsSent) {
       sendPushToConsumer(
         order.consumerId,
         "Order Cancelled",

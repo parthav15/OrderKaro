@@ -8,13 +8,19 @@ export function isTwilioConfigured(): boolean {
   )
 }
 
-export async function sendSms(to: string, body: string): Promise<void> {
+export async function sendSms(
+  to: string,
+  body: string,
+  statusCallback?: string
+): Promise<{ sid: string | null }> {
   const sid = process.env.TWILIO_ACCOUNT_SID as string
   const token = process.env.TWILIO_AUTH_TOKEN as string
   const from = process.env.TWILIO_FROM_NUMBER as string
 
   const auth = Buffer.from(`${sid}:${token}`).toString("base64")
-  const form = new URLSearchParams({ To: to, From: from, Body: body })
+  const params: Record<string, string> = { To: to, From: from, Body: body }
+  if (statusCallback) params.StatusCallback = statusCallback
+  const form = new URLSearchParams(params)
 
   const res = await fetch(`${TWILIO_API}/Accounts/${sid}/Messages.json`, {
     method: "POST",
@@ -25,8 +31,11 @@ export async function sendSms(to: string, body: string): Promise<void> {
     body: form.toString(),
   })
 
+  const payload = (await res.json().catch(() => null)) as { sid?: string; message?: string } | null
+
   if (!res.ok) {
-    const detail = (await res.json().catch(() => null)) as { message?: string } | null
-    throw new Error(detail?.message || `Twilio send failed (${res.status})`)
+    throw new Error(payload?.message || `Twilio send failed (${res.status})`)
   }
+
+  return { sid: payload?.sid ?? null }
 }
