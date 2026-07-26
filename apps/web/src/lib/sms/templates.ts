@@ -109,7 +109,7 @@ export const WHATSAPP_TEMPLATES: Record<SmsNotificationKey, WhatsAppTemplate> = 
   },
   ORDER_READY: {
     name: "vm_order_ready",
-    text: "Your order #{{1}} from {{2}} is ready for {{3}}!",
+    text: "Great news! Your order #{{1}} from {{2}} is now ready for {{3}}. Thank you for ordering with Vision Menu.",
     variables: (c) => ({
       "1": String(c.orderNumber),
       "2": c.restaurantName,
