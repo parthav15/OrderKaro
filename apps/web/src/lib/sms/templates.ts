@@ -72,9 +72,9 @@ export const SMS_TEMPLATES: Record<SmsNotificationKey, SmsTemplate> = {
   OWNER_DAILY_SUMMARY: {
     audience: "OWNER",
     render: (c) =>
-      `${c.restaurantName}: today you had ${c.orderCount ?? 0} order(s) totaling Rs ${
+      `Vision Menu daily summary for ${c.restaurantName} - ${c.orderCount ?? 0} order(s) totaling Rs ${
         c.revenue ?? "0"
-      }. See the full breakdown in Vision Menu.`,
+      } today. Open the app for the full breakdown.`,
   },
   OWNER_PLAN_EXPIRING: {
     audience: "OWNER",
@@ -169,7 +169,7 @@ export const WHATSAPP_TEMPLATES: Record<SmsNotificationKey, WhatsAppTemplate> = 
   },
   OWNER_DAILY_SUMMARY: {
     name: "vm_owner_daily_summary",
-    text: "{{1}}: today you had {{2}} orders totaling Rs {{3}}. Open Vision Menu to see the full breakdown.",
+    text: "Vision Menu daily summary for {{1}} - {{2}} order(s) totaling Rs {{3}} today. Open the app for the full breakdown.",
     variables: (c) => ({
       "1": c.restaurantName,
       "2": String(c.orderCount ?? 0),
