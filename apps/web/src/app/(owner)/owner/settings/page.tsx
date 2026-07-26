@@ -23,6 +23,9 @@ import {
   Utensils,
   ShoppingBag,
   Bike,
+  MessageSquare,
+  Bell,
+  Info,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -33,6 +36,7 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { BRAND_COLOR_PRESETS, DEFAULT_BRAND_COLOR, readableTextColor } from "@/lib/brand-color"
 import { useReducedMotionSafe } from "@/hooks/use-reduced-motion-safe"
+import { SMS_NOTIFICATIONS } from "@orderkaro/shared"
 
 interface PaymentMethodsFormState {
   acceptsCash: boolean
@@ -306,6 +310,31 @@ export default function SettingsPage() {
       toast.success("Ordering methods saved successfully")
     },
     onError: (err: any) => toast.error(err.response?.data?.error || "Failed to save ordering methods"),
+  })
+
+  const [notificationsForm, setNotificationsForm] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(SMS_NOTIFICATIONS.map((n) => [n.field, false]))
+  )
+
+  useEffect(() => {
+    if (restaurant) {
+      setNotificationsForm(
+        Object.fromEntries(SMS_NOTIFICATIONS.map((n) => [n.field, restaurant[n.field] ?? false]))
+      )
+    }
+  }, [restaurant])
+
+  function toggleNotification(field: string) {
+    setNotificationsForm((prev) => ({ ...prev, [field]: !prev[field] }))
+  }
+
+  const updateNotifications = useMutation({
+    mutationFn: (data: Record<string, boolean>) => api.put(`/api/v1/restaurants/${restaurantId}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["restaurants"] })
+      toast.success("Notification settings saved successfully")
+    },
+    onError: (err: any) => toast.error(err.response?.data?.error || "Failed to save notifications"),
   })
 
   function useCurrentLocation() {
@@ -716,6 +745,84 @@ export default function SettingsPage() {
 
               <Button type="submit" className="w-full" loading={updateOrderingMethods.isPending}>
                 <CheckCircle2 className="w-5 h-5" /> Save Ordering Methods
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </form>
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          updateNotifications.mutate(notificationsForm)
+        }}
+        className="mt-6"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reduceMotion ? 0.01 : 0.3, delay: reduceMotion ? 0 : 0.26 }}
+        >
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-surface-elevated flex items-center justify-center">
+                  <MessageSquare className="w-5 h-5 text-muted" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-ink">SMS Notifications</h2>
+                  <p className="text-sm text-muted">Text customers and yourself as orders move</p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {restaurant && !restaurant.smsEnabled && (
+                <div className="flex items-start gap-2 rounded-xl bg-surface-elevated p-3">
+                  <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-gold" />
+                  <p className="text-xs text-muted">
+                    SMS isn't switched on for your restaurant yet. Set your preferences here — they
+                    take effect as soon as it's enabled.
+                  </p>
+                </div>
+              )}
+
+              <div className="divide-y divide-line">
+                {SMS_NOTIFICATIONS.map((field, idx) => {
+                  const Icon = field.audience === "OWNER" ? Bell : MessageSquare
+                  return (
+                    <motion.div
+                      key={field.field}
+                      initial={{ opacity: 0, x: reduceMotion ? 0 : -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{
+                        duration: reduceMotion ? 0.01 : 0.25,
+                        delay: reduceMotion ? 0 : 0.04 * idx,
+                      }}
+                      className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-9 h-9 rounded-xl bg-surface-elevated flex items-center justify-center shrink-0">
+                          <Icon className="w-4 h-4 text-muted" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-ink">{field.label}</p>
+                          <p className="text-xs text-muted">{field.description}</p>
+                        </div>
+                      </div>
+                      <div className="shrink-0">
+                        <ToggleSwitch
+                          checked={!!notificationsForm[field.field]}
+                          onChange={() => toggleNotification(field.field)}
+                          ariaLabel={`Toggle ${field.label} SMS`}
+                        />
+                      </div>
+                    </motion.div>
+                  )
+                })}
+              </div>
+
+              <Button type="submit" className="w-full" loading={updateNotifications.isPending}>
+                <CheckCircle2 className="w-5 h-5" /> Save Notifications
               </Button>
             </CardContent>
           </Card>

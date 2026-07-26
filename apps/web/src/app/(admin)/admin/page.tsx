@@ -18,6 +18,7 @@ import {
   ChevronRight,
   Coins,
   Landmark,
+  MessageSquareText,
 } from "lucide-react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -184,33 +185,61 @@ export default function SuperAdminPage() {
         <PlatformRevenueCard value={stats?.platformRevenue ?? 0} loading={statsLoading} />
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.12 }}
-        className="mb-8"
-      >
-        <Link href="/admin/fees">
-          <motion.div
-            whileHover={{ y: -2 }}
-            whileTap={{ scale: 0.99 }}
-            className="group flex items-center justify-between gap-4 rounded-xl bg-surface border border-line shadow-sm px-6 py-5 transition-colors hover:border-primary/30"
-          >
-            <div className="flex items-center gap-4 min-w-0">
-              <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <Coins className="w-5 h-5 text-brand-red" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.12 }}
+        >
+          <Link href="/admin/fees">
+            <motion.div
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.99 }}
+              className="group flex items-center justify-between gap-4 rounded-xl bg-surface border border-line shadow-sm px-6 py-5 transition-colors hover:border-primary/30"
+            >
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <Coins className="w-5 h-5 text-brand-red" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-ink text-sm">Marketplace Fees</p>
+                  <p className="text-xs text-muted">
+                    Configure platform delivery &amp; convenience fees
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="font-bold text-ink text-sm">Marketplace Fees</p>
-                <p className="text-xs text-muted">
-                  Configure platform delivery &amp; convenience fees
-                </p>
+              <ChevronRight className="w-5 h-5 text-muted group-hover:text-brand-red group-hover:translate-x-0.5 transition-all shrink-0" />
+            </motion.div>
+          </Link>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.16 }}
+        >
+          <Link href="/admin/sms">
+            <motion.div
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.99 }}
+              className="group flex items-center justify-between gap-4 rounded-xl bg-surface border border-line shadow-sm px-6 py-5 transition-colors hover:border-primary/30"
+            >
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <MessageSquareText className="w-5 h-5 text-brand-red" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-ink text-sm">SMS Notifications</p>
+                  <p className="text-xs text-muted">
+                    Set base cost, margins &amp; per-restaurant SMS access
+                  </p>
+                </div>
               </div>
-            </div>
-            <ChevronRight className="w-5 h-5 text-muted group-hover:text-brand-red group-hover:translate-x-0.5 transition-all shrink-0" />
-          </motion.div>
-        </Link>
-      </motion.div>
+              <ChevronRight className="w-5 h-5 text-muted group-hover:text-brand-red group-hover:translate-x-0.5 transition-all shrink-0" />
+            </motion.div>
+          </Link>
+        </motion.div>
+      </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         {summaryStats.map((stat, idx) => {

@@ -120,6 +120,14 @@ export interface OwnerRestaurant {
   minOrderValue?: string
   country?: string
   currency?: string
+  smsEnabled?: boolean
+  notifyOrderPlaced?: boolean
+  notifyOrderAccepted?: boolean
+  notifyOrderPreparing?: boolean
+  notifyOrderReady?: boolean
+  notifyOrderCompleted?: boolean
+  notifyOrderCancelled?: boolean
+  notifyOwnerNewOrder?: boolean
 }
 
 export interface ActiveOrder {

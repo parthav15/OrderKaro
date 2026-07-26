@@ -28,7 +28,11 @@ import {
   Utensils,
   ShoppingBag,
   Bike,
+  MessageSquare,
+  Bell,
+  Info,
 } from "lucide-react-native"
+import { SMS_NOTIFICATIONS } from "@orderkaro/shared"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
 import { DeliveryMap } from "@/components/delivery-map"
@@ -45,7 +49,7 @@ interface OwnerRestaurantExtended extends OwnerRestaurant {
   acceptsDelivery?: boolean
 }
 
-type SectionKey = "profile" | "ordering" | "payments" | "branding" | "delivery"
+type SectionKey = "profile" | "ordering" | "payments" | "notifications" | "branding" | "delivery"
 
 const COLOR_PRESETS = ["#A31D33", "#BE2540", "#A9822B", "#1F6F54", "#2B4C7E", "#6B3FA0"]
 
@@ -338,6 +342,11 @@ export default function OwnerSettings() {
   const [acceptsDelivery, setAcceptsDelivery] = useState(true)
   const [orderingMethodsError, setOrderingMethodsError] = useState("")
 
+  const [notifications, setNotifications] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(SMS_NOTIFICATIONS.map((n) => [n.field, false]))
+  )
+  const [notificationsError, setNotificationsError] = useState("")
+
   const [deliveryEnabled, setDeliveryEnabled] = useState(false)
   const [latitude, setLatitude] = useState("")
   const [longitude, setLongitude] = useState("")
@@ -361,6 +370,9 @@ export default function OwnerSettings() {
     setAcceptsDineIn(restaurant.acceptsDineIn ?? true)
     setAcceptsTakeaway(restaurant.acceptsTakeaway ?? true)
     setAcceptsDelivery(restaurant.acceptsDelivery ?? true)
+    setNotifications(
+      Object.fromEntries(SMS_NOTIFICATIONS.map((n) => [n.field, restaurant[n.field] ?? false]))
+    )
     setDeliveryEnabled(!!restaurant.deliveryEnabled)
     setLatitude(restaurant.latitude != null ? String(restaurant.latitude) : "")
     setLongitude(restaurant.longitude != null ? String(restaurant.longitude) : "")
@@ -448,6 +460,19 @@ export default function OwnerSettings() {
       done()
     },
     onError: (e) => setOrderingMethodsError((e as Error).message || "Could not save"),
+  })
+
+  function toggleNotification(field: string) {
+    setNotifications((prev) => ({ ...prev, [field]: !prev[field] }))
+  }
+
+  const saveNotifications = useMutation({
+    mutationFn: () => ownerApi.put(`/api/v1/restaurants/${rid}`, notifications),
+    onSuccess: () => {
+      setNotificationsError("")
+      done()
+    },
+    onError: (e) => setNotificationsError((e as Error).message || "Could not save"),
   })
 
   const saveBrand = useMutation({
@@ -653,9 +678,58 @@ export default function OwnerSettings() {
           </AccordionCard>
 
           <AccordionCard
+            title="SMS notifications"
+            icon={MessageSquare}
+            index={3}
+            expanded={openSection === "notifications"}
+            onToggle={() => toggleSection("notifications")}
+          >
+            {restaurant && !restaurant.smsEnabled ? (
+              <View className="flex-row items-start gap-2 bg-canvas border border-line rounded-2xl p-3 mb-4">
+                <Info size={15} color={colors.accent} style={{ marginTop: 2 }} />
+                <Text variant="muted" className="text-xs flex-1">
+                  SMS isn't switched on for your restaurant yet. Set your preferences here — they take
+                  effect as soon as it's enabled.
+                </Text>
+              </View>
+            ) : null}
+
+            <View>
+              {SMS_NOTIFICATIONS.map((n, i) => (
+                <View key={n.field}>
+                  {i > 0 ? <View className="h-px bg-line" /> : null}
+                  <ToggleRow
+                    icon={n.audience === "OWNER" ? Bell : MessageSquare}
+                    label={n.label}
+                    description={n.description}
+                    value={!!notifications[n.field]}
+                    disabled={false}
+                    onValueChange={() => toggleNotification(n.field)}
+                    delay={i * 60}
+                  />
+                </View>
+              ))}
+            </View>
+
+            {notificationsError ? (
+              <Text className="text-danger font-sans-medium text-sm mt-3">
+                {notificationsError}
+              </Text>
+            ) : null}
+
+            <View className="mt-4">
+              <Button
+                title="Save notifications"
+                loading={saveNotifications.isPending}
+                onPress={() => saveNotifications.mutate()}
+              />
+            </View>
+          </AccordionCard>
+
+          <AccordionCard
             title="Branding"
             icon={Palette}
-            index={3}
+            index={4}
             expanded={openSection === "branding"}
             onToggle={() => toggleSection("branding")}
           >
@@ -714,7 +788,7 @@ export default function OwnerSettings() {
           <AccordionCard
             title="Delivery zone"
             icon={MapPin}
-            index={4}
+            index={5}
             expanded={openSection === "delivery"}
             onToggle={() => toggleSection("delivery")}
           >
