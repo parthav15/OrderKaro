@@ -250,9 +250,10 @@ export default function SuperAdminPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.07 }}
+              className="h-full"
             >
-              <Card>
-                <CardContent className="flex items-center gap-3 py-4">
+              <Card className="h-full">
+                <CardContent className="flex h-full items-center gap-3 py-4">
                   <div
                     className={`w-10 h-10 rounded-xl ${stat.bg} flex items-center justify-center flex-shrink-0`}
                   >
