@@ -21,7 +21,14 @@ export async function GET(
           select: { id: true, label: true, section: true },
         },
         restaurant: {
-          select: { id: true, name: true, slug: true, logoUrl: true, avgPrepTime: true },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            logoUrl: true,
+            avgPrepTime: true,
+            whatsappEnabled: true,
+          },
         },
       },
     })
@@ -29,6 +36,15 @@ export async function GET(
     if (!order) {
       return error("Order not found", 404)
     }
+
+    const settings = await prisma.smsSettings.findUnique({ where: { id: "singleton" } })
+    const whatsappOptIn =
+      settings?.whatsappEnabled && order.restaurant.whatsappEnabled && settings.whatsappSender
+        ? {
+            number: settings.whatsappSender.replace(/\D/g, ""),
+            message: `Hi ${order.restaurant.name}, please keep me updated on order #${order.orderNumber}.`,
+          }
+        : null
 
     return success({
       id: order.id,
@@ -50,6 +66,7 @@ export async function GET(
       items: order.items,
       table: order.table,
       restaurant: order.restaurant,
+      whatsappOptIn,
     })
   } catch (err) {
     return handleError(err)

@@ -7,6 +7,7 @@ import { requireSuperAdmin } from "@/lib/require-super-admin"
 const smsConfigSchema = z.object({
   smsEnabled: z.boolean().optional(),
   smsMarginPercent: z.number().min(0).max(1000).optional(),
+  whatsappEnabled: z.boolean().optional(),
 })
 
 export async function PUT(
@@ -28,6 +29,7 @@ export async function PUT(
       id: updated.id,
       smsEnabled: updated.smsEnabled,
       smsMarginPercent: Number(updated.smsMarginPercent.toString()),
+      whatsappEnabled: updated.whatsappEnabled,
     })
   } catch (err) {
     return handleError(err)

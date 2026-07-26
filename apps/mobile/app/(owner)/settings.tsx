@@ -678,7 +678,7 @@ export default function OwnerSettings() {
           </AccordionCard>
 
           <AccordionCard
-            title="SMS notifications"
+            title="Order notifications"
             icon={MessageSquare}
             index={3}
             expanded={openSection === "notifications"}

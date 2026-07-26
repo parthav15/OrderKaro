@@ -776,8 +776,8 @@ export default function SettingsPage() {
                   <MessageSquare className="w-5 h-5 text-muted" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-ink">SMS Notifications</h2>
-                  <p className="text-sm text-muted">Text customers and yourself as orders move</p>
+                  <h2 className="text-lg font-bold text-ink">Order Notifications</h2>
+                  <p className="text-sm text-muted">Message customers and yourself as orders move</p>
                 </div>
               </div>
             </CardHeader>
@@ -797,12 +797,12 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              {restaurant && !restaurant.smsEnabled && (
+              {restaurant && !restaurant.smsEnabled && !restaurant.whatsappEnabled && (
                 <div className="flex items-start gap-2 rounded-xl bg-surface-elevated p-3">
                   <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-gold" />
                   <p className="text-xs text-muted">
-                    SMS isn't switched on for your restaurant yet. Set your preferences here — they
-                    take effect as soon as it's enabled.
+                    Notifications aren't switched on for your restaurant yet. Set your preferences
+                    here — they take effect as soon as they're enabled.
                   </p>
                 </div>
               )}

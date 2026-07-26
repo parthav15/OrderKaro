@@ -171,4 +171,5 @@ export interface TrackedOrder {
   cancelledAt: string | null
   items: { id: string; quantity: number; menuItem: { name: string; imageUrl: string | null } }[]
   restaurant: { name: string; avgPrepTime: number }
+  whatsappOptIn?: { number: string; message: string } | null
 }

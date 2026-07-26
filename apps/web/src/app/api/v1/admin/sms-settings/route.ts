@@ -3,11 +3,26 @@ import { z } from "zod"
 import prisma from "@/lib/prisma"
 import { success, handleError, parseBody } from "@/lib/api-utils"
 import { requireSuperAdmin } from "@/lib/require-super-admin"
+import type { SmsNotificationKey } from "@orderkaro/shared"
+
+const whatsappTemplatesSchema = z.object({
+  ORDER_PLACED: z.string().optional(),
+  ORDER_ACCEPTED: z.string().optional(),
+  ORDER_PREPARING: z.string().optional(),
+  ORDER_READY: z.string().optional(),
+  ORDER_COMPLETED: z.string().optional(),
+  ORDER_CANCELLED: z.string().optional(),
+  OWNER_NEW_ORDER: z.string().optional(),
+})
 
 const smsSettingsSchema = z.object({
-  enabled: z.boolean(),
-  baseCostPerSegment: z.number().min(0).max(1000),
-  defaultMarginPercent: z.number().min(0).max(1000),
+  enabled: z.boolean().optional(),
+  baseCostPerSegment: z.number().min(0).max(1000).optional(),
+  defaultMarginPercent: z.number().min(0).max(1000).optional(),
+  whatsappEnabled: z.boolean().optional(),
+  whatsappSender: z.string().max(64).optional(),
+  whatsappCostPerMessage: z.number().min(0).max(1000).optional(),
+  whatsappTemplates: whatsappTemplatesSchema.optional(),
 })
 
 function serializeSettings(settings: {
@@ -15,12 +30,20 @@ function serializeSettings(settings: {
   baseCostPerSegment: { toString(): string }
   defaultMarginPercent: { toString(): string }
   currency: string
+  whatsappEnabled: boolean
+  whatsappSender: string | null
+  whatsappCostPerMessage: { toString(): string }
+  whatsappTemplates: unknown
 }) {
   return {
     enabled: settings.enabled,
     baseCostPerSegment: Number(settings.baseCostPerSegment.toString()),
     defaultMarginPercent: Number(settings.defaultMarginPercent.toString()),
     currency: settings.currency,
+    whatsappEnabled: settings.whatsappEnabled,
+    whatsappSender: settings.whatsappSender ?? "",
+    whatsappCostPerMessage: Number(settings.whatsappCostPerMessage.toString()),
+    whatsappTemplates: (settings.whatsappTemplates as Partial<Record<SmsNotificationKey, string>> | null) ?? {},
   }
 }
 

@@ -8,6 +8,7 @@ import {
   ArrowLeft,
   Shield,
   MessageSquareText,
+  MessageCircle,
   Search,
   AlertTriangle,
   Store,
@@ -21,12 +22,19 @@ import { useAuthStore } from "@/stores/auth"
 import api from "@/lib/api"
 import { toast } from "sonner"
 import { useReducedMotionSafe } from "@/hooks/use-reduced-motion-safe"
+import type { SmsNotificationKey } from "@orderkaro/shared"
+
+type WhatsappTemplateMap = Record<SmsNotificationKey, string>
 
 interface SmsSettingsResponse {
   enabled: boolean
   baseCostPerSegment: number
   defaultMarginPercent: number
   currency: string
+  whatsappEnabled: boolean
+  whatsappSender: string
+  whatsappCostPerMessage: number
+  whatsappTemplates: Partial<WhatsappTemplateMap>
 }
 
 interface SmsSettingsPayload {
@@ -41,12 +49,47 @@ interface SmsSettingsFormState {
   defaultMarginPercent: string
 }
 
+interface WhatsappSettingsPayload {
+  whatsappEnabled: boolean
+  whatsappSender: string
+  whatsappCostPerMessage: number
+  whatsappTemplates: Partial<WhatsappTemplateMap>
+}
+
+interface WhatsappSettingsFormState {
+  whatsappEnabled: boolean
+  whatsappSender: string
+  whatsappCostPerMessage: string
+  whatsappTemplates: WhatsappTemplateMap
+}
+
+const WHATSAPP_TEMPLATE_FIELDS: { key: SmsNotificationKey; label: string }[] = [
+  { key: "ORDER_PLACED", label: "Order placed" },
+  { key: "ORDER_ACCEPTED", label: "Order accepted" },
+  { key: "ORDER_PREPARING", label: "Order preparing" },
+  { key: "ORDER_READY", label: "Order ready" },
+  { key: "ORDER_COMPLETED", label: "Order completed" },
+  { key: "ORDER_CANCELLED", label: "Order cancelled" },
+  { key: "OWNER_NEW_ORDER", label: "New-order alert (owner)" },
+]
+
+const EMPTY_WHATSAPP_TEMPLATES: WhatsappTemplateMap = {
+  ORDER_PLACED: "",
+  ORDER_ACCEPTED: "",
+  ORDER_PREPARING: "",
+  ORDER_READY: "",
+  ORDER_COMPLETED: "",
+  ORDER_CANCELLED: "",
+  OWNER_NEW_ORDER: "",
+}
+
 interface RestaurantSmsRow {
   id: string
   name: string
   slug: string
   smsEnabled: boolean
   smsMarginPercent: number
+  whatsappEnabled: boolean
   smsSent: number
   totalSellAmount: number
   totalMarginAmount: number
@@ -59,6 +102,7 @@ interface RestaurantSmsResponse {
 interface SmsConfigPayload {
   smsEnabled?: boolean
   smsMarginPercent?: number
+  whatsappEnabled?: boolean
 }
 
 interface SmsConfigVariables {
@@ -85,6 +129,27 @@ function normalizeSettings(settings: SmsSettingsResponse): SmsSettingsFormState 
     baseCostPerSegment: String(settings.baseCostPerSegment),
     defaultMarginPercent: String(settings.defaultMarginPercent),
   }
+}
+
+function normalizeWhatsappSettings(settings: SmsSettingsResponse): WhatsappSettingsFormState {
+  const whatsappTemplates = { ...EMPTY_WHATSAPP_TEMPLATES }
+  for (const field of WHATSAPP_TEMPLATE_FIELDS) {
+    whatsappTemplates[field.key] = settings.whatsappTemplates[field.key] ?? ""
+  }
+  return {
+    whatsappEnabled: settings.whatsappEnabled,
+    whatsappSender: settings.whatsappSender,
+    whatsappCostPerMessage: String(settings.whatsappCostPerMessage),
+    whatsappTemplates,
+  }
+}
+
+function trimWhatsappTemplates(templates: WhatsappTemplateMap): Partial<WhatsappTemplateMap> {
+  const trimmed: Partial<WhatsappTemplateMap> = {}
+  for (const field of WHATSAPP_TEMPLATE_FIELDS) {
+    trimmed[field.key] = templates[field.key].trim()
+  }
+  return trimmed
 }
 
 function MarginField({
@@ -160,6 +225,17 @@ export default function SuperAdminSmsPage() {
   const initializedRef = useRef(false)
   const savedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  const [whatsappForm, setWhatsappForm] = useState<WhatsappSettingsFormState>({
+    whatsappEnabled: false,
+    whatsappSender: "",
+    whatsappCostPerMessage: "0",
+    whatsappTemplates: EMPTY_WHATSAPP_TEMPLATES,
+  })
+  const [whatsappSavedSnapshot, setWhatsappSavedSnapshot] =
+    useState<WhatsappSettingsFormState>(whatsappForm)
+  const [justSavedWhatsapp, setJustSavedWhatsapp] = useState(false)
+  const savedWhatsappTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const settingsQuery = useQuery<SmsSettingsResponse>({
     queryKey: ["sms-settings"],
     queryFn: () => api.get("/api/v1/admin/sms-settings").then((r) => r.data.data),
@@ -171,6 +247,9 @@ export default function SuperAdminSmsPage() {
       const normalized = normalizeSettings(settingsQuery.data)
       setForm(normalized)
       setSavedSnapshot(normalized)
+      const normalizedWhatsapp = normalizeWhatsappSettings(settingsQuery.data)
+      setWhatsappForm(normalizedWhatsapp)
+      setWhatsappSavedSnapshot(normalizedWhatsapp)
       initializedRef.current = true
     }
   }, [settingsQuery.data])
@@ -178,6 +257,7 @@ export default function SuperAdminSmsPage() {
   useEffect(() => {
     return () => {
       if (savedTimeoutRef.current) clearTimeout(savedTimeoutRef.current)
+      if (savedWhatsappTimeoutRef.current) clearTimeout(savedWhatsappTimeoutRef.current)
     }
   }, [])
 
@@ -211,6 +291,37 @@ export default function SuperAdminSmsPage() {
     })
   }
 
+  const whatsappMutation = useMutation({
+    mutationFn: (payload: WhatsappSettingsPayload) =>
+      api.put("/api/v1/admin/sms-settings", payload).then((r) => r.data.data as SmsSettingsResponse),
+    onSuccess: (data) => {
+      queryClient.setQueryData(["sms-settings"], data)
+      const normalized = normalizeWhatsappSettings(data)
+      setWhatsappForm(normalized)
+      setWhatsappSavedSnapshot(normalized)
+      setJustSavedWhatsapp(true)
+      toast.success("WhatsApp settings updated")
+      if (savedWhatsappTimeoutRef.current) clearTimeout(savedWhatsappTimeoutRef.current)
+      savedWhatsappTimeoutRef.current = setTimeout(() => setJustSavedWhatsapp(false), 2200)
+    },
+    onError: (err: any) => toast.error(err.response?.data?.error || "Failed to update WhatsApp settings"),
+  })
+
+  const whatsappDirty = useMemo(
+    () => JSON.stringify(whatsappForm) !== JSON.stringify(whatsappSavedSnapshot),
+    [whatsappForm, whatsappSavedSnapshot]
+  )
+
+  function handleSaveWhatsapp(e: React.FormEvent) {
+    e.preventDefault()
+    whatsappMutation.mutate({
+      whatsappEnabled: whatsappForm.whatsappEnabled,
+      whatsappSender: whatsappForm.whatsappSender.trim(),
+      whatsappCostPerMessage: clampPercent(toNumber(whatsappForm.whatsappCostPerMessage)),
+      whatsappTemplates: trimWhatsappTemplates(whatsappForm.whatsappTemplates),
+    })
+  }
+
   const configQuery = useQuery<RestaurantSmsResponse>({
     queryKey: ["sms-config"],
     queryFn: () => api.get("/api/v1/admin/sms-config").then((r) => r.data.data),
@@ -218,7 +329,7 @@ export default function SuperAdminSmsPage() {
   })
 
   const configMutation = useMutation<
-    { smsEnabled: boolean; smsMarginPercent: number },
+    { smsEnabled: boolean; smsMarginPercent: number; whatsappEnabled: boolean },
     unknown,
     SmsConfigVariables,
     { previous?: RestaurantSmsResponse }
@@ -443,9 +554,170 @@ export default function SuperAdminSmsPage() {
       </motion.div>
 
       <motion.div
-        initial={{ opacity: 0, y: reduceMotion ? 0 : 12 }}
+        initial={{ opacity: 0, y: reduceMotion ? 0 : 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: reduceMotion ? 0.01 : 0.4, delay: reduceMotion ? 0 : 0.1 }}
+        className="mb-8"
+      >
+        {settingsQuery.isLoading && (
+          <div className="h-56 rounded-xl bg-surface-elevated animate-pulse" />
+        )}
+
+        {!settingsQuery.isLoading && !settingsQuery.isError && (
+          <Card className="overflow-hidden">
+            <CardHeader className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <MessageCircle className="w-5 h-5 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-base font-bold text-ink">WhatsApp</h2>
+                  <p className="text-xs text-muted">
+                    Primary channel platform-wide &mdash; falls back to SMS when a message can&apos;t be sent
+                  </p>
+                </div>
+              </div>
+              <ToggleSwitch
+                checked={whatsappForm.whatsappEnabled}
+                onChange={(v) => setWhatsappForm((f) => ({ ...f, whatsappEnabled: v }))}
+                ariaLabel="Toggle WhatsApp notifications platform-wide"
+              />
+            </CardHeader>
+            <form onSubmit={handleSaveWhatsapp}>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label htmlFor="whatsappSender" className="block text-sm font-medium text-ink">
+                      Sender number
+                    </label>
+                    <input
+                      id="whatsappSender"
+                      type="text"
+                      placeholder="whatsapp:+14155238886"
+                      value={whatsappForm.whatsappSender}
+                      onChange={(e) =>
+                        setWhatsappForm((f) => ({ ...f, whatsappSender: e.target.value }))
+                      }
+                      className="w-full rounded-xl border border-line bg-surface py-3 px-4 text-base text-ink placeholder:text-muted font-mono transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label
+                      htmlFor="whatsappCostPerMessage"
+                      className="block text-sm font-medium text-ink"
+                    >
+                      Cost per message
+                    </label>
+                    <div className="relative">
+                      <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted">
+                        ₹
+                      </span>
+                      <input
+                        id="whatsappCostPerMessage"
+                        type="number"
+                        inputMode="decimal"
+                        min={0}
+                        max={1000}
+                        step="0.0001"
+                        value={whatsappForm.whatsappCostPerMessage}
+                        onChange={(e) =>
+                          setWhatsappForm((f) => ({ ...f, whatsappCostPerMessage: e.target.value }))
+                        }
+                        className="w-full rounded-xl border border-line bg-surface py-3 pl-8 pr-4 text-base text-ink transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 space-y-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-ink">Content template SIDs</h3>
+                    <p className="text-xs text-muted mt-0.5">
+                      The Twilio Content SID to use for each event, e.g. HXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {WHATSAPP_TEMPLATE_FIELDS.map((field) => (
+                      <div key={field.key} className="space-y-1.5">
+                        <label
+                          htmlFor={`whatsapp-template-${field.key}`}
+                          className="block text-sm font-medium text-ink"
+                        >
+                          {field.label}
+                        </label>
+                        <input
+                          id={`whatsapp-template-${field.key}`}
+                          type="text"
+                          placeholder="HXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                          value={whatsappForm.whatsappTemplates[field.key]}
+                          onChange={(e) =>
+                            setWhatsappForm((f) => ({
+                              ...f,
+                              whatsappTemplates: { ...f.whatsappTemplates, [field.key]: e.target.value },
+                            }))
+                          }
+                          className="w-full rounded-xl border border-line bg-surface py-2.5 px-4 text-sm text-ink placeholder:text-muted/60 font-mono transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+              <div className="flex items-center justify-end gap-3 border-t border-line px-6 py-4">
+                <AnimatePresence mode="wait" initial={false}>
+                  {whatsappDirty && (
+                    <motion.span
+                      key="dirty"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="text-xs font-semibold text-accent"
+                    >
+                      Unsaved changes
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+                <Button
+                  type="submit"
+                  loading={whatsappMutation.isPending}
+                  disabled={whatsappMutation.isPending || !whatsappDirty}
+                >
+                  <AnimatePresence mode="wait" initial={false}>
+                    {justSavedWhatsapp && !whatsappDirty ? (
+                      <motion.span
+                        key="saved"
+                        initial={{ opacity: 0, y: reduceMotion ? 0 : 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: reduceMotion ? 0 : -6 }}
+                        transition={{ duration: reduceMotion ? 0.01 : 0.2 }}
+                        className="inline-flex items-center gap-2"
+                      >
+                        <Check className="w-4 h-4" /> Saved
+                      </motion.span>
+                    ) : (
+                      <motion.span
+                        key="save"
+                        initial={{ opacity: 0, y: reduceMotion ? 0 : 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: reduceMotion ? 0 : -6 }}
+                        transition={{ duration: reduceMotion ? 0.01 : 0.2 }}
+                        className="inline-flex items-center gap-2"
+                      >
+                        <Save className="w-4 h-4" /> Save changes
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </Button>
+              </div>
+            </form>
+          </Card>
+        )}
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: reduceMotion ? 0 : 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: reduceMotion ? 0.01 : 0.4, delay: reduceMotion ? 0 : 0.15 }}
         className="relative mb-5 max-w-sm"
       >
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
@@ -496,7 +768,7 @@ export default function SuperAdminSmsPage() {
         <motion.div
           initial={{ opacity: 0, y: reduceMotion ? 0 : 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: reduceMotion ? 0.01 : 0.4, delay: reduceMotion ? 0 : 0.15 }}
+          transition={{ duration: reduceMotion ? 0.01 : 0.4, delay: reduceMotion ? 0 : 0.2 }}
         >
           <Card className="overflow-hidden">
             <div className="overflow-x-auto">
@@ -505,6 +777,7 @@ export default function SuperAdminSmsPage() {
                   <tr className="text-left text-muted border-b border-line">
                     <th className="py-3 px-5 font-bold">Restaurant</th>
                     <th className="py-3 px-4 font-bold">Enabled</th>
+                    <th className="py-3 px-4 font-bold">WhatsApp</th>
                     <th className="py-3 px-4 font-bold">Margin</th>
                     <th className="py-3 px-4 font-bold">SMS sent</th>
                     <th className="py-3 px-4 font-bold">Billed to owner</th>
@@ -540,6 +813,19 @@ export default function SuperAdminSmsPage() {
                                 configMutation.mutate({
                                   restaurantId: row.id,
                                   payload: { smsEnabled: next },
+                                })
+                              }
+                            />
+                          </td>
+                          <td className="py-4 px-4">
+                            <ToggleSwitch
+                              checked={row.whatsappEnabled}
+                              disabled={pending}
+                              ariaLabel={`Toggle WhatsApp for ${row.name}`}
+                              onChange={(next) =>
+                                configMutation.mutate({
+                                  restaurantId: row.id,
+                                  payload: { whatsappEnabled: next },
                                 })
                               }
                             />

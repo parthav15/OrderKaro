@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import { Check, Clock, ChefHat, Bell, X, ArrowLeft } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
+import { WhatsAppOptInCard } from "@/components/whatsapp-optin-card"
 import { api } from "@/lib/api"
 import { useTheme } from "@/theme/theme-provider"
 import type { TrackedOrder, OrderStatus } from "@/lib/types"
@@ -81,6 +82,12 @@ export default function TrackScreen() {
                 : `Usually ready in ~${data.restaurant.avgPrepTime} min`}
           </Text>
         </View>
+
+        {data.whatsappOptIn && !cancelled && data.status !== "PICKED_UP" ? (
+          <View className="mb-8">
+            <WhatsAppOptInCard optIn={data.whatsappOptIn} delay={120} />
+          </View>
+        ) : null}
 
         {cancelled ? (
           <View className="items-center py-10">
