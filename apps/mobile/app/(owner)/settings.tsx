@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   View,
   ScrollView,
@@ -7,6 +7,7 @@ import {
   Switch,
   KeyboardAvoidingView,
   Platform,
+  PanResponder,
 } from "react-native"
 import { useRouter } from "expo-router"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
@@ -30,6 +31,7 @@ import {
 } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
+import { DeliveryMap } from "@/components/delivery-map"
 import { ownerApi, OwnerApiError } from "@/lib/owner-api"
 import { useOwnerRestaurant } from "@/lib/use-owner-restaurant"
 import { useTheme } from "@/theme/theme-provider"
@@ -46,6 +48,22 @@ interface OwnerRestaurantExtended extends OwnerRestaurant {
 type SectionKey = "profile" | "ordering" | "payments" | "branding" | "delivery"
 
 const COLOR_PRESETS = ["#A31D33", "#BE2540", "#A9822B", "#1F6F54", "#2B4C7E", "#6B3FA0"]
+
+const DEFAULT_MAP_LATITUDE = 20.5937
+const DEFAULT_MAP_LONGITUDE = 78.9629
+const RADIUS_MIN_KM = 0.5
+const RADIUS_MAX_KM = 25
+const RADIUS_STEP_KM = 0.5
+const SLIDER_THUMB_SIZE = 26
+const SLIDER_TRACK_HEIGHT = 44
+
+function radiusFromTrackX(x: number, trackWidth: number) {
+  const travel = trackWidth - SLIDER_THUMB_SIZE
+  if (travel <= 0) return null
+  const ratio = Math.min(1, Math.max(0, (x - SLIDER_THUMB_SIZE / 2) / travel))
+  const raw = RADIUS_MIN_KM + ratio * (RADIUS_MAX_KM - RADIUS_MIN_KM)
+  return Math.round(raw / RADIUS_STEP_KM) * RADIUS_STEP_KM
+}
 
 function Field({
   label,
@@ -202,6 +220,93 @@ function AccordionCard({
         </MotiView>
       </MotiView>
     </MotiView>
+  )
+}
+
+function RadiusSlider({ value, onChange }: { value: number; onChange: (km: number) => void }) {
+  const { colors } = useTheme()
+  const [trackWidth, setTrackWidth] = useState(0)
+  const trackWidthRef = useRef(0)
+  const changeRef = useRef(onChange)
+  changeRef.current = onChange
+
+  const pan = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: () => true,
+        onPanResponderGrant: (event) => {
+          Haptics.selectionAsync()
+          const next = radiusFromTrackX(event.nativeEvent.locationX, trackWidthRef.current)
+          if (next !== null) changeRef.current(next)
+        },
+        onPanResponderMove: (event) => {
+          const next = radiusFromTrackX(event.nativeEvent.locationX, trackWidthRef.current)
+          if (next !== null) changeRef.current(next)
+        },
+      }),
+    []
+  )
+
+  const clamped = Math.min(RADIUS_MAX_KM, Math.max(RADIUS_MIN_KM, value))
+  const ratio = (clamped - RADIUS_MIN_KM) / (RADIUS_MAX_KM - RADIUS_MIN_KM)
+  const travel = Math.max(trackWidth - SLIDER_THUMB_SIZE, 0)
+  const thumbOffset = ratio * travel
+  const fillWidth = thumbOffset + SLIDER_THUMB_SIZE / 2
+
+  return (
+    <View>
+      <View className="flex-row items-center justify-between mb-2.5">
+        <Text variant="muted" className="text-xs uppercase tracking-widest">
+          Delivery radius
+        </Text>
+        <View className="rounded-full bg-primary/10 px-3 py-1">
+          <Text variant="label" className="text-sm" style={{ color: colors.primary }}>
+            {clamped.toFixed(1)} km
+          </Text>
+        </View>
+      </View>
+      <View
+        {...pan.panHandlers}
+        onLayout={(event) => {
+          const width = event.nativeEvent.layout.width
+          trackWidthRef.current = width
+          setTrackWidth(width)
+        }}
+        style={{ height: SLIDER_TRACK_HEIGHT }}
+        className="justify-center"
+      >
+        <View pointerEvents="none" className="h-2 rounded-full bg-line overflow-hidden">
+          <MotiView
+            animate={{ width: fillWidth }}
+            transition={{ type: "timing", duration: 90 }}
+            style={{ backgroundColor: colors.primary }}
+            className="h-2 rounded-full"
+          />
+        </View>
+        <MotiView
+          pointerEvents="none"
+          animate={{ translateX: thumbOffset }}
+          transition={{ type: "timing", duration: 90 }}
+          style={{
+            position: "absolute",
+            left: 0,
+            top: (SLIDER_TRACK_HEIGHT - SLIDER_THUMB_SIZE) / 2,
+            width: SLIDER_THUMB_SIZE,
+            height: SLIDER_THUMB_SIZE,
+            borderColor: colors.primary,
+            shadowColor: colors.primary,
+            shadowOpacity: 0.25,
+            shadowRadius: 6,
+            shadowOffset: { width: 0, height: 2 },
+            elevation: 3,
+          }}
+          className="rounded-full bg-surface border-2 items-center justify-center"
+        >
+          <View style={{ backgroundColor: colors.primary }} className="w-2.5 h-2.5 rounded-full" />
+        </MotiView>
+      </View>
+    </View>
   )
 }
 
@@ -385,6 +490,19 @@ export default function OwnerSettings() {
             : (e as Error).message || "Could not save",
       })),
   })
+
+  const mapLatitude =
+    latitude.trim() && Number.isFinite(Number(latitude)) ? Number(latitude) : DEFAULT_MAP_LATITUDE
+  const mapLongitude =
+    longitude.trim() && Number.isFinite(Number(longitude))
+      ? Number(longitude)
+      : DEFAULT_MAP_LONGITUDE
+  const mapRadiusKm = Number(radius) || 3
+
+  function handleMapChange(nextLatitude: number, nextLongitude: number) {
+    setLatitude(nextLatitude.toFixed(6))
+    setLongitude(nextLongitude.toFixed(6))
+  }
 
   return (
     <SafeAreaView edges={["top"]} className="flex-1 bg-canvas">
@@ -612,6 +730,24 @@ export default function OwnerSettings() {
               />
             </View>
 
+            {deliveryEnabled ? (
+              <View className="mb-4">
+                <DeliveryMap
+                  latitude={mapLatitude}
+                  longitude={mapLongitude}
+                  radiusKm={mapRadiusKm}
+                  onChange={handleMapChange}
+                />
+                <View className="mt-4">
+                  <RadiusSlider value={mapRadiusKm} onChange={(km) => setRadius(String(km))} />
+                </View>
+                <Text variant="muted" className="text-xs mt-3">
+                  Tap the map or drag the pin to place your restaurant, then slide to size the
+                  delivery zone.
+                </Text>
+              </View>
+            ) : null}
+
             <View className="flex-row gap-3">
               <View className="flex-1">
                 <Field
@@ -630,12 +766,6 @@ export default function OwnerSettings() {
                 />
               </View>
             </View>
-            <Field
-              label="Radius (km)"
-              value={radius}
-              onChangeText={(t) => setRadius(t.replace(/[^\d.]/g, ""))}
-              keyboardType="decimal-pad"
-            />
             <View className="flex-row gap-3">
               <View className="flex-1">
                 <Field
@@ -668,7 +798,7 @@ export default function OwnerSettings() {
               <Button title="Save delivery zone" loading={saveDelivery.isPending} onPress={() => saveDelivery.mutate()} />
             </View>
             <Text variant="muted" className="text-xs mt-3">
-              Tip: enter your exact lat/long for distance-based delivery. GPS autofill is coming soon.
+              Tip: fine-tune the exact latitude and longitude for precise distance-based delivery.
             </Text>
           </AccordionCard>
         </ScrollView>

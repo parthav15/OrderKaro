@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import dynamic from "next/dynamic"
 import { motion, AnimatePresence } from "framer-motion"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
@@ -25,6 +26,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import { ToggleSwitch } from "@/components/admin/fee-config-card"
 import api from "@/lib/api"
 import { toast } from "sonner"
@@ -90,6 +92,19 @@ const ORDERING_METHOD_FIELDS: {
 ]
 
 const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/
+
+const DEFAULT_DELIVERY_CENTER = { latitude: 20.5937, longitude: 78.9629 }
+
+const DeliveryMap = dynamic(
+  () => import("@/components/admin/delivery-map").then((mod) => mod.DeliveryMap),
+  { ssr: false, loading: () => <Skeleton className="h-80 w-full" /> }
+)
+
+function parseCoordinate(value: string, fallback: number) {
+  if (value.trim() === "") return fallback
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : fallback
+}
 
 function resolveMenuBase() {
   const configured = process.env.NEXT_PUBLIC_APP_URL
@@ -204,6 +219,10 @@ export default function SettingsPage() {
   })
 
   const deliveryUpgradeRequired = (updateDeliveryZone.error as any)?.response?.status === 402
+
+  const mapLatitude = parseCoordinate(deliveryForm.latitude, DEFAULT_DELIVERY_CENTER.latitude)
+  const mapLongitude = parseCoordinate(deliveryForm.longitude, DEFAULT_DELIVERY_CENTER.longitude)
+  const mapRadiusKm = Number(deliveryForm.deliveryRadiusKm) || 3
 
   const reduceMotion = useReducedMotionSafe()
 
@@ -871,6 +890,67 @@ export default function SettingsPage() {
                 Delivery {deliveryForm.deliveryEnabled ? "Enabled" : "Disabled"}
               </button>
 
+              <AnimatePresence initial={false}>
+                {deliveryForm.deliveryEnabled && (
+                  <motion.div
+                    key="delivery-map-block"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{
+                      duration: reduceMotion ? 0.01 : 0.35,
+                      ease: [0.25, 0.46, 0.45, 0.94],
+                    }}
+                    className="overflow-hidden"
+                  >
+                    <div className="space-y-5 pb-1 pt-1">
+                      <motion.div
+                        initial={{ opacity: 0, y: reduceMotion ? 0 : 14, scale: reduceMotion ? 1 : 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        transition={{ duration: reduceMotion ? 0.01 : 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+                      >
+                        <DeliveryMap
+                          latitude={mapLatitude}
+                          longitude={mapLongitude}
+                          radiusKm={mapRadiusKm}
+                          onChange={(lat, lng) =>
+                            setDeliveryForm((prev) => ({
+                              ...prev,
+                              latitude: String(lat),
+                              longitude: String(lng),
+                            }))
+                          }
+                        />
+                      </motion.div>
+
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <label className="block text-sm font-bold text-ink">Delivery Radius</label>
+                          <span className="rounded-full bg-brand-red/10 px-3 py-1 text-sm font-bold text-brand-red tabular-nums">
+                            {mapRadiusKm} km
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min={0.5}
+                          max={25}
+                          step={0.5}
+                          value={deliveryForm.deliveryRadiusKm}
+                          onChange={(e) =>
+                            setDeliveryForm({ ...deliveryForm, deliveryRadiusKm: e.target.value })
+                          }
+                          className="w-full cursor-pointer accent-brand-red rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red/30 focus-visible:ring-offset-2 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-brand-red [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-110 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-brand-red [&::-moz-range-thumb]:shadow-md"
+                        />
+                        <div className="flex items-center justify-between text-xs text-muted">
+                          <span>0.5 km</span>
+                          <span>25 km</span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <div className="grid grid-cols-2 gap-5">
                 <div className="space-y-2">
                   <label className="block text-sm font-bold text-ink">Latitude</label>
@@ -902,21 +982,7 @@ export default function SettingsPage() {
                 <Navigation className="w-4 h-4" /> Use my current location
               </button>
 
-              <div className="grid grid-cols-3 gap-5">
-                <div className="space-y-2">
-                  <label className="block text-sm font-bold text-ink">Radius (km)</label>
-                  <input
-                    type="number"
-                    min="0.1"
-                    max="50"
-                    step="0.1"
-                    value={deliveryForm.deliveryRadiusKm}
-                    onChange={(e) =>
-                      setDeliveryForm({ ...deliveryForm, deliveryRadiusKm: e.target.value })
-                    }
-                    className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
-                  />
-                </div>
+              <div className="grid grid-cols-2 gap-5">
                 <div className="space-y-2">
                   <label className="block text-sm font-bold text-ink">Delivery Fee</label>
                   <input
