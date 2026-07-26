@@ -31,7 +31,7 @@ export function CanvasViewport({
 }: CanvasViewportProps) {
   return (
     <div
-      ref={containerRef}
+      ref={containerRef as React.RefObject<HTMLDivElement>}
       onWheel={onWheel}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
