@@ -3,7 +3,7 @@
 import { useRef } from "react"
 import Image from "next/image"
 import { motion } from "framer-motion"
-import { Plus, Box } from "lucide-react"
+import { Plus, Scan } from "lucide-react"
 import { formatPrice, cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { VegMarker } from "./veg-marker"
@@ -149,9 +149,10 @@ export function ItemRow({
                 onViewAr()
               }}
               className="inline-flex items-center gap-1 px-2.5 h-9 rounded-full border border-brand-red text-brand-red text-[10px] font-bold uppercase tracking-[0.14em] hover:bg-brand-red hover:text-white transition-colors"
+              aria-label={`View ${item.name} on your table in AR`}
             >
-              <Box size={13} strokeWidth={2.6} />
-              3D
+              <Scan size={13} strokeWidth={2.6} />
+              AR
             </motion.button>
           )}
           {!item.isAvailable ? (

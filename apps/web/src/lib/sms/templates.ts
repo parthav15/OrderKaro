@@ -2,11 +2,15 @@ import type { SmsNotificationKey } from "@orderkaro/shared"
 
 export interface SmsContext {
   restaurantName: string
-  orderNumber: number
-  orderType: string
+  orderNumber?: number
+  orderType?: string
   customerName?: string | null
   itemCount?: number
   total?: string
+  orderCount?: number
+  revenue?: string
+  planName?: string
+  expiryDate?: string
 }
 
 interface SmsTemplate {
@@ -14,7 +18,7 @@ interface SmsTemplate {
   render: (ctx: SmsContext) => string
 }
 
-function orderTypeLabel(orderType: string): string {
+function orderTypeLabel(orderType?: string): string {
   if (orderType === "DELIVERY") return "Delivery"
   if (orderType === "TAKEAWAY") return "Takeaway"
   return "Dine-in"
@@ -60,6 +64,25 @@ export const SMS_TEMPLATES: Record<SmsNotificationKey, SmsTemplate> = {
         c.itemCount ? ` - ${c.itemCount} item(s)` : ""
       }${c.total ? `, Rs ${c.total}` : ""}. Open Vision Menu to accept.`,
   },
+  OWNER_ORDER_CANCELLED: {
+    audience: "OWNER",
+    render: (c) =>
+      `${c.restaurantName}: order #${c.orderNumber} was just cancelled by the customer. Open Vision Menu for details.`,
+  },
+  OWNER_DAILY_SUMMARY: {
+    audience: "OWNER",
+    render: (c) =>
+      `${c.restaurantName}: today you had ${c.orderCount ?? 0} order(s) totaling Rs ${
+        c.revenue ?? "0"
+      }. See the full breakdown in Vision Menu.`,
+  },
+  OWNER_PLAN_EXPIRING: {
+    audience: "OWNER",
+    render: (c) =>
+      `Your ${c.planName ?? "Vision Menu"} plan expires on ${
+        c.expiryDate ?? "soon"
+      }. Renew in Vision Menu to keep your features active.`,
+  },
 }
 
 export const ORDER_STATUS_SMS: Partial<Record<string, SmsNotificationKey>> = {
@@ -83,6 +106,9 @@ export const SMS_RESTAURANT_SELECT = {
   notifyOrderCompleted: true,
   notifyOrderCancelled: true,
   notifyOwnerNewOrder: true,
+  notifyOwnerOrderCancelled: true,
+  notifyOwnerDailySummary: true,
+  notifyOwnerPlanExpiring: true,
 } as const
 
 export interface WhatsAppTemplate {
@@ -135,5 +161,24 @@ export const WHATSAPP_TEMPLATES: Record<SmsNotificationKey, WhatsAppTemplate> = 
       "3": c.restaurantName,
       "4": c.total || "-",
     }),
+  },
+  OWNER_ORDER_CANCELLED: {
+    name: "vm_owner_order_cancelled",
+    text: "Order #{{1}} at {{2}} was just cancelled by the customer. Open Vision Menu to review the details.",
+    variables: (c) => ({ "1": String(c.orderNumber), "2": c.restaurantName }),
+  },
+  OWNER_DAILY_SUMMARY: {
+    name: "vm_owner_daily_summary",
+    text: "{{1}}: today you had {{2}} orders totaling Rs {{3}}. Open Vision Menu to see the full breakdown.",
+    variables: (c) => ({
+      "1": c.restaurantName,
+      "2": String(c.orderCount ?? 0),
+      "3": c.revenue ?? "0",
+    }),
+  },
+  OWNER_PLAN_EXPIRING: {
+    name: "vm_owner_plan_expiring",
+    text: "Your {{1}} plan expires on {{2}}. Renew in Vision Menu to keep your menu, orders and notifications running.",
+    variables: (c) => ({ "1": c.planName ?? "Vision Menu", "2": c.expiryDate ?? "soon" }),
   },
 }

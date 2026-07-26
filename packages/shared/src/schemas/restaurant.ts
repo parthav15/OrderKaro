@@ -25,6 +25,9 @@ export const createRestaurantSchema = z.object({
   notifyOrderCompleted: z.boolean().default(false),
   notifyOrderCancelled: z.boolean().default(false),
   notifyOwnerNewOrder: z.boolean().default(false),
+  notifyOwnerOrderCancelled: z.boolean().default(false),
+  notifyOwnerDailySummary: z.boolean().default(false),
+  notifyOwnerPlanExpiring: z.boolean().default(false),
 })
 
 export const updateRestaurantSchema = createRestaurantSchema.partial()

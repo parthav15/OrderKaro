@@ -777,7 +777,7 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-ink">Order Notifications</h2>
-                  <p className="text-sm text-muted">Message customers and yourself as orders move</p>
+                  <p className="text-sm text-muted">Keep customers and yourself in the loop, automatically</p>
                 </div>
               </div>
             </CardHeader>

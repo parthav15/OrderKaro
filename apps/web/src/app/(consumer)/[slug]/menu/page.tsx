@@ -307,7 +307,7 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
       {arItem?.model3dUrl && (
         <ArViewer
           modelUrl={arItem.model3dUrl}
-          posterUrl={arItem.model3dPosterUrl}
+          posterUrl={arItem.model3dPosterUrl ?? arItem.imageUrl}
           usdzUrl={arItem.model3dUsdzUrl}
           itemName={arItem.name}
           onClose={() => setArItem(null)}

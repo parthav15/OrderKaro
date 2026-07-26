@@ -1,6 +1,9 @@
 import { NextRequest } from "next/server"
 import prisma from "@/lib/prisma"
 import { success, error, handleError, requireRole, AuthError } from "@/lib/api-utils"
+import { dispatchSms } from "@/lib/sms/dispatch"
+import { SMS_RESTAURANT_SELECT } from "@/lib/sms/templates"
+import { resolveAppUrl } from "@/lib/app-url"
 import { CANCEL_WINDOW_MS } from "@orderkaro/shared"
 
 export async function POST(
@@ -13,6 +16,9 @@ export async function POST(
 
     const order = await prisma.order.findFirst({
       where: { id: orderId, restaurantId, consumerId: user.id },
+      include: {
+        restaurant: { select: { ...SMS_RESTAURANT_SELECT, owner: { select: { phone: true } } } },
+      },
     })
 
     if (!order) return error("Order not found", 404)
@@ -46,6 +52,24 @@ export async function POST(
         },
       })
     })
+
+    if (
+      (order.restaurant.smsEnabled || order.restaurant.whatsappEnabled) &&
+      order.restaurant.notifyOwnerOrderCancelled
+    ) {
+      await dispatchSms({
+        restaurant: order.restaurant,
+        key: "OWNER_ORDER_CANCELLED",
+        toPhone: order.restaurant.owner.phone,
+        context: {
+          restaurantName: order.restaurant.name,
+          orderNumber: order.orderNumber,
+          orderType: order.orderType,
+        },
+        orderId: order.id,
+        statusCallbackUrl: `${resolveAppUrl(request)}/api/v1/sms/status`,
+      })
+    }
 
     return success({ message: "Order cancelled successfully" })
   } catch (err) {

@@ -71,6 +71,9 @@ const WHATSAPP_TEMPLATE_FIELDS: { key: SmsNotificationKey; label: string }[] = [
   { key: "ORDER_COMPLETED", label: "Order completed" },
   { key: "ORDER_CANCELLED", label: "Order cancelled" },
   { key: "OWNER_NEW_ORDER", label: "New-order alert (owner)" },
+  { key: "OWNER_ORDER_CANCELLED", label: "Cancellation alert (owner)" },
+  { key: "OWNER_DAILY_SUMMARY", label: "Daily summary (owner)" },
+  { key: "OWNER_PLAN_EXPIRING", label: "Plan expiring (owner)" },
 ]
 
 const EMPTY_WHATSAPP_TEMPLATES: WhatsappTemplateMap = {
@@ -81,6 +84,9 @@ const EMPTY_WHATSAPP_TEMPLATES: WhatsappTemplateMap = {
   ORDER_COMPLETED: "",
   ORDER_CANCELLED: "",
   OWNER_NEW_ORDER: "",
+  OWNER_ORDER_CANCELLED: "",
+  OWNER_DAILY_SUMMARY: "",
+  OWNER_PLAN_EXPIRING: "",
 }
 
 interface RestaurantSmsRow {

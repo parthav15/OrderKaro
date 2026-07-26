@@ -74,6 +74,10 @@ model Restaurant {
   notifyOrderCancelled Boolean @default(false)
   notifyOwnerNewOrder  Boolean @default(false)
 
+  notifyOwnerOrderCancelled Boolean @default(false)
+  notifyOwnerDailySummary   Boolean @default(false)
+  notifyOwnerPlanExpiring   Boolean @default(false)
+
   staff          Staff[]
   categories     Category[]
   tables         Table[]

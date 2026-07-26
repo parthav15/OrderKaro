@@ -14,6 +14,9 @@ type NotifyField =
   | "notifyOrderCompleted"
   | "notifyOrderCancelled"
   | "notifyOwnerNewOrder"
+  | "notifyOwnerOrderCancelled"
+  | "notifyOwnerDailySummary"
+  | "notifyOwnerPlanExpiring"
 
 export interface SmsRestaurant {
   id: string
@@ -28,6 +31,9 @@ export interface SmsRestaurant {
   notifyOrderCompleted: boolean
   notifyOrderCancelled: boolean
   notifyOwnerNewOrder: boolean
+  notifyOwnerOrderCancelled: boolean
+  notifyOwnerDailySummary: boolean
+  notifyOwnerPlanExpiring: boolean
 }
 
 const TOGGLE: Record<SmsNotificationKey, NotifyField> = {
@@ -38,6 +44,9 @@ const TOGGLE: Record<SmsNotificationKey, NotifyField> = {
   ORDER_COMPLETED: "notifyOrderCompleted",
   ORDER_CANCELLED: "notifyOrderCancelled",
   OWNER_NEW_ORDER: "notifyOwnerNewOrder",
+  OWNER_ORDER_CANCELLED: "notifyOwnerOrderCancelled",
+  OWNER_DAILY_SUMMARY: "notifyOwnerDailySummary",
+  OWNER_PLAN_EXPIRING: "notifyOwnerPlanExpiring",
 }
 
 export function toE164(phone: string | null | undefined): string | null {

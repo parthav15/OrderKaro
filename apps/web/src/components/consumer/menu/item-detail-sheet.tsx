@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
-import { X, Check, Plus, Minus, ChevronRight, Box } from "lucide-react"
+import { X, Check, Plus, Minus, ChevronRight, Scan } from "lucide-react"
 import { formatPrice, cn } from "@/lib/utils"
 import { VegMarker } from "./veg-marker"
 import { QuantityStepper } from "./quantity-stepper"
@@ -167,10 +167,10 @@ export function ItemDetailSheet({
                     type="button"
                     whileTap={{ scale: 0.95 }}
                     onClick={onViewAr}
-                    className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 h-10 px-4 rounded-full bg-brand-red text-white text-[11px] font-bold uppercase tracking-[0.16em] shadow-lg"
+                    className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 h-10 px-4 rounded-full bg-brand-red text-white text-[11px] font-bold uppercase tracking-[0.16em] shadow-lg whitespace-nowrap"
                   >
-                    <Box className="w-4 h-4" strokeWidth={2.4} />
-                    View in 3D
+                    <Scan className="w-4 h-4" strokeWidth={2.4} />
+                    View on your table
                   </motion.button>
                 )}
               </div>

@@ -85,6 +85,27 @@ export const SMS_NOTIFICATIONS = [
     description: "Text you the moment a new order comes in",
     audience: "OWNER",
   },
+  {
+    key: "OWNER_ORDER_CANCELLED",
+    field: "notifyOwnerOrderCancelled",
+    label: "Cancellation alert",
+    description: "Text you when a customer cancels their order",
+    audience: "OWNER",
+  },
+  {
+    key: "OWNER_DAILY_SUMMARY",
+    field: "notifyOwnerDailySummary",
+    label: "Daily summary",
+    description: "Text you an end-of-day recap of orders and revenue",
+    audience: "OWNER",
+  },
+  {
+    key: "OWNER_PLAN_EXPIRING",
+    field: "notifyOwnerPlanExpiring",
+    label: "Plan expiring",
+    description: "Text you a few days before your subscription renews",
+    audience: "OWNER",
+  },
 ] as const
 
 export type SmsNotificationKey = (typeof SMS_NOTIFICATIONS)[number]["key"]
