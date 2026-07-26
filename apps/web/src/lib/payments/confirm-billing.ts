@@ -43,6 +43,16 @@ export async function confirmSubscriptionPayment(subscriptionId: string): Promis
         where: { id: subscription.restaurantId },
         data: { plan: subscription.plan, planValidUntil: periodEnd },
       })
+      if (subscription.smsAmount && Number(subscription.smsAmount.toString()) > 0) {
+        await tx.smsMessage.updateMany({
+          where: {
+            restaurantId: subscription.restaurantId,
+            billingStatus: "PENDING",
+            createdAt: { lte: subscription.createdAt },
+          },
+          data: { billingStatus: "BILLED" },
+        })
+      }
     })
     return "PAID"
   }

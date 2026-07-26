@@ -37,12 +37,20 @@ export async function POST(
     const { plan } = parseBody(billingCheckoutSchema, body)
     const definition = PLANS[plan]
 
+    const smsDueAgg = await prisma.smsMessage.aggregate({
+      where: { restaurantId: id, billingStatus: "PENDING" },
+      _sum: { sellAmount: true },
+    })
+    const smsDue = Math.round(Number((smsDueAgg._sum.sellAmount ?? 0).toString()) * 100) / 100
+    const totalAmount = Math.round((definition.monthlyPrice + smsDue) * 100) / 100
+
     const subscription = await prisma.subscription.create({
       data: {
         restaurantId: id,
         plan,
         status: "PENDING",
-        amount: definition.monthlyPrice,
+        amount: totalAmount,
+        smsAmount: smsDue > 0 ? smsDue : null,
         currency: BILLING_CURRENCY,
         provider,
       },
@@ -55,10 +63,10 @@ export async function POST(
     try {
       const session = await gateway.createCheckout(platformAccount(provider), {
         orderId: subscription.id,
-        amount: definition.monthlyPrice,
+        amount: totalAmount,
         currency: BILLING_CURRENCY,
         platformFee: 0,
-        description: `Vision Menu ${definition.label} plan — ${restaurant.name}`,
+        description: `Vision Menu ${definition.label} plan${smsDue > 0 ? ` + SMS ₹${smsDue.toFixed(2)}` : ""} — ${restaurant.name}`,
         customer: { name: restaurant.name, phone: restaurant.phone ?? undefined },
         successUrl: returnUrl,
         failureUrl: returnUrl,
@@ -74,7 +82,9 @@ export async function POST(
         redirectUrl: session.redirectUrl,
         qrUrl: session.qrUrl ?? null,
         upiIntent: session.upiIntent ?? null,
-        amount: definition.monthlyPrice,
+        amount: totalAmount,
+        planAmount: definition.monthlyPrice,
+        smsAmount: smsDue,
         currency: BILLING_CURRENCY,
         pollUrl: `/api/v1/restaurants/${id}/billing/verify`,
         reference: subscription.id,

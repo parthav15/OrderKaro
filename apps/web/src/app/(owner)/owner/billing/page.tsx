@@ -12,6 +12,7 @@ import {
   QrCode,
   Receipt,
   Sparkles,
+  MessageSquare,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -157,6 +158,12 @@ export default function BillingPage() {
     enabled: !!restaurantId,
   })
 
+  const { data: smsUsage } = useQuery({
+    queryKey: ["sms-usage", restaurantId],
+    queryFn: () => api.get(`/api/v1/restaurants/${restaurantId}/sms/usage`).then((r) => r.data.data),
+    enabled: !!restaurantId,
+  })
+
   useEffect(() => {
     if (typeof window === "undefined") return
     const outcome = new URLSearchParams(window.location.search).get("billing")
@@ -276,6 +283,29 @@ export default function BillingPage() {
               </CardContent>
             </Card>
           </motion.div>
+
+          {smsUsage && smsUsage.pendingAmount > 0 && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.07 }}>
+              <Card>
+                <CardContent className="py-5 flex items-center justify-between gap-4 flex-wrap">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-brand-gold/10 flex items-center justify-center shrink-0">
+                      <MessageSquare className="w-5 h-5 text-brand-gold" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-ink">SMS notifications this cycle</p>
+                      <p className="text-xs text-muted">
+                        {smsUsage.totalSent} sent — added to your next plan payment
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-2xl font-extrabold text-ink tabular-nums">
+                    {formatPrice(smsUsage.pendingAmount)}
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
 
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <Card>
