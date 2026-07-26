@@ -124,6 +124,12 @@ export default function CartPage({ params }: { params: { slug: string } }) {
   const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null)
   const [locating, setLocating] = useState(false)
   const [locationMessage, setLocationMessage] = useState<string | null>(null)
+  const [deliveryCheck, setDeliveryCheck] = useState<{
+    deliverable: boolean
+    distanceKm: number | null
+    radiusKm: number
+  } | null>(null)
+  const [checkingRange, setCheckingRange] = useState(false)
 
   const fixedTable = !!tableId
   const tableLabel = tables.find((t) => t.id === tableId)?.label
@@ -132,6 +138,12 @@ export default function CartPage({ params }: { params: { slug: string } }) {
   const acceptsOnline = storefront?.acceptsOnline !== false
   const onlinePaymentAvailable = acceptsOnline && Boolean(storefront?.onlinePaymentEnabled)
   const deliveryZoneActive = Boolean(storefront?.deliveryEnabled && storefront?.hasLocation)
+  const outOfRange =
+    orderType === "DELIVERY" &&
+    deliveryZoneActive &&
+    Boolean(coords) &&
+    deliveryCheck != null &&
+    !deliveryCheck.deliverable
   const deliveryFeeAmount =
     deliveryZoneActive && orderType === "DELIVERY" ? Number(storefront?.deliveryFee ?? 0) : 0
 
@@ -186,12 +198,37 @@ export default function CartPage({ params }: { params: { slug: string } }) {
     )
   }, [storefront, acceptsDineIn, acceptsTakeaway, acceptsDelivery, fixedTable])
 
+  async function checkDeliveryRange(latitude: number, longitude: number) {
+    if (!deliveryZoneActive) {
+      setDeliveryCheck(null)
+      return
+    }
+    setCheckingRange(true)
+    try {
+      const { data } = await api.post(
+        `/api/v1/public/restaurant/${params.slug}/delivery-check`,
+        { latitude, longitude }
+      )
+      const result = data.data
+      setDeliveryCheck({
+        deliverable: Boolean(result.deliverable),
+        distanceKm: result.distanceKm ?? null,
+        radiusKm: Number(result.radiusKm ?? 0),
+      })
+    } catch {
+      setDeliveryCheck(null)
+    } finally {
+      setCheckingRange(false)
+    }
+  }
+
   function handleUseMyLocation() {
     if (!navigator.geolocation) {
       setLocationMessage("Location isn't available on this device. Enter your address below instead.")
       return
     }
     setLocationMessage(null)
+    setDeliveryCheck(null)
     setLocating(true)
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -202,6 +239,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
         setLocating(false)
         setLocationMessage(null)
         toast.success("Location captured")
+        void checkDeliveryRange(position.coords.latitude, position.coords.longitude)
       },
       (geoError) => {
         setLocating(false)
@@ -241,6 +279,12 @@ export default function CartPage({ params }: { params: { slug: string } }) {
     }
     if (finalOrderType === "DELIVERY" && deliveryZoneActive && !coords) {
       toast.error("Please share your location so we can check the delivery range")
+      return
+    }
+    if (finalOrderType === "DELIVERY" && outOfRange) {
+      toast.error(
+        `You're outside the delivery area — ${deliveryCheck?.distanceKm} km away, delivers within ${deliveryCheck?.radiusKm} km. Try pickup or a closer address.`
+      )
       return
     }
 
@@ -503,12 +547,14 @@ export default function CartPage({ params }: { params: { slug: string } }) {
                     layout
                     whileTap={{ scale: 0.97 }}
                     onClick={handleUseMyLocation}
-                    disabled={locating}
+                    disabled={locating || checkingRange}
                     className={cn(
                       "relative w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-sm font-bold overflow-hidden transition-colors disabled:opacity-70",
-                      coords
-                        ? "border-success text-success bg-success/5"
-                        : "border-line text-ink hover:border-brand-red"
+                      outOfRange
+                        ? "border-danger text-danger bg-danger/5"
+                        : coords
+                          ? "border-success text-success bg-success/5"
+                          : "border-line text-ink hover:border-brand-red"
                     )}
                   >
                     <AnimatePresence mode="wait" initial={false}>
@@ -524,6 +570,30 @@ export default function CartPage({ params }: { params: { slug: string } }) {
                           <Loader2 className="w-4 h-4 animate-spin" />
                           Getting your location…
                         </motion.span>
+                      ) : checkingRange ? (
+                        <motion.span
+                          key="checking"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.15 }}
+                          className="flex items-center gap-2"
+                        >
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Checking delivery range…
+                        </motion.span>
+                      ) : outOfRange ? (
+                        <motion.span
+                          key="outofrange"
+                          initial={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.7 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ type: "spring", stiffness: 420, damping: 22 }}
+                          className="flex items-center gap-2"
+                        >
+                          <AlertTriangle className="w-4 h-4" />
+                          Outside delivery area — tap to retry
+                        </motion.span>
                       ) : coords ? (
                         <motion.span
                           key="captured"
@@ -534,7 +604,9 @@ export default function CartPage({ params }: { params: { slug: string } }) {
                           className="flex items-center gap-2"
                         >
                           <CheckCircle2 className="w-4 h-4" />
-                          Location captured — tap to update
+                          {deliveryCheck?.distanceKm != null
+                            ? `Within delivery area · ${deliveryCheck.distanceKm} km — tap to update`
+                            : "Location captured — tap to update"}
                         </motion.span>
                       ) : (
                         <motion.span
@@ -563,6 +635,25 @@ export default function CartPage({ params }: { params: { slug: string } }) {
                       >
                         <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                         <span>{locationMessage}</span>
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+
+                  <AnimatePresence initial={false}>
+                    {outOfRange && deliveryCheck && (
+                      <motion.p
+                        key="range-message"
+                        initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -6, height: 0 }}
+                        animate={{ opacity: 1, y: 0, height: "auto" }}
+                        exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -6, height: 0 }}
+                        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                        className="flex items-start gap-2 text-xs text-danger bg-danger/10 border border-danger/30 rounded-lg px-3 py-2 overflow-hidden"
+                      >
+                        <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                        <span>
+                          You&apos;re {deliveryCheck.distanceKm} km away — {storefront?.name ?? "this restaurant"}{" "}
+                          delivers within {deliveryCheck.radiusKm} km. Try pickup or a closer address.
+                        </span>
                       </motion.p>
                     )}
                   </AnimatePresence>
