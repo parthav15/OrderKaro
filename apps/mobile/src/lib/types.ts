@@ -62,10 +62,17 @@ export interface Restaurant {
   acceptsDelivery: boolean
 }
 
+export interface Announcement {
+  id: string
+  message: string
+  createdAt: string
+}
+
 export interface MenuResponse {
   restaurant: Restaurant
   categories: Category[]
   tables: { id: string; label: string }[]
+  announcements: Announcement[]
 }
 
 export interface PaymentSession {

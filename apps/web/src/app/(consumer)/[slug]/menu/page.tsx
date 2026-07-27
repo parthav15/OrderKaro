@@ -271,7 +271,7 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
     [trackItemView]
   )
 
-  const announcements: Announcement[] | undefined = qrData?.announcements
+  const announcements: Announcement[] | undefined = menuData?.announcements ?? qrData?.announcements
   const tableInfo: ResolvedTable | undefined = qrData?.table
   const restaurantName = menuData?.restaurant?.name ?? "Menu"
   const closingTime = menuData?.restaurant?.closingTime ?? qrData?.restaurant?.closingTime ?? null

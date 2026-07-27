@@ -30,7 +30,7 @@ import { ItemDetailSheet } from "@/components/item-detail-sheet"
 import { api } from "@/lib/api"
 import { useCart } from "@/stores/cart"
 import { useTheme } from "@/theme/theme-provider"
-import type { MenuResponse, MenuItem, Category } from "@/lib/types"
+import type { MenuResponse, MenuItem, Category, Announcement } from "@/lib/types"
 
 const POPULAR = /popular|chef|signature|special|featured|bestseller|recommended/i
 
@@ -181,6 +181,13 @@ export default function MenuScreen() {
           Open until {data.restaurant.closingTime}
         </Text>
       </View>
+
+      <AnnouncementBanner
+        announcements={data.announcements ?? []}
+        brand={brand}
+        inkColor={colors.ink}
+        canvasColor={colors.canvas}
+      />
 
       <View className="px-5 pb-2">
         <View className="flex-row items-center bg-surface rounded-2xl border border-line px-4">
@@ -449,5 +456,59 @@ function FilterChip({
         {label}
       </Text>
     </Pressable>
+  )
+}
+
+function AnnouncementBanner({
+  announcements,
+  brand,
+  inkColor,
+  canvasColor,
+}: {
+  announcements: Announcement[]
+  brand: string
+  inkColor: string
+  canvasColor: string
+}) {
+  if (!announcements || announcements.length === 0) return null
+  const multi = announcements.length > 1
+  return (
+    <MotiView
+      from={{ opacity: 0, translateY: -8 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      transition={{ type: "timing", duration: 400 }}
+      style={{ backgroundColor: inkColor }}
+      className="mx-5 mb-2 rounded-2xl px-4 py-2.5"
+    >
+      {multi ? (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 22, alignItems: "center" }}
+        >
+          {announcements.map((a) => (
+            <View key={a.id} className="flex-row items-center gap-2">
+              <View style={{ backgroundColor: brand }} className="w-1.5 h-1.5 rounded-full" />
+              <Text className="text-xs font-sans-medium" style={{ color: canvasColor }}>
+                {a.message}
+              </Text>
+            </View>
+          ))}
+        </ScrollView>
+      ) : (
+        <View className="flex-row items-center justify-center gap-2">
+          <MotiView
+            from={{ opacity: 0.35 }}
+            animate={{ opacity: 1 }}
+            transition={{ loop: true, type: "timing", duration: 900 }}
+            style={{ backgroundColor: brand }}
+            className="w-1.5 h-1.5 rounded-full"
+          />
+          <Text className="text-xs font-sans-medium" numberOfLines={1} style={{ color: canvasColor }}>
+            {announcements[0].message}
+          </Text>
+        </View>
+      )}
+    </MotiView>
   )
 }

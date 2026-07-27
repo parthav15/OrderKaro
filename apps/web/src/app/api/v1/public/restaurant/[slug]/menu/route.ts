@@ -79,6 +79,16 @@ export async function GET(
       orderBy: { label: "asc" },
     })
 
+    const announcements = await prisma.announcement.findMany({
+      where: {
+        restaurantId: restaurant.id,
+        isActive: true,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
+      select: { id: true, message: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+    })
+
     const { plan, planValidUntil, latitude, longitude, country, ...publicRestaurant } = restaurant
     const arEnabled = hasFeature({ plan, planValidUntil }, "ar")
     const brandingEnabled = hasFeature({ plan, planValidUntil }, "branding")
@@ -109,6 +119,7 @@ export async function GET(
             })),
           })),
       tables,
+      announcements,
     })
   } catch (err) {
     return handleError(err)
