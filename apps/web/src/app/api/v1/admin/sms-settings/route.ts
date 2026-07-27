@@ -13,6 +13,9 @@ const whatsappTemplatesSchema = z.object({
   ORDER_COMPLETED: z.string().optional(),
   ORDER_CANCELLED: z.string().optional(),
   OWNER_NEW_ORDER: z.string().optional(),
+  OWNER_ORDER_CANCELLED: z.string().optional(),
+  OWNER_DAILY_SUMMARY: z.string().optional(),
+  OWNER_PLAN_EXPIRING: z.string().optional(),
 })
 
 const smsSettingsSchema = z.object({
@@ -23,6 +26,7 @@ const smsSettingsSchema = z.object({
   whatsappSender: z.string().max(64).optional(),
   whatsappCostPerMessage: z.number().min(0).max(1000).optional(),
   whatsappTemplates: whatsappTemplatesSchema.optional(),
+  whatsappOtpTemplate: z.string().max(64).optional(),
 })
 
 function serializeSettings(settings: {
@@ -34,6 +38,7 @@ function serializeSettings(settings: {
   whatsappSender: string | null
   whatsappCostPerMessage: { toString(): string }
   whatsappTemplates: unknown
+  whatsappOtpTemplate: string | null
 }) {
   return {
     enabled: settings.enabled,
@@ -44,6 +49,7 @@ function serializeSettings(settings: {
     whatsappSender: settings.whatsappSender ?? "",
     whatsappCostPerMessage: Number(settings.whatsappCostPerMessage.toString()),
     whatsappTemplates: (settings.whatsappTemplates as Partial<Record<SmsNotificationKey, string>> | null) ?? {},
+    whatsappOtpTemplate: settings.whatsappOtpTemplate ?? "",
   }
 }
 

@@ -4,7 +4,8 @@ import bcrypt from "bcryptjs"
 import prisma from "@/lib/prisma"
 import { success, error, handleError, parseBody } from "@/lib/api-utils"
 import { ownerForgotPasswordSchema } from "@orderkaro/shared"
-import { sendSms, isTwilioConfigured } from "@/lib/twilio"
+import { isTwilioConfigured } from "@/lib/twilio"
+import { dispatchOtp } from "@/lib/sms/otp"
 
 const RESEND_COOLDOWN_MS = 30_000
 const CODE_TTL_MS = 10 * 60_000
@@ -51,10 +52,7 @@ export async function POST(request: NextRequest) {
       update: { codeHash, expiresAt, attempts: 0, lastSentAt: new Date() },
     })
 
-    await sendSms(
-      toE164(owner.phone),
-      `Your Vision Menu password reset code is ${code}. It expires in 10 minutes.`
-    )
+    await dispatchOtp(toE164(owner.phone), code, "reset")
 
     return success({ sent: true, phoneHint: maskPhone(owner.phone) })
   } catch (err) {

@@ -256,7 +256,7 @@ export default function AnalyticsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
         >
-          <Card>
+          <Card className="h-full">
             <CardHeader>
               <h2 className="text-lg font-bold text-ink">Revenue — Last 7 Days</h2>
               <p className="text-sm text-muted">Daily earnings breakdown</p>
@@ -312,7 +312,7 @@ export default function AnalyticsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Card>
+          <Card className="h-full">
             <CardHeader>
               <h2 className="text-lg font-bold text-ink">Most Popular Items</h2>
               <p className="text-sm text-muted">Best selling items by order count</p>
@@ -377,7 +377,7 @@ export default function AnalyticsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45 }}
         >
-          <Card>
+          <Card className="h-full">
             <CardHeader>
               <h2 className="text-lg font-bold text-ink">Peak Hours</h2>
               <p className="text-sm text-muted">Busiest hours of the day — darker means more orders</p>
@@ -435,7 +435,7 @@ export default function AnalyticsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <Card>
+          <Card className="h-full">
             <CardHeader>
               <h2 className="text-lg font-bold text-ink">Revenue by Category</h2>
               <p className="text-sm text-muted">Which categories earn the most</p>
@@ -603,7 +603,7 @@ export default function AnalyticsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.85 }}
               >
-                <Card>
+                <Card className="h-full">
                   <CardHeader>
                     <h2 className="text-lg font-bold text-ink">
                       Menu Views — Last {menuViewsDays} Days
@@ -661,7 +661,7 @@ export default function AnalyticsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.9 }}
               >
-                <Card>
+                <Card className="h-full">
                   <CardHeader>
                     <h2 className="text-lg font-bold text-ink">Most Viewed Items</h2>
                     <p className="text-sm text-muted">Menu items customers look at the most</p>

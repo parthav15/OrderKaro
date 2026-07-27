@@ -1060,9 +1060,9 @@ export default function SettingsPage() {
                         </div>
                         <input
                           type="range"
-                          min={0.5}
+                          min={0.1}
                           max={25}
-                          step={0.5}
+                          step={0.1}
                           value={deliveryForm.deliveryRadiusKm}
                           onChange={(e) =>
                             setDeliveryForm({ ...deliveryForm, deliveryRadiusKm: e.target.value })
@@ -1070,7 +1070,7 @@ export default function SettingsPage() {
                           className="w-full cursor-pointer accent-brand-red rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-red/30 focus-visible:ring-offset-2 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-brand-red [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-110 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-brand-red [&::-moz-range-thumb]:shadow-md"
                         />
                         <div className="flex items-center justify-between text-xs text-muted">
-                          <span>0.5 km</span>
+                          <span>0.1 km</span>
                           <span>25 km</span>
                         </div>
                       </div>

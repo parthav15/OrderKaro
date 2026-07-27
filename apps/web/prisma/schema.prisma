@@ -173,6 +173,7 @@ model SmsSettings {
   whatsappSender         String?
   whatsappCostPerMessage Decimal  @default(0.15) @db.Decimal(10, 4)
   whatsappTemplates      Json?
+  whatsappOtpTemplate    String?
   updatedAt              DateTime @updatedAt
 }
 

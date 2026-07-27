@@ -35,6 +35,7 @@ interface SmsSettingsResponse {
   whatsappSender: string
   whatsappCostPerMessage: number
   whatsappTemplates: Partial<WhatsappTemplateMap>
+  whatsappOtpTemplate: string
 }
 
 interface SmsSettingsPayload {
@@ -54,6 +55,7 @@ interface WhatsappSettingsPayload {
   whatsappSender: string
   whatsappCostPerMessage: number
   whatsappTemplates: Partial<WhatsappTemplateMap>
+  whatsappOtpTemplate: string
 }
 
 interface WhatsappSettingsFormState {
@@ -61,6 +63,7 @@ interface WhatsappSettingsFormState {
   whatsappSender: string
   whatsappCostPerMessage: string
   whatsappTemplates: WhatsappTemplateMap
+  whatsappOtpTemplate: string
 }
 
 const WHATSAPP_TEMPLATE_FIELDS: { key: SmsNotificationKey; label: string }[] = [
@@ -147,6 +150,7 @@ function normalizeWhatsappSettings(settings: SmsSettingsResponse): WhatsappSetti
     whatsappSender: settings.whatsappSender,
     whatsappCostPerMessage: String(settings.whatsappCostPerMessage),
     whatsappTemplates,
+    whatsappOtpTemplate: settings.whatsappOtpTemplate,
   }
 }
 
@@ -236,6 +240,7 @@ export default function SuperAdminSmsPage() {
     whatsappSender: "",
     whatsappCostPerMessage: "0",
     whatsappTemplates: EMPTY_WHATSAPP_TEMPLATES,
+    whatsappOtpTemplate: "",
   })
   const [whatsappSavedSnapshot, setWhatsappSavedSnapshot] =
     useState<WhatsappSettingsFormState>(whatsappForm)
@@ -325,6 +330,7 @@ export default function SuperAdminSmsPage() {
       whatsappSender: whatsappForm.whatsappSender.trim(),
       whatsappCostPerMessage: clampPercent(toNumber(whatsappForm.whatsappCostPerMessage)),
       whatsappTemplates: trimWhatsappTemplates(whatsappForm.whatsappTemplates),
+      whatsappOtpTemplate: whatsappForm.whatsappOtpTemplate.trim(),
     })
   }
 
@@ -666,6 +672,31 @@ export default function SuperAdminSmsPage() {
                         />
                       </div>
                     ))}
+                  </div>
+                </div>
+
+                <div className="mt-6 space-y-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-ink">One-time passcode (OTP)</h3>
+                    <p className="text-xs text-muted mt-0.5">
+                      AUTHENTICATION-category template for login &amp; password-reset codes. Falls back to SMS
+                      until Meta approves it.
+                    </p>
+                  </div>
+                  <div className="space-y-1.5 sm:max-w-md">
+                    <label htmlFor="whatsapp-otp-template" className="block text-sm font-medium text-ink">
+                      OTP template SID
+                    </label>
+                    <input
+                      id="whatsapp-otp-template"
+                      type="text"
+                      placeholder="HXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                      value={whatsappForm.whatsappOtpTemplate}
+                      onChange={(e) =>
+                        setWhatsappForm((f) => ({ ...f, whatsappOtpTemplate: e.target.value }))
+                      }
+                      className="w-full rounded-xl border border-line bg-surface py-2.5 px-4 text-sm text-ink placeholder:text-muted/60 font-mono transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    />
                   </div>
                 </div>
               </CardContent>

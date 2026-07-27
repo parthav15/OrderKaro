@@ -75,6 +75,14 @@ or hit-or-miss AI (Meshy library). Photoreal = paid per-dish (license-gated) or 
   Meta 3DGen (research-only, no API), Sloyd + Luma Genie (not photo-of-real-dish), Alpha3D (self-serve
   but USDZ export + pricing unverified).
 
+### License & privacy deltas (verified 2026-07 — matter for a multi-tenant SaaS)
+- **Meshy:** paid = full ownership, sell/distribute OK — **but ToS §2.9 lets Meshy train on your inputs AND outputs on every non-Enterprise tier** (restaurants' dish photos + the generated models feed Meshy's training unless we're Enterprise), and §2.6(v) forbids reselling API *access*.
+- **Compliant multi-tenant pattern (Meshy & Tripo both):** the platform holds **ONE paid API account, generates server-side, stores + serves the files itself** — never expose raw API access to restaurants, never resell it. This is the safe reading of both ToS for "one account generates on behalf of many restaurants."
+- **Tripo:** the **API is a separate product line from Studio subscriptions** (separate keys + billing); free tier is CC-BY **no commercial use** → must be paid Pro+ for commercial.
+- **Stability SF3D/SPAR3D:** Community License is free for commercial **only under $1M/yr revenue** (Enterprise above); weights self-host (SF3D ≈6GB VRAM) at zero per-call cost — the cost floor **and** the only fully-private option (owner photos never leave our servers).
+- **Rodin:** broad "use Output without limits" grant + native USDZ, but the **API is gated to Business (~$96–120/mo)**, or ~$0.30–0.40/model via fal/wavespeed; no IP warranty on outputs.
+- **Confirmed dead-ends:** **Luma has no 3D API in 2026** (image/video only); **Sloyd's API excludes organic/food** (parametric hard-surface only, no image input). Both stay ruled out.
+
 ### Food is genuinely hard for single-photo AI
 ~80–90% accurate; error concentrates on **surfaces the camera never saw (hallucinated backs)**; glossy
 sauces / drinks / glassware / translucency produce holes and spikes. **Mitigate with multi-view (2–4 angles),
