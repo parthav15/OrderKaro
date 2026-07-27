@@ -128,6 +128,9 @@ export interface OwnerRestaurant {
   notifyOrderCompleted?: boolean
   notifyOrderCancelled?: boolean
   notifyOwnerNewOrder?: boolean
+  notifyOwnerOrderCancelled?: boolean
+  notifyOwnerDailySummary?: boolean
+  notifyOwnerPlanExpiring?: boolean
 }
 
 export interface ActiveOrder {

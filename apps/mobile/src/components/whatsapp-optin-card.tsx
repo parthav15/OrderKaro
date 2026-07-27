@@ -1,13 +1,9 @@
-import { useState } from "react"
-import { View, Pressable, Linking } from "react-native"
+import { View } from "react-native"
 import { MotiView } from "moti"
 import Svg, { Path } from "react-native-svg"
-import { ChevronRight } from "lucide-react-native"
-import * as Haptics from "expo-haptics"
 import { Text } from "@/components/ui/text"
 
 const WHATSAPP_GREEN = "#25D366"
-const WHATSAPP_TEAL = "#128C7E"
 
 function WhatsAppGlyph({ size = 26 }: { size?: number }) {
   return (
@@ -18,119 +14,90 @@ function WhatsAppGlyph({ size = 26 }: { size?: number }) {
 }
 
 export function WhatsAppOptInCard({
-  optIn,
   delay = 0,
 }: {
   optIn: { number: string; message: string }
   delay?: number
 }) {
-  const [pressed, setPressed] = useState(false)
-
-  function open() {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-    Linking.openURL(`https://wa.me/${optIn.number}?text=${encodeURIComponent(optIn.message)}`)
-  }
-
   return (
     <MotiView
       from={{ opacity: 0, translateY: 16 }}
       animate={{ opacity: 1, translateY: 0 }}
       transition={{ type: "spring", damping: 22, stiffness: 260, delay }}
+      style={{
+        borderColor: "rgba(37,211,102,0.32)",
+        backgroundColor: "rgba(37,211,102,0.10)",
+      }}
+      className="relative overflow-hidden rounded-3xl border p-5"
     >
-      <Pressable
-        onPressIn={() => setPressed(true)}
-        onPressOut={() => setPressed(false)}
-        onPress={open}
-        accessibilityRole="button"
-        accessibilityLabel="Get updates on WhatsApp"
-      >
+      <MotiView
+        pointerEvents="none"
+        from={{ scale: 1, opacity: 0.42 }}
+        animate={{ scale: 1.4, opacity: 0.12 }}
+        transition={{ loop: true, repeatReverse: true, type: "timing", duration: 1700 }}
+        style={{
+          position: "absolute",
+          right: -36,
+          top: -46,
+          width: 138,
+          height: 138,
+          borderRadius: 999,
+          backgroundColor: WHATSAPP_GREEN,
+        }}
+      />
+      <MotiView
+        pointerEvents="none"
+        from={{ translateX: -150 }}
+        animate={{ translateX: 440 }}
+        transition={{
+          loop: true,
+          repeatReverse: false,
+          type: "timing",
+          duration: 2600,
+          delay: 500,
+        }}
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: 64,
+          backgroundColor: "rgba(255,255,255,0.16)",
+          transform: [{ skewX: "-16deg" }],
+        }}
+      />
+
+      <View className="relative flex-row items-center gap-4">
         <MotiView
-          animate={{ scale: pressed ? 0.98 : 1 }}
-          transition={{ type: "timing", duration: 160 }}
+          from={{ rotate: "-6deg" }}
+          animate={{ rotate: "6deg" }}
+          transition={{ loop: true, repeatReverse: true, type: "timing", duration: 1500 }}
           style={{
-            borderColor: "rgba(37,211,102,0.32)",
-            backgroundColor: "rgba(37,211,102,0.10)",
+            width: 48,
+            height: 48,
+            borderRadius: 16,
+            backgroundColor: WHATSAPP_GREEN,
+            alignItems: "center",
+            justifyContent: "center",
+            shadowColor: WHATSAPP_GREEN,
+            shadowOpacity: 0.45,
+            shadowRadius: 12,
+            shadowOffset: { width: 0, height: 4 },
+            elevation: 6,
           }}
-          className="relative overflow-hidden rounded-3xl border p-5"
         >
-          <MotiView
-            pointerEvents="none"
-            from={{ scale: 1, opacity: 0.42 }}
-            animate={{ scale: 1.4, opacity: 0.12 }}
-            transition={{ loop: true, repeatReverse: true, type: "timing", duration: 1700 }}
-            style={{
-              position: "absolute",
-              right: -36,
-              top: -46,
-              width: 138,
-              height: 138,
-              borderRadius: 999,
-              backgroundColor: WHATSAPP_GREEN,
-            }}
-          />
-          <MotiView
-            pointerEvents="none"
-            from={{ translateX: -150 }}
-            animate={{ translateX: 440 }}
-            transition={{
-              loop: true,
-              repeatReverse: false,
-              type: "timing",
-              duration: 2600,
-              delay: 500,
-            }}
-            style={{
-              position: "absolute",
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: 64,
-              backgroundColor: "rgba(255,255,255,0.16)",
-              transform: [{ skewX: "-16deg" }],
-            }}
-          />
-
-          <View className="relative flex-row items-center gap-4">
-            <MotiView
-              from={{ rotate: "-6deg" }}
-              animate={{ rotate: "6deg" }}
-              transition={{ loop: true, repeatReverse: true, type: "timing", duration: 1500 }}
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: 16,
-                backgroundColor: WHATSAPP_GREEN,
-                alignItems: "center",
-                justifyContent: "center",
-                shadowColor: WHATSAPP_GREEN,
-                shadowOpacity: 0.45,
-                shadowRadius: 12,
-                shadowOffset: { width: 0, height: 4 },
-                elevation: 6,
-              }}
-            >
-              <WhatsAppGlyph size={26} />
-            </MotiView>
-
-            <View className="flex-1">
-              <Text variant="title" className="text-base">
-                Get updates on WhatsApp
-              </Text>
-              <Text variant="muted" className="text-xs mt-0.5 leading-relaxed">
-                Free, instant order updates — right in your chats.
-              </Text>
-            </View>
-
-            <MotiView
-              from={{ translateX: 0 }}
-              animate={{ translateX: 4 }}
-              transition={{ loop: true, repeatReverse: true, type: "timing", duration: 850 }}
-            >
-              <ChevronRight size={20} color={WHATSAPP_TEAL} />
-            </MotiView>
-          </View>
+          <WhatsAppGlyph size={26} />
         </MotiView>
-      </Pressable>
+
+        <View className="flex-1">
+          <Text variant="title" className="text-base">
+            You'll get updates on WhatsApp
+          </Text>
+          <Text variant="muted" className="text-xs mt-0.5 leading-relaxed">
+            We'll message you here as your order moves.
+          </Text>
+        </View>
+      </View>
     </MotiView>
   )
 }

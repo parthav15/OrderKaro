@@ -39,6 +39,12 @@ import type { MenuResponse, PaymentSession } from "@/lib/types"
 type Fulfillment = "TAKEAWAY" | "DINE_IN" | "DELIVERY"
 type Payment = "CASH" | "ONLINE"
 
+type DeliveryCheck = {
+  deliverable: boolean
+  distanceKm: number | null
+  radiusKm: number
+}
+
 function idempotencyKey() {
   return `vm-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
 }
@@ -64,6 +70,8 @@ export default function CartScreen() {
   const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null)
   const [locating, setLocating] = useState(false)
   const [locationMessage, setLocationMessage] = useState<string | null>(null)
+  const [deliveryCheck, setDeliveryCheck] = useState<DeliveryCheck | null>(null)
+  const [checkingRange, setCheckingRange] = useState(false)
   const [session, setSession] = useState<(PaymentSession & { orderId: string; token?: string }) | null>(
     null
   )
@@ -91,6 +99,12 @@ export default function CartScreen() {
   }
 
   const deliveryZoneActive = Boolean(restaurant?.deliveryEnabled && restaurant?.hasLocation)
+  const outOfRange =
+    fulfillment === "DELIVERY" &&
+    deliveryZoneActive &&
+    Boolean(coords) &&
+    deliveryCheck != null &&
+    !deliveryCheck.deliverable
   const deliveryRestrictedItems =
     fulfillment === "DELIVERY" ? lines.filter((l) => l.availableForDelivery === false) : []
   const hasDeliveryRestrictedItems = deliveryRestrictedItems.length > 0
@@ -139,8 +153,34 @@ export default function CartScreen() {
   ]
   const FULFILL = ALL_FULFILL.filter((f) => fulfillmentAvailable[f.key])
 
+  async function checkDeliveryRange(latitude: number, longitude: number) {
+    if (!deliveryZoneActive) {
+      setDeliveryCheck(null)
+      return
+    }
+    setCheckingRange(true)
+    try {
+      const result = await api.post<{
+        enforced: boolean
+        deliverable: boolean
+        distanceKm: number | null
+        radiusKm: number
+      }>(`/api/v1/public/restaurant/${slug}/delivery-check`, { latitude, longitude })
+      setDeliveryCheck({
+        deliverable: Boolean(result.deliverable),
+        distanceKm: result.distanceKm ?? null,
+        radiusKm: Number(result.radiusKm ?? 0),
+      })
+    } catch {
+      setDeliveryCheck(null)
+    } finally {
+      setCheckingRange(false)
+    }
+  }
+
   async function requestLocation() {
     setLocationMessage(null)
+    setDeliveryCheck(null)
     setLocating(true)
     try {
       const { status } = await Location.requestForegroundPermissionsAsync()
@@ -151,6 +191,7 @@ export default function CartScreen() {
       const position = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
       setCoords({ latitude: position.coords.latitude, longitude: position.coords.longitude })
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      void checkDeliveryRange(position.coords.latitude, position.coords.longitude)
     } catch {
       setLocationMessage("Couldn't get your location right now. Enter your address below instead.")
     } finally {
@@ -172,6 +213,17 @@ export default function CartScreen() {
     }
     if (fulfillment === "DELIVERY" && !deliveryLocation.trim()) {
       setOrderError("Please enter a delivery location")
+      return
+    }
+    if (fulfillment === "DELIVERY" && deliveryZoneActive && !coords) {
+      setOrderError("Please share your location so we can check the delivery range")
+      return
+    }
+    if (fulfillment === "DELIVERY" && outOfRange) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
+      setOrderError(
+        `You're outside the delivery area — ${deliveryCheck?.distanceKm} km away, delivers within ${deliveryCheck?.radiusKm} km. Try pickup or a closer address.`
+      )
       return
     }
     if (availablePayments.length === 0) {
@@ -378,9 +430,13 @@ export default function CartScreen() {
               <View className="mb-3">
                 <Pressable
                   onPress={requestLocation}
-                  disabled={locating}
+                  disabled={locating || checkingRange}
                   className={`flex-row items-center justify-center gap-2 h-14 rounded-2xl border mb-2 ${
-                    coords ? "border-success bg-success/10" : "border-line bg-surface"
+                    outOfRange
+                      ? "border-danger bg-danger/10"
+                      : coords
+                        ? "border-success bg-success/10"
+                        : "border-line bg-surface"
                   }`}
                 >
                   {locating ? (
@@ -396,6 +452,32 @@ export default function CartScreen() {
                         Getting your location…
                       </Text>
                     </MotiView>
+                  ) : checkingRange ? (
+                    <MotiView
+                      key="checking"
+                      from={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ type: "timing", duration: 150 }}
+                      className="flex-row items-center gap-2"
+                    >
+                      <ActivityIndicator size="small" color={colors.muted} />
+                      <Text variant="muted" className="text-sm font-sans-semibold">
+                        Checking delivery range…
+                      </Text>
+                    </MotiView>
+                  ) : outOfRange ? (
+                    <MotiView
+                      key="outofrange"
+                      from={{ opacity: 0, scale: 0.85 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ type: "spring", damping: 16, stiffness: 260 }}
+                      className="flex-row items-center gap-2"
+                    >
+                      <AlertTriangle size={16} color={colors.danger} />
+                      <Text className="text-danger text-sm font-sans-semibold">
+                        Outside delivery area — tap to retry
+                      </Text>
+                    </MotiView>
                   ) : coords ? (
                     <MotiView
                       key="captured"
@@ -406,7 +488,9 @@ export default function CartScreen() {
                     >
                       <CheckCircle2 size={16} color={colors.success} />
                       <Text className="text-success text-sm font-sans-semibold">
-                        Location captured — tap to update
+                        {deliveryCheck?.distanceKm != null
+                          ? `Within delivery area · ${deliveryCheck.distanceKm} km — tap to update`
+                          : "Location captured — tap to update"}
                       </Text>
                     </MotiView>
                   ) : (
@@ -437,6 +521,25 @@ export default function CartScreen() {
                     >
                       <AlertTriangle size={13} color={colors.danger} style={{ marginTop: 1 }} />
                       <Text className="text-danger text-xs flex-1">{locationMessage}</Text>
+                    </MotiView>
+                  ) : null}
+                </AnimatePresence>
+
+                <AnimatePresence>
+                  {outOfRange && deliveryCheck ? (
+                    <MotiView
+                      key="range-message"
+                      from={{ opacity: 0, translateY: -6 }}
+                      animate={{ opacity: 1, translateY: 0 }}
+                      exit={{ opacity: 0, translateY: -6 }}
+                      transition={{ type: "timing", duration: 220 }}
+                      className="flex-row items-start gap-2 bg-danger/10 border border-danger/30 rounded-xl px-3 py-2.5 mb-2"
+                    >
+                      <AlertTriangle size={13} color={colors.danger} style={{ marginTop: 1 }} />
+                      <Text className="text-danger text-xs flex-1">
+                        You're {deliveryCheck.distanceKm} km away — {restaurant?.name ?? "This restaurant"}{" "}
+                        delivers within {deliveryCheck.radiusKm} km. Try pickup or a closer address.
+                      </Text>
                     </MotiView>
                   ) : null}
                 </AnimatePresence>
