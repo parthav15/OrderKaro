@@ -40,6 +40,19 @@ export async function sendSms(
   return { sid: payload?.sid ?? null }
 }
 
+export async function getMessageStatus(sid: string): Promise<string | null> {
+  const accountSid = process.env.TWILIO_ACCOUNT_SID as string
+  const token = process.env.TWILIO_AUTH_TOKEN as string
+  const auth = Buffer.from(`${accountSid}:${token}`).toString("base64")
+
+  const res = await fetch(`${TWILIO_API}/Accounts/${accountSid}/Messages/${sid}.json`, {
+    headers: { Authorization: `Basic ${auth}` },
+  })
+  if (!res.ok) return null
+  const payload = (await res.json().catch(() => null)) as { status?: string } | null
+  return payload?.status ?? null
+}
+
 function normalizeWhatsAppNumber(value: string): string {
   const trimmed = value.trim().replace(/^whatsapp:/i, "")
   return trimmed.startsWith("+") ? trimmed : `+${trimmed.replace(/\D/g, "")}`
