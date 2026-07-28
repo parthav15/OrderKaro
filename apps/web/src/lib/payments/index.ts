@@ -1,3 +1,4 @@
+import { currencyForCountryCode } from "@orderkaro/shared"
 import { paypurGateway } from "./paypur"
 import { stripeGateway } from "./stripe"
 import { cashfreeGateway } from "./cashfree"
@@ -16,15 +17,7 @@ export function providerForCountry(country: string): PaymentProviderName {
 }
 
 export function currencyForCountry(country: string): string {
-  const currencies: Record<string, string> = {
-    IN: "INR",
-    US: "USD",
-    CA: "CAD",
-    GB: "GBP",
-    AU: "AUD",
-    CH: "CHF",
-  }
-  return currencies[country.toUpperCase()] ?? "EUR"
+  return currencyForCountryCode(country)
 }
 
 export function gatewayFor(provider: PaymentProviderName): PaymentGateway {

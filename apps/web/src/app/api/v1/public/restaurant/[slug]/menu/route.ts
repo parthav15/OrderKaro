@@ -2,7 +2,7 @@ import { NextRequest } from "next/server"
 import prisma from "@/lib/prisma"
 import { success, error, handleError } from "@/lib/api-utils"
 import { hasFeature } from "@/lib/plans"
-import { gatewayForRestaurant } from "@/lib/payments"
+import { gatewayForRestaurant, currencyForCountry } from "@/lib/payments"
 import { DEFAULT_BRAND_COLOR } from "@/lib/brand-color"
 
 export async function GET(
@@ -125,6 +125,7 @@ export async function GET(
         arEnabled,
         onlinePaymentEnabled,
         fees,
+        currency: currencyForCountry(country),
       },
       categories: arEnabled
         ? categories

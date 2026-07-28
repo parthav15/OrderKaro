@@ -5,8 +5,35 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatPrice(price: number | string) {
-  return `₹${Number(price).toFixed(0)}`
+const CURRENCY_LOCALE: Record<string, string> = {
+  INR: "en-IN",
+  USD: "en-US",
+  GBP: "en-GB",
+  EUR: "en-IE",
+  CAD: "en-CA",
+  AUD: "en-AU",
+  NZD: "en-NZ",
+  SGD: "en-SG",
+  AED: "en-AE",
+  CHF: "de-CH",
+  JPY: "ja-JP",
+}
+
+const ZERO_DECIMAL_CURRENCIES = new Set(["INR", "JPY", "VND", "IDR", "KRW"])
+
+export function formatPrice(price: number | string, currency = "INR") {
+  const value = Number(price)
+  const fractionDigits = ZERO_DECIMAL_CURRENCIES.has(currency) ? 0 : 2
+  try {
+    return new Intl.NumberFormat(CURRENCY_LOCALE[currency] ?? "en-US", {
+      style: "currency",
+      currency,
+      minimumFractionDigits: fractionDigits,
+      maximumFractionDigits: fractionDigits,
+    }).format(value)
+  } catch {
+    return `${value.toFixed(fractionDigits)}`
+  }
 }
 
 export function formatTime(date: string | Date) {

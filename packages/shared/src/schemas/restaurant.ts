@@ -1,7 +1,14 @@
 import { z } from "zod"
+import { SUPPORTED_COUNTRY_CODES } from "../countries"
 
 export const createRestaurantSchema = z.object({
   name: z.string().min(2).max(100),
+  country: z
+    .string()
+    .default("IN")
+    .refine((c) => SUPPORTED_COUNTRY_CODES.includes(c.toUpperCase()), {
+      message: "Unsupported country",
+    }),
   slug: z
     .string()
     .min(2)
