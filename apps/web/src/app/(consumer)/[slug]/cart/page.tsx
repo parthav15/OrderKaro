@@ -86,6 +86,10 @@ interface StorefrontConfig {
   deliveryEnabled?: boolean
   deliveryRadiusKm?: number
   deliveryFee?: string
+  fees?: {
+    delivery: { enabled: boolean; mode: string; amount: number }
+    convenience: { enabled: boolean; mode: string; amount: number }
+  } | null
   minOrderValue?: string
   hasLocation?: boolean
   onlinePaymentEnabled?: boolean
@@ -105,6 +109,25 @@ const FULFILLMENT_OPTIONS: Array<{ value: OrderType; label: string; icon: typeof
 const PAYMENT_METHOD_META: Record<PaymentMethod, { label: string; sub: string; icon: typeof Banknote }> = {
   ONLINE: { label: "Pay online", sub: "UPI · Card", icon: Smartphone },
   CASH: { label: "Cash", sub: "At the counter", icon: Banknote },
+}
+
+function feePart(part: { enabled: boolean; mode: string; amount: number } | undefined, base: number): number {
+  if (!part || !part.enabled) return 0
+  return part.mode === "PERCENT" ? (base * part.amount) / 100 : part.amount
+}
+
+function computeHandlingFee(
+  orderType: OrderType,
+  storefront: StorefrontConfig | null,
+  deliveryZoneActive: boolean,
+  subtotal: number
+): number {
+  if (orderType !== "DELIVERY") return 0
+  if (storefront?.fees) {
+    const raw = feePart(storefront.fees.delivery, subtotal) + feePart(storefront.fees.convenience, subtotal)
+    return Math.round(raw * 100) / 100
+  }
+  return deliveryZoneActive ? Number(storefront?.deliveryFee ?? 0) : 0
 }
 
 export default function CartPage({ params }: { params: { slug: string } }) {
@@ -144,9 +167,6 @@ export default function CartPage({ params }: { params: { slug: string } }) {
     Boolean(coords) &&
     deliveryCheck != null &&
     !deliveryCheck.deliverable
-  const deliveryFeeAmount =
-    deliveryZoneActive && orderType === "DELIVERY" ? Number(storefront?.deliveryFee ?? 0) : 0
-
   const availablePaymentMethods: PaymentMethod[] = []
   if (onlinePaymentAvailable) availablePaymentMethods.push("ONLINE")
   if (acceptsCash) availablePaymentMethods.push("CASH")
@@ -170,7 +190,8 @@ export default function CartPage({ params }: { params: { slug: string } }) {
   const hasDeliveryRestrictedItems = deliveryRestrictedItems.length > 0
 
   const itemsTotal = getTotal()
-  const total = itemsTotal + deliveryFeeAmount
+  const handlingFee = computeHandlingFee(orderType, storefront, deliveryZoneActive, itemsTotal)
+  const total = itemsTotal + handlingFee
 
   useEffect(() => {
     api
@@ -671,8 +692,8 @@ export default function CartPage({ params }: { params: { slug: string } }) {
                   <p className="text-xs text-muted">
                     {storefront?.name ?? "This restaurant"} delivers within{" "}
                     {storefront?.deliveryRadiusKm} km
-                    {Number(storefront?.deliveryFee ?? 0) > 0
-                      ? ` · delivery fee ${formatPrice(Number(storefront?.deliveryFee))}`
+                    {handlingFee > 0
+                      ? ` · delivery & handling ${formatPrice(handlingFee)}`
                       : " · free delivery"}
                     {Number(storefront?.minOrderValue ?? 0) > 0
                       ? ` · min order ${formatPrice(Number(storefront?.minOrderValue))}`
@@ -818,7 +839,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
             </motion.div>
           )}
         </AnimatePresence>
-        {deliveryFeeAmount > 0 && (
+        {handlingFee > 0 && (
           <div className="flex justify-between items-center mb-1.5">
             <span className="text-xs text-muted">Items</span>
             <span className="text-xs font-semibold text-muted">
@@ -826,11 +847,11 @@ export default function CartPage({ params }: { params: { slug: string } }) {
             </span>
           </div>
         )}
-        {deliveryFeeAmount > 0 && (
+        {handlingFee > 0 && (
           <div className="flex justify-between items-center mb-2">
-            <span className="text-xs text-muted">Delivery fee</span>
+            <span className="text-xs text-muted">Delivery &amp; handling</span>
             <span className="text-xs font-semibold text-muted">
-              {formatPrice(deliveryFeeAmount)}
+              {formatPrice(handlingFee)}
             </span>
           </div>
         )}

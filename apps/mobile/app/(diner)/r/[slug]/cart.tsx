@@ -49,6 +49,27 @@ function idempotencyKey() {
   return `vm-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
 }
 
+type FeePart = { enabled: boolean; mode: string; amount: number }
+
+function feePart(part: FeePart | undefined, base: number): number {
+  if (!part || !part.enabled) return 0
+  return part.mode === "PERCENT" ? (base * part.amount) / 100 : part.amount
+}
+
+function computeHandlingFee(
+  isDelivery: boolean,
+  fees: { delivery: FeePart; convenience: FeePart } | null | undefined,
+  legacyDeliveryFee: number,
+  subtotalAmount: number
+): number {
+  if (!isDelivery) return 0
+  if (fees) {
+    const raw = feePart(fees.delivery, subtotalAmount) + feePart(fees.convenience, subtotalAmount)
+    return Math.round(raw * 100) / 100
+  }
+  return legacyDeliveryFee
+}
+
 export default function CartScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>()
   const router = useRouter()
@@ -110,9 +131,13 @@ export default function CartScreen() {
   const hasDeliveryRestrictedItems = deliveryRestrictedItems.length > 0
 
   const itemsTotal = subtotal()
-  const deliveryFeeAmount =
-    fulfillment === "DELIVERY" && deliveryZoneActive ? Number(restaurant?.deliveryFee ?? 0) : 0
-  const total = itemsTotal + deliveryFeeAmount
+  const handlingFee = computeHandlingFee(
+    fulfillment === "DELIVERY",
+    restaurant?.fees,
+    deliveryZoneActive ? Number(restaurant?.deliveryFee ?? 0) : 0,
+    itemsTotal
+  )
+  const total = itemsTotal + handlingFee
 
   const tableLabel = menu?.tables.find((t) => t.id === storeTableId)?.label
 
@@ -555,8 +580,8 @@ export default function CartScreen() {
                 {deliveryZoneActive ? (
                   <Text variant="muted" className="text-xs">
                     {restaurant?.name ?? "This restaurant"} delivers within {restaurant?.deliveryRadiusKm} km
-                    {Number(restaurant?.deliveryFee ?? 0) > 0
-                      ? ` · delivery fee ₹${Number(restaurant?.deliveryFee)}`
+                    {handlingFee > 0
+                      ? ` · delivery & handling ₹${handlingFee}`
                       : " · free delivery"}
                     {Number(restaurant?.minOrderValue ?? 0) > 0
                       ? ` · min order ₹${Number(restaurant?.minOrderValue)}`
@@ -641,7 +666,7 @@ export default function CartScreen() {
           ) : null}
         </AnimatePresence>
 
-        {deliveryFeeAmount > 0 ? (
+        {handlingFee > 0 ? (
           <>
             <View className="flex-row items-center justify-between mb-1.5">
               <Text variant="muted" className="text-xs">
@@ -653,10 +678,10 @@ export default function CartScreen() {
             </View>
             <View className="flex-row items-center justify-between mb-2">
               <Text variant="muted" className="text-xs">
-                Delivery fee
+                Delivery & handling
               </Text>
               <Text variant="muted" className="text-xs font-sans-semibold">
-                ₹{deliveryFeeAmount}
+                ₹{handlingFee}
               </Text>
             </View>
           </>

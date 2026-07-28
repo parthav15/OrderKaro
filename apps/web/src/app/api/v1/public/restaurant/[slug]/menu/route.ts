@@ -98,6 +98,24 @@ export async function GET(
     })
     const onlinePaymentEnabled = gatewayForRestaurant({ country }).isReady(paymentAccount)
 
+    const feeConfig = await prisma.restaurantFeeConfig.findUnique({
+      where: { restaurantId: restaurant.id },
+    })
+    const fees = feeConfig
+      ? {
+          delivery: {
+            enabled: feeConfig.deliveryFeeEnabled,
+            mode: feeConfig.deliveryFeeMode,
+            amount: Number(feeConfig.deliveryFeeAmount),
+          },
+          convenience: {
+            enabled: feeConfig.convenienceFeeEnabled,
+            mode: feeConfig.convenienceFeeMode,
+            amount: Number(feeConfig.convenienceFeeAmount),
+          },
+        }
+      : null
+
     return success({
       restaurant: {
         ...publicRestaurant,
@@ -106,6 +124,7 @@ export async function GET(
         hasLocation: latitude != null && longitude != null,
         arEnabled,
         onlinePaymentEnabled,
+        fees,
       },
       categories: arEnabled
         ? categories

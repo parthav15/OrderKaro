@@ -51,6 +51,10 @@ export interface Restaurant {
   deliveryEnabled: boolean
   deliveryRadiusKm: number
   deliveryFee: string
+  fees?: {
+    delivery: { enabled: boolean; mode: string; amount: number }
+    convenience: { enabled: boolean; mode: string; amount: number }
+  } | null
   minOrderValue: string
   hasLocation: boolean
   arEnabled: boolean

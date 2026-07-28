@@ -7,6 +7,7 @@ export interface OrderFeeBreakdown {
   total: Decimal
   restaurantShare: Decimal
   platformShare: Decimal
+  configured: boolean
 }
 
 const ZERO = new Decimal(0)
@@ -22,6 +23,7 @@ export const EMPTY_ORDER_FEES: OrderFeeBreakdown = {
   total: ZERO,
   restaurantShare: ZERO,
   platformShare: ZERO,
+  configured: false,
 }
 
 export async function computeOrderFees(
@@ -56,5 +58,6 @@ export async function computeOrderFees(
     total,
     restaurantShare: total.sub(platformShare),
     platformShare,
+    configured: true,
   }
 }

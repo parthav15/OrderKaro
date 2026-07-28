@@ -174,8 +174,9 @@ export async function POST(
     }
 
     const orderFees = await computeOrderFees(restaurantId, itemsSubtotal, data.orderType)
-    const totalDeliveryFee = deliveryFee.add(orderFees.deliveryFee)
-    const totalAmount = itemsSubtotal.add(deliveryFee).add(orderFees.total)
+    const legacyDeliveryFee = orderFees.configured ? new Decimal(0) : deliveryFee
+    const totalDeliveryFee = legacyDeliveryFee.add(orderFees.deliveryFee)
+    const totalAmount = itemsSubtotal.add(legacyDeliveryFee).add(orderFees.total)
 
     let onlinePaymentAccount: Awaited<
       ReturnType<typeof prisma.restaurantPaymentAccount.findUnique>
