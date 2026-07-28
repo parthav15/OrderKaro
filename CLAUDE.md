@@ -17,7 +17,7 @@ Three interfaces in one Next.js app:
 - **Single app**: Next.js 14 (App Router) serves BOTH the UI and the API
 - **Frontend**: Tailwind CSS, Zustand, TanStack Query, Framer Motion
 - **Backend**: Next.js Route Handlers (`apps/web/src/app/api/v1/**`), Prisma ORM, PostgreSQL (Neon), JWT auth
-- **Payments**: PayPur (India) / Stripe (abroad), per-restaurant bring-your-own-credentials — pay-per-order only (no wallet)
+- **Payments**: Cashfree (India, LIVE) / Stripe (abroad), per-restaurant bring-your-own-credentials — pay-per-order only (no wallet)
 - **Shared**: Zod schemas + TypeScript types in `packages/shared/`
 
 ## Project Structure
@@ -99,15 +99,16 @@ pnpm dev          # Next.js on http://localhost:3000 (UI + API together)
 
 ## Payments
 
-- Gateway is picked from `Restaurant.country` in `apps/web/src/lib/payments/` — `IN` → **PayPur**, everything else → **Stripe**. Always go through the interface; never call a gateway directly
-- **Bring-your-own-credentials for BOTH providers.** Each restaurant connects their own account (PayPur key+salt, or a Stripe secret key), so diners pay the restaurant directly and the platform never holds the money. Consequence: **no per-order commission anywhere** — platform revenue is subscriptions only. `commissionPercent` and the platform-fee plumbing exist but are inert (`supportsPlatformFee` is false on every adapter)
+- Gateway is picked from `Restaurant.country` in `apps/web/src/lib/payments/` — `IN` → **Cashfree** (`providerForCountry`; PayPur retired), everything else → **Stripe**. Always go through the interface; never call a gateway directly
+- **Bring-your-own-credentials for BOTH providers.** Each restaurant connects their own account (Cashfree App ID + secret, or a Stripe secret key), so diners pay the restaurant directly and the platform never holds the money. Consequence: **no per-order commission anywhere** — platform revenue is subscriptions only. `commissionPercent` and the platform-fee plumbing exist but are inert (`supportsPlatformFee` is false on every adapter)
 - PayPur quirks: no webhook or refund API; its status endpoint keys on `txn_id` (not `order_id`); the paid `amount` is a few paise above `base_amount` for reconciliation, so compare against `base_amount`
 - Stripe here is plain Checkout Sessions on the restaurant's own secret key — **not Connect**. No onboarding, no application fee, no platform webhook. Confirmation uses the return redirect + reconciliation, same as PayPur
 - Restaurant credentials are encrypted with `CREDENTIAL_ENCRYPTION_KEY` (AES-256-GCM) and are write-only from the UI. **The key must be identical in every environment** — local and production share one database, and rotating it orphans stored credentials
 - Online orders are created `AWAITING_PAYMENT` and only become `PLACED` once payment is confirmed. Any new order-count or revenue query must exclude `AWAITING_PAYMENT`
 - `reconcilePendingPayments()` polls the gateway status endpoint to catch payments where the diner closed the tab (neither provider uses a webhook now)
 - **Online refunds are NOT automated yet.** Since online is now the main digital payment (no wallet), automatic online refunds (Cashfree reversal) are still the pending marketplace P3 piece — a cancelled online order can't auto-refund to UPI yet, so **handle those manually for now**. Cash is fully fine (nothing to refund; change is handed back at the counter)
-- **Two separate money flows.** Order payments (diner → restaurant) use each restaurant's OWN credentials from `RestaurantPaymentAccount`. SaaS subscription billing (restaurant → platform) uses the PLATFORM's own credentials from env — `PAYPUR_PLATFORM_KEY`/`PAYPUR_PLATFORM_SALT` (India) and `STRIPE_SECRET_KEY` (abroad) — via `lib/payments/platform.ts`. Razorpay is now unused for live flows (the consumer wallet top-up it powered was removed 2026-07-25)
+- **Two separate money flows.** Order payments (diner → restaurant) use each restaurant's OWN credentials from `RestaurantPaymentAccount`. SaaS subscription billing (restaurant → platform) uses the PLATFORM's own credentials from env — `CASHFREE_PLATFORM_APP_ID`/`CASHFREE_PLATFORM_SECRET` (India) and `STRIPE_SECRET_KEY` (abroad) — via `lib/payments/platform.ts`. PayPur/Razorpay are unused for live flows (the consumer wallet top-up Razorpay powered was removed 2026-07-25)
+- **Cashfree is LIVE (production) since 2026-07-28.** `CASHFREE_ENV=production` selects the live API (`https://api.cashfree.com/pg`; sandbox otherwise) — set in `.env` + Vercel production env. The platform operator's own Cashfree account is used two ways: (1) **SN College Canteen's** BYO order payments (diner → the restaurant) via `RestaurantPaymentAccount`, since that's the operator's restaurant; and (2) the **platform's SaaS subscription** billing, since that's the operator's SaaS. Live keys live ONLY in `.env` + Vercel production env — never in the repo.
 - Plan prices are INR and charged in INR through either gateway; subscription activation happens only after `confirmSubscriptionPayment` sees a paid status (billing-return route + polling)
 
 ## Marketplace / Split Settlement (customers pay the platform — IN PROGRESS)
