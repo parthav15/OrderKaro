@@ -15,6 +15,7 @@ import {
   MessageSquare,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { PLAN_ORDER } from "@/lib/plans"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { PaymentModal } from "@/components/consumer/payment-modal"
@@ -178,7 +179,7 @@ export default function BillingPage() {
   }, [queryClient])
 
   const handleUpgrade = async (plan: PlanName) => {
-    if (!restaurantId || plan === "FREE") return
+    if (!restaurantId) return
     setUpgradingPlan(plan)
 
     try {
@@ -187,8 +188,15 @@ export default function BillingPage() {
         { plan }
       )
       const session = response.data
+      if (session?.downgraded) {
+        toast.success("Switched to the Free plan")
+        queryClient.invalidateQueries({ queryKey: ["billing"] })
+        queryClient.invalidateQueries({ queryKey: ["restaurants"] })
+        setUpgradingPlan(null)
+        return
+      }
       if (!session?.redirectUrl) {
-        toast.error("Could not start the upgrade")
+        toast.error("Could not start the plan change")
         setUpgradingPlan(null)
         return
       }
@@ -338,7 +346,9 @@ export default function BillingPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {data.catalogue.map((planDef, idx) => {
                 const isActive = planDef.name === data.plan
-                const showUpgrade = planDef.name !== "FREE" && !isActive
+                const showAction = !isActive
+                const isUpgrade = PLAN_ORDER.indexOf(planDef.name) > PLAN_ORDER.indexOf(data.plan)
+                const actionLabel = isUpgrade ? "Upgrade" : `Switch to ${planDef.label}`
 
                 return (
                   <motion.div
@@ -381,15 +391,16 @@ export default function BillingPage() {
                         </div>
 
                         <div className="mt-auto">
-                          {showUpgrade && (
+                          {showAction && (
                             <Button
                               size="lg"
+                              variant={isUpgrade ? undefined : "outline"}
                               className="w-full"
                               loading={upgradingPlan === planDef.name}
                               disabled={upgradingPlan !== null && upgradingPlan !== planDef.name}
                               onClick={() => handleUpgrade(planDef.name)}
                             >
-                              Upgrade
+                              {actionLabel}
                             </Button>
                           )}
                         </div>

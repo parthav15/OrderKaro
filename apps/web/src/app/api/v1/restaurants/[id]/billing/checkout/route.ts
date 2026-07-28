@@ -37,6 +37,14 @@ export async function POST(
     const { plan } = parseBody(billingCheckoutSchema, body)
     const definition = PLANS[plan]
 
+    if (plan === "FREE") {
+      await prisma.restaurant.update({
+        where: { id },
+        data: { plan: "FREE", planValidUntil: null },
+      })
+      return success({ downgraded: true, plan: definition })
+    }
+
     const smsDueAgg = await prisma.smsMessage.aggregate({
       where: { restaurantId: id, billingStatus: "PENDING" },
       _sum: { sellAmount: true },

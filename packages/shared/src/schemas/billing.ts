@@ -3,7 +3,7 @@ import { z } from "zod"
 export const planSchema = z.enum(["FREE", "BASIC", "PRO"])
 
 export const billingCheckoutSchema = z.object({
-  plan: z.enum(["BASIC", "PRO"]),
+  plan: z.enum(["FREE", "BASIC", "PRO"]),
 })
 
 export const billingVerifySchema = z.object({

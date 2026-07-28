@@ -6,7 +6,7 @@ import { useQuery, useMutation } from "@tanstack/react-query"
 import { CreditCard, RefreshCw, Banknote } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { MarketplaceOnboardingCard } from "@/components/admin/marketplace-onboarding-card"
+import { CashfreeConnectCard } from "@/components/admin/cashfree-connect-card"
 import { StripeConnectCard } from "@/components/admin/stripe-connect-card"
 import api from "@/lib/api"
 import { toast } from "sonner"
@@ -84,7 +84,7 @@ export default function PaymentsPage() {
       {restaurantId && !isLoading && data && (
         <div className="mb-8">
           {data.country === "IN" ? (
-            <MarketplaceOnboardingCard key={restaurantId} restaurantId={restaurantId} />
+            <CashfreeConnectCard key={restaurantId} restaurantId={restaurantId} />
           ) : (
             <StripeConnectCard key={restaurantId} restaurantId={restaurantId} />
           )}
