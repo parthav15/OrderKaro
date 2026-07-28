@@ -354,7 +354,6 @@ export default function OwnerSettings() {
   const [latitude, setLatitude] = useState("")
   const [longitude, setLongitude] = useState("")
   const [radius, setRadius] = useState("")
-  const [fee, setFee] = useState("")
   const [minOrder, setMinOrder] = useState("")
 
   const [gate, setGate] = useState<{ branding?: string; delivery?: string }>({})
@@ -381,7 +380,6 @@ export default function OwnerSettings() {
     setLatitude(restaurant.latitude != null ? String(restaurant.latitude) : "")
     setLongitude(restaurant.longitude != null ? String(restaurant.longitude) : "")
     setRadius(restaurant.deliveryRadiusKm != null ? String(restaurant.deliveryRadiusKm) : "")
-    setFee(restaurant.deliveryFee != null ? String(Math.round(Number(restaurant.deliveryFee))) : "")
     setMinOrder(
       restaurant.minOrderValue != null ? String(Math.round(Number(restaurant.minOrderValue))) : ""
     )
@@ -504,7 +502,6 @@ export default function OwnerSettings() {
         latitude: latitude.trim() ? Number(latitude) : null,
         longitude: longitude.trim() ? Number(longitude) : null,
         deliveryRadiusKm: Number(radius) || 1,
-        deliveryFee: Number(fee) || 0,
         minOrderValue: Number(minOrder) || 0,
       }),
     onSuccess: () => {
@@ -854,24 +851,15 @@ export default function OwnerSettings() {
                 />
               </View>
             </View>
-            <View className="flex-row gap-3">
-              <View className="flex-1">
-                <Field
-                  label="Delivery fee (₹)"
-                  value={fee}
-                  onChangeText={(t) => setFee(t.replace(/[^\d]/g, ""))}
-                  keyboardType="number-pad"
-                />
-              </View>
-              <View className="flex-1">
-                <Field
-                  label="Min order (₹)"
-                  value={minOrder}
-                  onChangeText={(t) => setMinOrder(t.replace(/[^\d]/g, ""))}
-                  keyboardType="number-pad"
-                />
-              </View>
-            </View>
+            <Field
+              label="Min order (₹)"
+              value={minOrder}
+              onChangeText={(t) => setMinOrder(t.replace(/[^\d]/g, ""))}
+              keyboardType="number-pad"
+            />
+            <Text variant="muted" className="mb-3 text-[11px]">
+              Delivery &amp; handling fees are set under Finance → Fees on the web dashboard.
+            </Text>
 
             {gate.delivery ? (
               <View className="flex-row items-center gap-2 bg-canvas border border-line rounded-2xl p-3 mb-3">

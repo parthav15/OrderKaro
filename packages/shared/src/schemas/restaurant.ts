@@ -75,7 +75,7 @@ export const deliveryZoneSchema = z.object({
   latitude: z.number().min(-90).max(90).nullable().optional(),
   longitude: z.number().min(-180).max(180).nullable().optional(),
   deliveryRadiusKm: z.number().min(0.1).max(50),
-  deliveryFee: z.number().min(0).max(10000),
+  deliveryFee: z.number().min(0).max(10000).optional(),
   minOrderValue: z.number().min(0).max(100000),
 })
 

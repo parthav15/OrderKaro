@@ -198,7 +198,6 @@ export default function SettingsPage() {
     latitude: "",
     longitude: "",
     deliveryRadiusKm: "3",
-    deliveryFee: "0",
     minOrderValue: "0",
   })
 
@@ -210,7 +209,6 @@ export default function SettingsPage() {
         longitude: restaurant.longitude != null ? String(restaurant.longitude) : "",
         deliveryRadiusKm:
           restaurant.deliveryRadiusKm != null ? String(restaurant.deliveryRadiusKm) : "3",
-        deliveryFee: restaurant.deliveryFee != null ? String(Number(restaurant.deliveryFee)) : "0",
         minOrderValue:
           restaurant.minOrderValue != null ? String(Number(restaurant.minOrderValue)) : "0",
       })
@@ -1013,7 +1011,6 @@ export default function SettingsPage() {
             latitude: Number(deliveryForm.latitude),
             longitude: Number(deliveryForm.longitude),
             deliveryRadiusKm: Number(deliveryForm.deliveryRadiusKm),
-            deliveryFee: Number(deliveryForm.deliveryFee),
             minOrderValue: Number(deliveryForm.minOrderValue),
           })
         }}
@@ -1144,29 +1141,22 @@ export default function SettingsPage() {
                 <Navigation className="w-4 h-4" /> Use my current location
               </button>
 
-              <div className="grid grid-cols-2 gap-5">
-                <div className="space-y-2">
-                  <label className="block text-sm font-bold text-ink">Delivery Fee</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={deliveryForm.deliveryFee}
-                    onChange={(e) => setDeliveryForm({ ...deliveryForm, deliveryFee: e.target.value })}
-                    className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-sm font-bold text-ink">Min Order Value</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={deliveryForm.minOrderValue}
-                    onChange={(e) => setDeliveryForm({ ...deliveryForm, minOrderValue: e.target.value })}
-                    className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
-                  />
-                </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-bold text-ink">Min Order Value</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={deliveryForm.minOrderValue}
+                  onChange={(e) => setDeliveryForm({ ...deliveryForm, minOrderValue: e.target.value })}
+                  className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                />
+                <p className="text-xs text-muted">
+                  Delivery &amp; handling fees are set under{" "}
+                  <Link href="/owner/fees" className="font-semibold text-brand-red hover:underline">
+                    Finance → Fees
+                  </Link>
+                </p>
               </div>
 
               {deliveryUpgradeRequired && (
