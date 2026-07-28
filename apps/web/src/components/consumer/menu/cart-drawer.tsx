@@ -6,7 +6,7 @@ import Image from "next/image"
 import { motion, AnimatePresence, useAnimationControls } from "framer-motion"
 import { ChevronRight } from "lucide-react"
 import { useCartStore } from "@/stores/cart"
-import { formatPrice } from "@/lib/utils"
+import { useMoney } from "@/lib/currency-context"
 
 interface CartDrawerProps {
   slug: string
@@ -29,6 +29,8 @@ export function CartDrawer({ slug }: CartDrawerProps) {
     }
     previousCount.current = itemCount
   }, [itemCount, controls])
+
+  const money = useMoney()
 
   const previewItems = items.slice(0, 3)
   const remaining = Math.max(0, items.length - previewItems.length)
@@ -82,7 +84,7 @@ export function CartDrawer({ slug }: CartDrawerProps) {
                   {itemCount} {itemCount === 1 ? "item" : "items"}
                 </p>
                 <p className="text-[17px] font-extrabold leading-tight tabular-nums mt-1">
-                  {formatPrice(total)}
+                  {money(total)}
                 </p>
               </div>
 

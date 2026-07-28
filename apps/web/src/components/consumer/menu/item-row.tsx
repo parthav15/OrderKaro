@@ -4,7 +4,8 @@ import { useRef } from "react"
 import Image from "next/image"
 import { motion } from "framer-motion"
 import { Plus, Scan } from "lucide-react"
-import { formatPrice, cn } from "@/lib/utils"
+import { cn } from "@/lib/utils"
+import { useMoney } from "@/lib/currency-context"
 import { Badge } from "@/components/ui/badge"
 import { VegMarker } from "./veg-marker"
 import { QuantityStepper } from "./quantity-stepper"
@@ -32,6 +33,7 @@ export function ItemRow({
   onViewAr,
 }: ItemRowProps) {
   const thumbRef = useRef<HTMLDivElement>(null)
+  const money = useMoney()
 
   const hasRequiredCustomizations = item.customizations.some((c) => c.isRequired)
   const hasAnyCustomizations = item.customizations.length > 0
@@ -82,7 +84,7 @@ export function ItemRow({
           </h3>
           <span className="leader-dots hidden sm:block" />
           <span className="hidden sm:block font-heading text-[17px] sm:text-lg font-extrabold text-ink tabular-nums whitespace-nowrap">
-            {formatPrice(item.price)}
+            {money(item.price)}
           </span>
         </div>
 
@@ -107,7 +109,7 @@ export function ItemRow({
           ))}
 
           <span className="sm:hidden font-heading text-[15px] font-extrabold text-ink tabular-nums ml-auto">
-            {formatPrice(item.price)}
+            {money(item.price)}
           </span>
         </div>
       </div>

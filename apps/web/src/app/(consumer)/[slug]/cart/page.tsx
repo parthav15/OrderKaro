@@ -82,6 +82,7 @@ async function driveGatewayCheckout(
 
 interface StorefrontConfig {
   name?: string
+  currency?: string
   primaryColor?: string
   deliveryEnabled?: boolean
   deliveryRadiusKm?: number
@@ -153,6 +154,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
     radiusKm: number
   } | null>(null)
   const [checkingRange, setCheckingRange] = useState(false)
+  const money = (n: number | string) => formatPrice(n, storefront?.currency ?? "INR")
 
   const fixedTable = !!tableId
   const tableLabel = tables.find((t) => t.id === tableId)?.label
@@ -447,7 +449,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
                   </p>
                 )}
                 <p className="font-bold text-sm mt-1">
-                  {formatPrice(
+                  {money(
                     (item.price + item.selectedOptions.reduce((s, o) => s + o.priceAdjustment, 0)) * item.quantity
                   )}
                 </p>
@@ -693,10 +695,10 @@ export default function CartPage({ params }: { params: { slug: string } }) {
                     {storefront?.name ?? "This restaurant"} delivers within{" "}
                     {storefront?.deliveryRadiusKm} km
                     {handlingFee > 0
-                      ? ` · delivery & handling ${formatPrice(handlingFee)}`
+                      ? ` · delivery & handling ${money(handlingFee)}`
                       : " · free delivery"}
                     {Number(storefront?.minOrderValue ?? 0) > 0
-                      ? ` · min order ${formatPrice(Number(storefront?.minOrderValue))}`
+                      ? ` · min order ${money(Number(storefront?.minOrderValue))}`
                       : ""}
                   </p>
                 )}
@@ -843,7 +845,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
           <div className="flex justify-between items-center mb-1.5">
             <span className="text-xs text-muted">Items</span>
             <span className="text-xs font-semibold text-muted">
-              {formatPrice(itemsTotal)}
+              {money(itemsTotal)}
             </span>
           </div>
         )}
@@ -851,13 +853,13 @@ export default function CartPage({ params }: { params: { slug: string } }) {
           <div className="flex justify-between items-center mb-2">
             <span className="text-xs text-muted">Delivery &amp; handling</span>
             <span className="text-xs font-semibold text-muted">
-              {formatPrice(handlingFee)}
+              {money(handlingFee)}
             </span>
           </div>
         )}
         <div className="flex justify-between items-center mb-3">
           <span className="text-sm text-muted">Total</span>
-          <span className="text-xl font-extrabold text-ink">{formatPrice(total)}</span>
+          <span className="text-xl font-extrabold text-ink">{money(total)}</span>
         </div>
         {hasDeliveryRestrictedItems ? (
           <Button className="w-full" size="lg" disabled>
@@ -865,7 +867,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
           </Button>
         ) : (
           <Button className="w-full" size="lg" loading={loading} onClick={handlePlaceOrder}>
-            {paymentMethod === "ONLINE" ? `Pay ${formatPrice(total)}` : "Place Order"}
+            {paymentMethod === "ONLINE" ? `Pay ${money(total)}` : "Place Order"}
           </Button>
         )}
       </motion.div>

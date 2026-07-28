@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Modal } from "@/components/ui/modal"
+import { CountryPicker } from "@/components/ui/country-picker"
 import api from "@/lib/api"
 import { toast } from "sonner"
 
@@ -19,6 +20,7 @@ interface Restaurant {
   openingTime: string | null
   closingTime: string | null
   avgPrepTime: number
+  country?: string
   isActive: boolean
 }
 
@@ -29,6 +31,7 @@ const emptyForm = {
   openingTime: "",
   closingTime: "",
   avgPrepTime: 15,
+  country: "IN",
 }
 
 export default function RestaurantsPage() {
@@ -100,6 +103,7 @@ export default function RestaurantsPage() {
       openingTime: restaurant.openingTime ?? "",
       closingTime: restaurant.closingTime ?? "",
       avgPrepTime: restaurant.avgPrepTime,
+      country: restaurant.country ?? "IN",
     })
     setShowModal(true)
   }
@@ -292,6 +296,14 @@ export default function RestaurantsPage() {
               required
               className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
             />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-bold text-ink">Country</label>
+            <CountryPicker value={form.country} onChange={(country) => setForm((f) => ({ ...f, country }))} />
+            <p className="text-xs text-muted">
+              Sets the payment gateway (India → Cashfree, elsewhere → Stripe) and the menu currency.
+            </p>
           </div>
 
           <div className="space-y-2">

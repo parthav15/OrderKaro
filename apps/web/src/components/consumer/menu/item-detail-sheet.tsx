@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { X, Check, Plus, Minus, ChevronRight, Scan } from "lucide-react"
-import { formatPrice, cn } from "@/lib/utils"
+import { cn } from "@/lib/utils"
+import { useMoney } from "@/lib/currency-context"
 import { VegMarker } from "./veg-marker"
 import { QuantityStepper } from "./quantity-stepper"
 import type { MenuItem } from "./types"
@@ -79,6 +80,8 @@ export function ItemDetailSheet({
       (c) => c.isRequired && (selectedOptions[c.id]?.length ?? 0) === 0
     )
   }, [item, selectedOptions])
+
+  const money = useMoney()
 
   function toggleOption(custId: string, optionId: string, type: string) {
     setSelectedOptions((prev) => {
@@ -197,7 +200,7 @@ export function ItemDetailSheet({
 
                 <div className="flex items-baseline gap-3 mt-5">
                   <span className="font-heading text-2xl font-extrabold tabular-nums text-ink">
-                    {formatPrice(item.price)}
+                    {money(item.price)}
                   </span>
                   {item.tags.slice(0, 2).map((tag) => (
                     <span
@@ -287,7 +290,7 @@ export function ItemDetailSheet({
                                       isSelected ? "font-bold text-ink" : "font-medium text-ink/55"
                                     )}
                                   >
-                                    +{formatPrice(adjustment)}
+                                    +{money(adjustment)}
                                   </span>
                                 )}
                               </button>
@@ -341,7 +344,7 @@ export function ItemDetailSheet({
                   {requiredMissing ? "Select required options" : "Add to cart"}
                 </span>
                 <span className="flex items-center gap-2 font-heading text-lg font-extrabold tabular-nums">
-                  {formatPrice(liveTotal)}
+                  {money(liveTotal)}
                   <ChevronRight className="w-5 h-5" strokeWidth={2.4} />
                 </span>
               </motion.button>

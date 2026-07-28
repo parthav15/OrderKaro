@@ -23,6 +23,7 @@ import { EmptySearch } from "@/components/consumer/menu/empty-search"
 import { MenuSkeleton } from "@/components/consumer/menu/menu-skeleton"
 import { FlyToCartLayer } from "@/components/consumer/menu/fly-to-cart-layer"
 import { ArViewer } from "@/components/consumer/menu/ar-viewer"
+import { CurrencyProvider } from "@/lib/currency-context"
 import { StorefrontTheme } from "@/components/consumer/storefront-theme"
 import { useViewTracking } from "@/hooks/use-view-tracking"
 
@@ -295,7 +296,7 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
   }, [search, categories])
 
   return (
-    <>
+    <CurrencyProvider currency={menuData?.restaurant?.currency ?? "INR"}>
       <IdentifyModal
         isOpen={showIdentifyModal}
         restaurantName={menuData?.restaurant?.name}
@@ -407,6 +408,6 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
         onAddToCart={handleAddFromSheet}
         onViewAr={selectedItem?.model3dUrl ? () => handleOpenAr(selectedItem) : undefined}
       />
-    </>
+    </CurrencyProvider>
   )
 }

@@ -4,7 +4,7 @@ import { useRef } from "react"
 import Image from "next/image"
 import { motion } from "framer-motion"
 import { Plus } from "lucide-react"
-import { formatPrice } from "@/lib/utils"
+import { useMoney } from "@/lib/currency-context"
 import { VegMarker } from "./veg-marker"
 import { QuantityStepper } from "./quantity-stepper"
 import type { MenuItem } from "./types"
@@ -29,6 +29,7 @@ export function ItemHeroCard({
   onDecrement,
 }: ItemHeroCardProps) {
   const thumbRef = useRef<HTMLDivElement>(null)
+  const money = useMoney()
 
   const hasRequiredCustomizations = item.customizations.some((c) => c.isRequired)
   const numberStr = String(number).padStart(2, "0")
@@ -114,7 +115,7 @@ export function ItemHeroCard({
 
           <div className="flex items-center justify-between mt-4">
             <span className="font-heading text-xl font-extrabold tabular-nums">
-              {formatPrice(item.price)}
+              {money(item.price)}
             </span>
 
             {!item.isAvailable ? (
