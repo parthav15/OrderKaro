@@ -3,6 +3,7 @@
 import { motion } from "framer-motion"
 import { Check } from "lucide-react"
 import { PLANS } from "@/lib/plans"
+import { formatPrice } from "@/lib/utils"
 import { SectionHeading } from "./section-heading"
 import { CtaLink } from "./cta-link"
 
@@ -12,7 +13,7 @@ const PRICING_PLANS = [
   {
     id: "FREE",
     label: "Free",
-    price: "$0",
+    price: formatPrice(PLANS.FREE.monthlyPrice),
     period: "/month",
     description: "Everything you need to try Vision Menu on a small menu.",
     cta: "Start free",
@@ -28,7 +29,7 @@ const PRICING_PLANS = [
   {
     id: "BASIC",
     label: "Basic",
-    price: "$9",
+    price: formatPrice(PLANS.BASIC.monthlyPrice),
     period: "/month",
     description: "For growing restaurants ready to look and feel premium.",
     cta: "Get started",
@@ -45,7 +46,7 @@ const PRICING_PLANS = [
   {
     id: "PRO",
     label: "Pro",
-    price: "$29",
+    price: formatPrice(PLANS.PRO.monthlyPrice),
     period: "/month",
     description: "The full platform, including augmented reality menus.",
     cta: "Go Pro",
@@ -144,7 +145,7 @@ export function PricingSection() {
           transition={{ duration: 0.6, delay: 0.2, ease: EASE }}
           className="mt-12 text-center text-sm text-muted font-medium"
         >
-          Prices in USD. Zero commission on any order, on every plan.
+          Prices in INR. Zero commission on any order, on every plan.
         </motion.p>
       </div>
     </section>

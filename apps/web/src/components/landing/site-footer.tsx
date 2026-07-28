@@ -17,6 +17,13 @@ const ACCOUNT_LINKS = [
   { href: "/register", label: "Get started" },
 ]
 
+const LEGAL_LINKS = [
+  { href: "/terms", label: "Terms & Conditions" },
+  { href: "/refunds", label: "Refunds & Cancellations" },
+  { href: "/privacy", label: "Privacy Policy" },
+  { href: "/contact", label: "Contact Us" },
+]
+
 export function SiteFooter() {
   const year = new Date().getFullYear()
 
@@ -59,6 +66,22 @@ export function SiteFooter() {
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted">Account</p>
               <ul className="mt-4 flex flex-col gap-3">
                 {ACCOUNT_LINKS.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="text-sm font-medium text-ink/75 hover:text-ink transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted">Legal</p>
+              <ul className="mt-4 flex flex-col gap-3">
+                {LEGAL_LINKS.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
