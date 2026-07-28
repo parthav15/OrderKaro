@@ -31,6 +31,7 @@ import { api } from "@/lib/api"
 import { useCart } from "@/stores/cart"
 import { useTheme } from "@/theme/theme-provider"
 import type { MenuResponse, MenuItem, Category, Announcement } from "@/lib/types"
+import { formatPrice } from "@/lib/format"
 
 const POPULAR = /popular|chef|signature|special|featured|bestseller|recommended/i
 
@@ -75,6 +76,7 @@ export default function MenuScreen() {
   }, [data, table, setContext])
 
   const brand = data?.restaurant.primaryColor || colors.primary
+  const currency = data?.restaurant?.currency ?? "INR"
   const filtering = search.trim().length > 0 || veg !== "ALL" || arOnly
 
   const filtered = useMemo<Category[]>(() => {
@@ -284,7 +286,7 @@ export default function MenuScreen() {
                     {item.name}
                   </Text>
                   <Text variant="price" className="text-sm mt-0.5" style={{ color: brand }}>
-                    ₹{Number(item.price)}
+                    {formatPrice(item.price, currency)}
                   </Text>
                 </Pressable>
               ))}
@@ -347,7 +349,7 @@ export default function MenuScreen() {
                         </Text>
                       ) : null}
                       <Text variant="price" className="text-lg mt-2" style={{ color: brand }}>
-                        ₹{Number(item.price)}
+                        {formatPrice(item.price, currency)}
                       </Text>
                     </View>
 
@@ -415,7 +417,7 @@ export default function MenuScreen() {
                 {itemCount} {itemCount === 1 ? "item" : "items"}
               </Text>
             </View>
-            <Text className="font-sans-bold text-base" style={{ color: colors.onPrimary }}>View cart · ₹{subtotal}</Text>
+            <Text className="font-sans-bold text-base" style={{ color: colors.onPrimary }}>View cart · {formatPrice(subtotal, currency)}</Text>
           </Pressable>
         </MotiView>
       ) : null}

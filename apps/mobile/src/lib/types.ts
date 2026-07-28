@@ -51,6 +51,7 @@ export interface Restaurant {
   deliveryEnabled: boolean
   deliveryRadiusKm: number
   deliveryFee: string
+  currency?: string
   fees?: {
     delivery: { enabled: boolean; mode: string; amount: number }
     convenience: { enabled: boolean; mode: string; amount: number }

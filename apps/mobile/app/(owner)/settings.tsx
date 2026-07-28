@@ -38,6 +38,7 @@ import { Button } from "@/components/ui/button"
 import { DeliveryMap } from "@/components/delivery-map"
 import { ownerApi, OwnerApiError } from "@/lib/owner-api"
 import { useOwnerRestaurant } from "@/lib/use-owner-restaurant"
+import { CountryPicker } from "@/components/country-picker"
 import { useTheme } from "@/theme/theme-provider"
 import type { OwnerRestaurant } from "@/lib/types"
 
@@ -47,6 +48,7 @@ interface OwnerRestaurantExtended extends OwnerRestaurant {
   acceptsDineIn?: boolean
   acceptsTakeaway?: boolean
   acceptsDelivery?: boolean
+  country?: string
 }
 
 type SectionKey = "profile" | "ordering" | "payments" | "notifications" | "branding" | "delivery"
@@ -335,6 +337,7 @@ export default function OwnerSettings() {
 
   const [acceptsCash, setAcceptsCash] = useState(true)
   const [acceptsOnline, setAcceptsOnline] = useState(true)
+  const [country, setCountry] = useState("IN")
   const [paymentMethodsError, setPaymentMethodsError] = useState("")
 
   const [acceptsDineIn, setAcceptsDineIn] = useState(true)
@@ -367,6 +370,7 @@ export default function OwnerSettings() {
     setThemeMode(restaurant.themeMode ?? "LIGHT")
     setAcceptsCash(restaurant.acceptsCash ?? true)
     setAcceptsOnline(restaurant.acceptsOnline ?? true)
+    setCountry(restaurant.country || "IN")
     setAcceptsDineIn(restaurant.acceptsDineIn ?? true)
     setAcceptsTakeaway(restaurant.acceptsTakeaway ?? true)
     setAcceptsDelivery(restaurant.acceptsDelivery ?? true)
@@ -403,6 +407,7 @@ export default function OwnerSettings() {
         openingTime,
         closingTime,
         avgPrepTime: Number(avgPrepTime) || 15,
+        country,
       }),
     onSuccess: done,
   })
@@ -574,6 +579,15 @@ export default function OwnerSettings() {
               onChangeText={(t) => setAvgPrepTime(t.replace(/[^\d]/g, ""))}
               keyboardType="number-pad"
             />
+            <View className="mt-1">
+              <Text variant="muted" className="mb-1.5 text-sm font-sans-semibold">
+                Country
+              </Text>
+              <CountryPicker value={country} onChange={setCountry} />
+              <Text variant="muted" className="mt-1.5 text-[11px]">
+                Sets your payment gateway (India → Cashfree, else Stripe) and menu currency.
+              </Text>
+            </View>
             <View className="mt-2">
               <Button title="Save profile" loading={saveBasic.isPending} onPress={() => saveBasic.mutate()} />
             </View>

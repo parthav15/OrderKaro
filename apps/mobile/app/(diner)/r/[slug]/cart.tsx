@@ -35,6 +35,7 @@ import { signOut } from "@/lib/auth"
 import { useCart } from "@/stores/cart"
 import { useTheme } from "@/theme/theme-provider"
 import type { MenuResponse, PaymentSession } from "@/lib/types"
+import { formatPrice } from "@/lib/format"
 
 type Fulfillment = "TAKEAWAY" | "DINE_IN" | "DELIVERY"
 type Payment = "CASH" | "ONLINE"
@@ -104,6 +105,7 @@ export default function CartScreen() {
   })
 
   const restaurant = menu?.restaurant
+  const currency = restaurant?.currency ?? "INR"
   const onlineAvailable = Boolean(restaurant?.acceptsOnline && restaurant?.onlinePaymentEnabled)
   const cashAvailable = Boolean(restaurant?.acceptsCash)
   const availablePayments: Payment[] = []
@@ -359,7 +361,7 @@ export default function CartScreen() {
                     </Text>
                   ) : null}
                   <Text variant="price" className="text-base mt-1">
-                    ₹{lineTotal(l)}
+                    {formatPrice(lineTotal(l), currency)}
                   </Text>
                   <AnimatePresence>
                     {restricted ? (
@@ -581,10 +583,10 @@ export default function CartScreen() {
                   <Text variant="muted" className="text-xs">
                     {restaurant?.name ?? "This restaurant"} delivers within {restaurant?.deliveryRadiusKm} km
                     {handlingFee > 0
-                      ? ` · delivery & handling ₹${handlingFee}`
+                      ? ` · delivery & handling ${formatPrice(handlingFee, currency)}`
                       : " · free delivery"}
                     {Number(restaurant?.minOrderValue ?? 0) > 0
-                      ? ` · min order ₹${Number(restaurant?.minOrderValue)}`
+                      ? ` · min order ${formatPrice(Number(restaurant?.minOrderValue), currency)}`
                       : ""}
                   </Text>
                 ) : null}
@@ -673,7 +675,7 @@ export default function CartScreen() {
                 Items
               </Text>
               <Text variant="muted" className="text-xs font-sans-semibold">
-                ₹{itemsTotal}
+                {formatPrice(itemsTotal, currency)}
               </Text>
             </View>
             <View className="flex-row items-center justify-between mb-2">
@@ -681,7 +683,7 @@ export default function CartScreen() {
                 Delivery & handling
               </Text>
               <Text variant="muted" className="text-xs font-sans-semibold">
-                ₹{handlingFee}
+                {formatPrice(handlingFee, currency)}
               </Text>
             </View>
           </>
@@ -692,7 +694,7 @@ export default function CartScreen() {
             Total
           </Text>
           <Text variant="heading" className="text-2xl">
-            ₹{total}
+            {formatPrice(total, currency)}
           </Text>
         </View>
         <Button

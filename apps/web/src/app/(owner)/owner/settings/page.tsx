@@ -9,6 +9,7 @@ import {
   Settings,
   Clock,
   Store,
+  Globe,
   CheckCircle2,
   Link2,
   Copy,
@@ -29,6 +30,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { CountryPicker } from "@/components/ui/country-picker"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ToggleSwitch } from "@/components/admin/fee-config-card"
 import api from "@/lib/api"
@@ -127,6 +129,7 @@ export default function SettingsPage() {
     closingTime: "22:00",
     avgPrepTime: 15,
   })
+  const [country, setCountry] = useState("IN")
 
   const { data: restaurants } = useQuery({
     queryKey: ["restaurants"],
@@ -150,6 +153,7 @@ export default function SettingsPage() {
         closingTime: restaurant.closingTime || "22:00",
         avgPrepTime: restaurant.avgPrepTime || 15,
       })
+      setCountry(restaurant.country || "IN")
     }
   }, [restaurant])
 
@@ -426,6 +430,36 @@ export default function SettingsPage() {
                 placeholder="e.g. Main Campus Cafeteria"
                 className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-muted transition-colors focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/20"
               />
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.06 }}
+        >
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-surface-elevated flex items-center justify-center">
+                  <Globe className="w-5 h-5 text-muted" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-ink">Country</h2>
+                  <p className="text-sm text-muted">
+                    Sets your payment gateway (India → Cashfree, elsewhere → Stripe) and menu currency
+                  </p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CountryPicker value={country} onChange={setCountry} />
+              <div className="mt-4 flex justify-end">
+                <Button onClick={() => update.mutate({ country })} loading={update.isPending}>
+                  Save country
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
