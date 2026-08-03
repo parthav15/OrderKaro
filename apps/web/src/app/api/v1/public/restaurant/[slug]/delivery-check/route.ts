@@ -2,6 +2,7 @@ import { NextRequest } from "next/server"
 import prisma from "@/lib/prisma"
 import { success, error, handleError } from "@/lib/api-utils"
 import { distanceInKm, roundKm } from "@/lib/geo"
+import { isDeliveryFeeExempt } from "@/lib/delivery-exemptions"
 
 export async function POST(request: NextRequest, { params }: { params: { slug: string } }) {
   try {
@@ -15,6 +16,7 @@ export async function POST(request: NextRequest, { params }: { params: { slug: s
     const restaurant = await prisma.restaurant.findUnique({
       where: { slug: params.slug },
       select: {
+        id: true,
         deliveryEnabled: true,
         latitude: true,
         longitude: true,
@@ -23,11 +25,13 @@ export async function POST(request: NextRequest, { params }: { params: { slug: s
     })
     if (!restaurant) return error("Restaurant not found", 404)
 
+    const feeExempt = await isDeliveryFeeExempt(restaurant.id, body?.phone)
+
     const enforced =
       restaurant.deliveryEnabled && restaurant.latitude != null && restaurant.longitude != null
 
     if (!enforced) {
-      return success({ enforced: false, deliverable: true, distanceKm: null, radiusKm: restaurant.deliveryRadiusKm })
+      return success({ enforced: false, deliverable: true, distanceKm: null, radiusKm: restaurant.deliveryRadiusKm, feeExempt })
     }
 
     const distanceKm = roundKm(
@@ -38,6 +42,7 @@ export async function POST(request: NextRequest, { params }: { params: { slug: s
       deliverable: distanceKm <= restaurant.deliveryRadiusKm,
       distanceKm,
       radiusKm: restaurant.deliveryRadiusKm,
+      feeExempt,
     })
   } catch (err) {
     return handleError(err)

@@ -21,7 +21,8 @@ import { gatewayForRestaurant, currencyForCountry } from "@/lib/payments"
 import type { CheckoutSession } from "@/lib/payments/gateway"
 import { createConnectCheckout } from "@/lib/payments/stripe-connect"
 import { createCashfreeSplitCheckout } from "@/lib/payments/cashfree-vendor"
-import { computeOrderFees } from "@/lib/order-fees"
+import { computeOrderFees, EMPTY_ORDER_FEES } from "@/lib/order-fees"
+import { isDeliveryFeeExempt } from "@/lib/delivery-exemptions"
 import { resolveAppUrl } from "@/lib/app-url"
 import { activeOrderWhere } from "@/lib/active-orders"
 import { dispatchSms } from "@/lib/sms/dispatch"
@@ -173,8 +174,18 @@ export async function POST(
       deliveryFee = new Decimal(restaurant.deliveryFee.toString())
     }
 
-    const orderFees = await computeOrderFees(restaurantId, itemsSubtotal, data.orderType)
-    const legacyDeliveryFee = orderFees.configured ? new Decimal(0) : deliveryFee
+    let feeExempt = false
+    if (data.orderType === "DELIVERY") {
+      const diner = await prisma.consumer.findUnique({
+        where: { id: user.id },
+        select: { phone: true },
+      })
+      feeExempt = await isDeliveryFeeExempt(restaurantId, diner?.phone)
+    }
+    const orderFees = feeExempt
+      ? EMPTY_ORDER_FEES
+      : await computeOrderFees(restaurantId, itemsSubtotal, data.orderType)
+    const legacyDeliveryFee = feeExempt || orderFees.configured ? new Decimal(0) : deliveryFee
     const totalDeliveryFee = legacyDeliveryFee.add(orderFees.deliveryFee)
     const totalAmount = itemsSubtotal.add(legacyDeliveryFee).add(orderFees.total)
 

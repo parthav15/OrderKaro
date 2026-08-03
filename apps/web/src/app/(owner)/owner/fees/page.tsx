@@ -10,6 +10,7 @@ import {
   type FeeMode,
   type FeeBeneficiary,
 } from "@/components/admin/fee-config-card"
+import { DeliveryExemptionsCard } from "@/components/admin/delivery-exemptions-card"
 import api from "@/lib/api"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -211,6 +212,7 @@ export default function FeesPage() {
       )}
 
       {!configQuery.isLoading && !configQuery.isError && configQuery.data && (
+        <>
         <form onSubmit={handleSave}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <FeeConfigCard
@@ -304,6 +306,8 @@ export default function FeesPage() {
             )}
           </AnimatePresence>
         </form>
+        <DeliveryExemptionsCard restaurantId={restaurantId} />
+        </>
       )}
     </div>
   )

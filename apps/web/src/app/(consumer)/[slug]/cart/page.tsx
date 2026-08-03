@@ -154,6 +154,7 @@ export default function CartPage({ params }: { params: { slug: string } }) {
     radiusKm: number
   } | null>(null)
   const [checkingRange, setCheckingRange] = useState(false)
+  const [feeExempt, setFeeExempt] = useState(false)
   const money = (n: number | string) => formatPrice(n, storefront?.currency ?? "INR")
 
   const fixedTable = !!tableId
@@ -193,7 +194,8 @@ export default function CartPage({ params }: { params: { slug: string } }) {
 
   const itemsTotal = getTotal()
   const handlingFee = computeHandlingFee(orderType, storefront, deliveryZoneActive, itemsTotal)
-  const total = itemsTotal + handlingFee
+  const effectiveHandlingFee = feeExempt ? 0 : handlingFee
+  const total = itemsTotal + effectiveHandlingFee
 
   useEffect(() => {
     api
@@ -224,13 +226,14 @@ export default function CartPage({ params }: { params: { slug: string } }) {
   async function checkDeliveryRange(latitude: number, longitude: number) {
     if (!deliveryZoneActive) {
       setDeliveryCheck(null)
+      setFeeExempt(false)
       return
     }
     setCheckingRange(true)
     try {
       const { data } = await api.post(
         `/api/v1/public/restaurant/${params.slug}/delivery-check`,
-        { latitude, longitude }
+        { latitude, longitude, phone: user?.phone }
       )
       const result = data.data
       setDeliveryCheck({
@@ -238,8 +241,10 @@ export default function CartPage({ params }: { params: { slug: string } }) {
         distanceKm: result.distanceKm ?? null,
         radiusKm: Number(result.radiusKm ?? 0),
       })
+      setFeeExempt(Boolean(result.feeExempt))
     } catch {
       setDeliveryCheck(null)
+      setFeeExempt(false)
     } finally {
       setCheckingRange(false)
     }
@@ -853,10 +858,27 @@ export default function CartPage({ params }: { params: { slug: string } }) {
           <div className="flex justify-between items-center mb-2">
             <span className="text-xs text-muted">Delivery &amp; handling</span>
             <span className="text-xs font-semibold text-muted">
-              {money(handlingFee)}
+              {money(effectiveHandlingFee)}
             </span>
           </div>
         )}
+        <AnimatePresence initial={false}>
+          {feeExempt && handlingFee > 0 && (
+            <motion.div
+              key="fee-waived-badge"
+              initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -6, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: "auto" }}
+              exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -6, height: 0 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              className="flex justify-end mb-2 overflow-hidden"
+            >
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-success bg-success/10 border border-success/30 rounded-full px-2.5 py-1">
+                <CheckCircle2 className="w-3 h-3" />
+                Delivery fee waived
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <div className="flex justify-between items-center mb-3">
           <span className="text-sm text-muted">Total</span>
           <span className="text-xl font-extrabold text-ink">{money(total)}</span>

@@ -79,6 +79,13 @@ export const deliveryZoneSchema = z.object({
   minOrderValue: z.number().min(0).max(100000),
 })
 
+export const deliveryExemptionSchema = z.object({
+  phone: z.string().min(10).max(20),
+  label: z.string().max(80).optional(),
+})
+
+export type DeliveryExemptionInput = z.infer<typeof deliveryExemptionSchema>
+
 export type BrandingInput = z.infer<typeof brandingSchema>
 export type DeliveryZoneInput = z.infer<typeof deliveryZoneSchema>
 

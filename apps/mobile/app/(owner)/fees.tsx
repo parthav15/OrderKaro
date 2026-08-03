@@ -15,9 +15,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { MotiView, AnimatePresence } from "moti"
 import * as Haptics from "expo-haptics"
-import { ArrowLeft, Bike, Receipt, Check, Building2, Sparkles, Info } from "lucide-react-native"
+import { ArrowLeft, Bike, Receipt, Check, Building2, Sparkles, Info, UserCheck, Phone, X } from "lucide-react-native"
 import { Text } from "@/components/ui/text"
 import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { ownerApi } from "@/lib/owner-api"
 import { useOwnerRestaurant } from "@/lib/use-owner-restaurant"
 import { useTheme } from "@/theme/theme-provider"
@@ -34,6 +35,13 @@ interface FeeConfig {
   convenienceFeeMode: FeeMode
   convenienceFeeAmount: number
   convenienceFeeBeneficiary: Beneficiary
+}
+
+interface Exemption {
+  id: string
+  phone: string
+  label: string | null
+  createdAt: string
 }
 
 type IconType = React.ComponentType<{ size?: number; color?: string }>
@@ -323,6 +331,187 @@ function SaveButton({
   )
 }
 
+function ExemptionsSection({ rid }: { rid: string | undefined }) {
+  const { colors } = useTheme()
+  const queryClient = useQueryClient()
+  const [phone, setPhone] = useState("")
+  const [label, setLabel] = useState("")
+  const [formError, setFormError] = useState("")
+
+  const { data: exemptions, isLoading } = useQuery({
+    queryKey: ["delivery-exemptions", rid],
+    queryFn: () => ownerApi.get<Exemption[]>(`/api/v1/restaurants/${rid}/delivery-exemptions`),
+    enabled: !!rid,
+  })
+
+  const add = useMutation({
+    mutationFn: () =>
+      ownerApi.post(`/api/v1/restaurants/${rid}/delivery-exemptions`, {
+        phone: phone.replace(/\D/g, ""),
+        label: label.trim() || undefined,
+      }),
+    onSuccess: () => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      queryClient.invalidateQueries({ queryKey: ["delivery-exemptions", rid] })
+      setPhone("")
+      setLabel("")
+      setFormError("")
+    },
+    onError: (e) => setFormError(e instanceof Error ? e.message : "Couldn't add that number"),
+  })
+
+  const remove = useMutation({
+    mutationFn: (id: string) =>
+      ownerApi.delete(`/api/v1/restaurants/${rid}/delivery-exemptions/${id}`),
+    onSuccess: () => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+      queryClient.invalidateQueries({ queryKey: ["delivery-exemptions", rid] })
+    },
+  })
+
+  const digits = phone.replace(/\D/g, "")
+  const canAdd = digits.length >= 10 && !add.isPending
+  const list = exemptions ?? []
+
+  return (
+    <Card delay={300} className="mt-8">
+      <View className="flex-row items-center gap-3">
+        <View className="w-11 h-11 rounded-2xl bg-canvas border border-line items-center justify-center">
+          <UserCheck size={19} color={colors.primary} />
+        </View>
+        <View className="flex-1">
+          <Text variant="title" className="text-base">
+            Delivery fee exemptions
+          </Text>
+          <Text variant="muted" className="text-xs mt-0.5 leading-relaxed">
+            Diners who order delivery with an exempt phone pay ₹0 delivery & handling.
+          </Text>
+        </View>
+      </View>
+
+      <View className="mt-4">
+        {isLoading ? (
+          <View className="py-8 items-center justify-center">
+            <ActivityIndicator color={colors.primary} />
+          </View>
+        ) : list.length === 0 ? (
+          <MotiView
+            from={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ type: "timing", duration: 260 }}
+            className="items-center py-7 rounded-2xl bg-canvas border border-dashed border-line"
+          >
+            <Text variant="muted" className="text-sm">
+              No exempt numbers yet.
+            </Text>
+          </MotiView>
+        ) : (
+          <View className="gap-2">
+            <AnimatePresence>
+              {list.map((ex, i) => {
+                const removing = remove.isPending && remove.variables === ex.id
+                return (
+                  <MotiView
+                    key={ex.id}
+                    from={{ opacity: 0, translateY: -6 }}
+                    animate={{ opacity: removing ? 0.5 : 1, translateY: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ type: "timing", duration: 220, delay: i * 30 }}
+                    className="flex-row items-center gap-3 rounded-2xl bg-canvas border border-line px-4 py-3"
+                  >
+                    <View className="w-9 h-9 rounded-full bg-primary/10 items-center justify-center">
+                      <Phone size={15} color={colors.primary} />
+                    </View>
+                    <View className="flex-1">
+                      <Text variant="label" className="text-sm">
+                        {ex.phone}
+                      </Text>
+                      {ex.label ? (
+                        <Text variant="muted" className="text-xs mt-0.5">
+                          {ex.label}
+                        </Text>
+                      ) : null}
+                    </View>
+                    <Pressable
+                      disabled={removing}
+                      onPress={() => remove.mutate(ex.id)}
+                      hitSlop={8}
+                      className="w-8 h-8 rounded-full bg-surface border border-line items-center justify-center"
+                    >
+                      {removing ? (
+                        <ActivityIndicator size="small" color={colors.muted} />
+                      ) : (
+                        <X size={15} color={colors.muted} />
+                      )}
+                    </Pressable>
+                  </MotiView>
+                )
+              })}
+            </AnimatePresence>
+          </View>
+        )}
+      </View>
+
+      <View className="h-px bg-line my-4" />
+
+      <Text variant="muted" className="text-xs uppercase tracking-widest mb-2">
+        Add a number
+      </Text>
+      <View className="gap-2">
+        <View className="flex-row items-center h-14 rounded-2xl bg-canvas border border-line px-5">
+          <Phone size={16} color={colors.muted} />
+          <TextInput
+            value={phone}
+            onChangeText={(t) => {
+              if (formError) setFormError("")
+              setPhone(t.replace(/[^\d]/g, ""))
+            }}
+            placeholder="Phone number"
+            placeholderTextColor={colors.muted}
+            keyboardType="number-pad"
+            maxLength={15}
+            className="flex-1 h-full ml-3 text-ink font-sans-medium text-base"
+          />
+        </View>
+        <TextInput
+          value={label}
+          onChangeText={setLabel}
+          placeholder="Label (optional)"
+          placeholderTextColor={colors.muted}
+          maxLength={80}
+          className="h-14 rounded-2xl bg-canvas border border-line px-5 text-ink font-sans-medium text-base"
+        />
+      </View>
+
+      <AnimatePresence>
+        {formError ? (
+          <MotiView
+            key="exemption-error"
+            from={{ opacity: 0, translateY: -4 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            exit={{ opacity: 0, translateY: -4 }}
+            transition={{ type: "timing", duration: 200 }}
+          >
+            <Text className="text-danger font-sans-medium text-xs mt-2">{formError}</Text>
+          </MotiView>
+        ) : null}
+      </AnimatePresence>
+
+      <View className="mt-3">
+        <Button
+          title="Add number"
+          loading={add.isPending}
+          disabled={!canAdd}
+          onPress={() => {
+            setFormError("")
+            add.mutate()
+          }}
+        />
+      </View>
+    </Card>
+  )
+}
+
 export default function OwnerFees() {
   const router = useRouter()
   const { colors } = useTheme()
@@ -515,6 +704,8 @@ export default function OwnerFees() {
                 }}
               />
             </MotiView>
+
+            <ExemptionsSection rid={rid} />
           </ScrollView>
         )}
       </KeyboardAvoidingView>

@@ -31,7 +31,7 @@ import { Text } from "@/components/ui/text"
 import { Button } from "@/components/ui/button"
 import { PaymentSheet } from "@/components/payment-sheet"
 import { api, ApiError } from "@/lib/api"
-import { signOut } from "@/lib/auth"
+import { getIdentity, signOut } from "@/lib/auth"
 import { useCart } from "@/stores/cart"
 import { useTheme } from "@/theme/theme-provider"
 import type { MenuResponse, PaymentSession } from "@/lib/types"
@@ -94,6 +94,8 @@ export default function CartScreen() {
   const [locationMessage, setLocationMessage] = useState<string | null>(null)
   const [deliveryCheck, setDeliveryCheck] = useState<DeliveryCheck | null>(null)
   const [checkingRange, setCheckingRange] = useState(false)
+  const [feeExempt, setFeeExempt] = useState(false)
+  const [dinerPhone, setDinerPhone] = useState<string | null>(null)
   const [session, setSession] = useState<(PaymentSession & { orderId: string; token?: string }) | null>(
     null
   )
@@ -139,7 +141,8 @@ export default function CartScreen() {
     deliveryZoneActive ? Number(restaurant?.deliveryFee ?? 0) : 0,
     itemsTotal
   )
-  const total = itemsTotal + handlingFee
+  const effectiveHandlingFee = feeExempt ? 0 : handlingFee
+  const total = itemsTotal + effectiveHandlingFee
 
   const tableLabel = menu?.tables.find((t) => t.id === storeTableId)?.label
 
@@ -155,6 +158,10 @@ export default function CartScreen() {
       setTableId(storeTableId)
     }
   }, [storeTableId])
+
+  useEffect(() => {
+    getIdentity().then((identity) => setDinerPhone(identity?.phone ?? null))
+  }, [])
 
   useEffect(() => {
     if (!menu) return
@@ -183,6 +190,7 @@ export default function CartScreen() {
   async function checkDeliveryRange(latitude: number, longitude: number) {
     if (!deliveryZoneActive) {
       setDeliveryCheck(null)
+      setFeeExempt(false)
       return
     }
     setCheckingRange(true)
@@ -192,14 +200,21 @@ export default function CartScreen() {
         deliverable: boolean
         distanceKm: number | null
         radiusKm: number
-      }>(`/api/v1/public/restaurant/${slug}/delivery-check`, { latitude, longitude })
+        feeExempt: boolean
+      }>(`/api/v1/public/restaurant/${slug}/delivery-check`, {
+        latitude,
+        longitude,
+        phone: dinerPhone ?? undefined,
+      })
       setDeliveryCheck({
         deliverable: Boolean(result.deliverable),
         distanceKm: result.distanceKm ?? null,
         radiusKm: Number(result.radiusKm ?? 0),
       })
+      setFeeExempt(Boolean(result.feeExempt))
     } catch {
       setDeliveryCheck(null)
+      setFeeExempt(false)
     } finally {
       setCheckingRange(false)
     }
@@ -208,6 +223,7 @@ export default function CartScreen() {
   async function requestLocation() {
     setLocationMessage(null)
     setDeliveryCheck(null)
+    setFeeExempt(false)
     setLocating(true)
     try {
       const { status } = await Location.requestForegroundPermissionsAsync()
@@ -582,8 +598,8 @@ export default function CartScreen() {
                 {deliveryZoneActive ? (
                   <Text variant="muted" className="text-xs">
                     {restaurant?.name ?? "This restaurant"} delivers within {restaurant?.deliveryRadiusKm} km
-                    {handlingFee > 0
-                      ? ` · delivery & handling ${formatPrice(handlingFee, currency)}`
+                    {effectiveHandlingFee > 0
+                      ? ` · delivery & handling ${formatPrice(effectiveHandlingFee, currency)}`
                       : " · free delivery"}
                     {Number(restaurant?.minOrderValue ?? 0) > 0
                       ? ` · min order ${formatPrice(Number(restaurant?.minOrderValue), currency)}`
@@ -682,12 +698,45 @@ export default function CartScreen() {
               <Text variant="muted" className="text-xs">
                 Delivery & handling
               </Text>
-              <Text variant="muted" className="text-xs font-sans-semibold">
-                {formatPrice(handlingFee, currency)}
-              </Text>
+              {feeExempt ? (
+                <View className="flex-row items-center gap-1.5">
+                  <Text
+                    variant="muted"
+                    className="text-xs"
+                    style={{ textDecorationLine: "line-through", opacity: 0.6 }}
+                  >
+                    {formatPrice(handlingFee, currency)}
+                  </Text>
+                  <Text className="text-success text-xs font-sans-semibold">
+                    {formatPrice(0, currency)}
+                  </Text>
+                </View>
+              ) : (
+                <Text variant="muted" className="text-xs font-sans-semibold">
+                  {formatPrice(handlingFee, currency)}
+                </Text>
+              )}
             </View>
           </>
         ) : null}
+
+        <AnimatePresence>
+          {feeExempt && handlingFee > 0 ? (
+            <MotiView
+              key="fee-waived"
+              from={{ opacity: 0, translateY: 6, scale: 0.96 }}
+              animate={{ opacity: 1, translateY: 0, scale: 1 }}
+              exit={{ opacity: 0, translateY: 6 }}
+              transition={{ type: "spring", damping: 18, stiffness: 220 }}
+              className="flex-row items-center gap-1.5 self-start bg-success/10 border border-success/30 rounded-full px-3 py-1.5 mb-3"
+            >
+              <CheckCircle2 size={13} color={colors.success} />
+              <Text className="text-success text-xs font-sans-semibold">
+                Delivery fee waived
+              </Text>
+            </MotiView>
+          ) : null}
+        </AnimatePresence>
 
         <View className="flex-row items-center justify-between mb-3">
           <Text variant="muted" className="text-base">

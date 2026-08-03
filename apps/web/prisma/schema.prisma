@@ -88,6 +88,7 @@ model Restaurant {
   modelRequests  ModelRequest[]
   paymentAccount RestaurantPaymentAccount?
   feeConfig      RestaurantFeeConfig?
+  deliveryFeeExemptions DeliveryFeeExemption[]
   smsMessages    SmsMessage[]
 
   @@map("Canteen")
@@ -474,6 +475,18 @@ model Announcement {
   createdAt    DateTime   @default(now())
 
   @@index([restaurantId, isActive])
+}
+
+model DeliveryFeeExemption {
+  id           String     @id @default(uuid())
+  restaurantId String     @map("canteenId")
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  phone        String
+  label        String?
+  createdAt    DateTime   @default(now())
+
+  @@unique([restaurantId, phone])
+  @@index([restaurantId])
 }
 
 enum StaffRole {
