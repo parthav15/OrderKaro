@@ -58,12 +58,22 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
   const [arItem, setArItem] = useState<MenuItem | null>(null)
 
   const [showIdentifyModal, setShowIdentifyModal] = useState(false)
+  const [hydrated, setHydrated] = useState(false)
 
   const isConsumerSession = !!accessToken && user?.role === "CONSUMER"
 
   useEffect(() => {
-    if (!isConsumerSession) setShowIdentifyModal(true)
-  }, [isConsumerSession])
+    if (useAuthStore.persist.hasHydrated()) {
+      setHydrated(true)
+    } else {
+      const unsub = useAuthStore.persist.onFinishHydration(() => setHydrated(true))
+      return () => unsub()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (hydrated) setShowIdentifyModal(!isConsumerSession)
+  }, [hydrated, isConsumerSession])
 
   function handleVerified(result: VerifiedResult) {
     setAuth(
