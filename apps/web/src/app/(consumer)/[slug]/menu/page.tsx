@@ -19,6 +19,7 @@ import { ItemRow } from "@/components/consumer/menu/item-row"
 import { CartDrawer } from "@/components/consumer/menu/cart-drawer"
 import { ItemDetailSheet } from "@/components/consumer/menu/item-detail-sheet"
 import { IdentifyModal } from "@/components/consumer/menu/identify-modal"
+import { AccountMenu } from "@/components/consumer/menu/account-menu"
 import { EmptySearch } from "@/components/consumer/menu/empty-search"
 import { MenuSkeleton } from "@/components/consumer/menu/menu-skeleton"
 import { FlyToCartLayer } from "@/components/consumer/menu/fly-to-cart-layer"
@@ -49,6 +50,7 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
   const removeItem = useCartStore((s) => s.removeItem)
   const updateQuantity = useCartStore((s) => s.updateQuantity)
   const setAuth = useAuthStore((s) => s.setAuth)
+  const logout = useAuthStore((s) => s.logout)
   const user = useAuthStore((s) => s.user)
   const accessToken = useAuthStore((s) => s.accessToken)
 
@@ -347,6 +349,16 @@ export default function MenuPage({ params }: { params: { slug: string } }) {
               restaurantName={restaurantName}
               search={search}
               onSearchChange={setSearch}
+              account={
+                isConsumerSession ? (
+                  <AccountMenu
+                    firstName={consumerFirstName}
+                    name={user?.name ?? null}
+                    phone={user?.phone}
+                    onLogout={logout}
+                  />
+                ) : null
+              }
             >
               {!search.trim() && (
                 <CategoryNav

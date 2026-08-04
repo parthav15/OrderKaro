@@ -8,6 +8,7 @@ import {
   parseBody,
   generateAccessToken,
   generateRefreshToken,
+  CONSUMER_ACCESS_EXPIRY,
 } from "@/lib/api-utils"
 import { otpVerifySchema } from "@orderkaro/shared"
 
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     await prisma.phoneVerification.delete({ where: { phone } })
 
-    const accessToken = generateAccessToken({ id: consumer.id, role: "CONSUMER" }, "24h")
+    const accessToken = generateAccessToken({ id: consumer.id, role: "CONSUMER" }, CONSUMER_ACCESS_EXPIRY)
     const refreshToken = generateRefreshToken({ id: consumer.id, role: "CONSUMER" })
 
     return success({ consumer, accessToken, refreshToken })

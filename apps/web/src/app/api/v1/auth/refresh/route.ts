@@ -7,6 +7,7 @@ import {
   generateRefreshToken,
   verifyRefreshToken,
   parseBody,
+  CONSUMER_ACCESS_EXPIRY,
 } from "@/lib/api-utils"
 import { refreshTokenSchema } from "@orderkaro/shared"
 
@@ -23,7 +24,10 @@ export async function POST(request: NextRequest) {
       ...(payload.restaurantId && { restaurantId: payload.restaurantId }),
     }
 
-    const accessToken = generateAccessToken(tokenPayload)
+    const accessToken = generateAccessToken(
+      tokenPayload,
+      payload.role === "CONSUMER" ? CONSUMER_ACCESS_EXPIRY : undefined
+    )
     const refreshToken = generateRefreshToken(tokenPayload)
 
     return success({ accessToken, refreshToken })

@@ -7,6 +7,8 @@ const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "dev-refresh-secret
 const JWT_EXPIRY = "15m"
 const JWT_REFRESH_EXPIRY = "7d"
 
+export const CONSUMER_ACCESS_EXPIRY = "3650d"
+
 export function success(data: unknown = null, status = 200) {
   return NextResponse.json({ success: true, data }, { status })
 }

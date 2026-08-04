@@ -10,6 +10,7 @@ interface MenuStickyHeaderProps {
   restaurantName: string
   search: string
   onSearchChange: (value: string) => void
+  account?: React.ReactNode
   children?: React.ReactNode
 }
 
@@ -17,6 +18,7 @@ export function MenuStickyHeader({
   restaurantName,
   search,
   onSearchChange,
+  account,
   children,
 }: MenuStickyHeaderProps) {
   const [scrolled, setScrolled] = useState(false)
@@ -116,6 +118,8 @@ export function MenuStickyHeader({
             <span className="hidden sm:inline text-sm font-semibold">Orders</span>
           </Link>
         </motion.div>
+
+        {account}
       </div>
 
       {children}
