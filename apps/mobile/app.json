@@ -11,14 +11,25 @@
     "backgroundColor": "#141110",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.visionmenu.app"
+      "bundleIdentifier": "com.visionmenu.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "buildNumber": "2"
     },
     "android": {
       "package": "com.visionmenu.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#7A1626"
-      }
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -57,7 +68,12 @@
       "typedRoutes": true
     },
     "extra": {
-      "apiUrl": "https://visionmenu.app"
-    }
+      "apiUrl": "https://visionmenu.app",
+      "router": {},
+      "eas": {
+        "projectId": "f57924bc-3d82-4dcc-9d41-0f8bb79241cb"
+      }
+    },
+    "owner": "parthav15"
   }
 }

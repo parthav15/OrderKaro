@@ -6,18 +6,23 @@ import { success, error, handleError, parseBody } from "@/lib/api-utils"
 import { otpRequestSchema } from "@orderkaro/shared"
 import { isTwilioConfigured } from "@/lib/twilio"
 import { dispatchOtp } from "@/lib/sms/otp"
+import { isReviewOtpBypass } from "@/lib/review-bypass"
 
 const RESEND_COOLDOWN_MS = 30_000
 const CODE_TTL_MS = 10 * 60_000
 
 export async function POST(request: NextRequest) {
   try {
+    const body = await request.json()
+    const { phone } = parseBody(otpRequestSchema, body)
+
+    if (isReviewOtpBypass(phone)) {
+      return success({ sent: true })
+    }
+
     if (!isTwilioConfigured()) {
       return error("SMS verification is not configured", 503)
     }
-
-    const body = await request.json()
-    const { phone } = parseBody(otpRequestSchema, body)
 
     const existing = await prisma.phoneVerification.findUnique({ where: { phone } })
     if (existing && Date.now() - existing.lastSentAt.getTime() < RESEND_COOLDOWN_MS) {

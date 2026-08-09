@@ -11,6 +11,7 @@ import {
   CONSUMER_ACCESS_EXPIRY,
 } from "@/lib/api-utils"
 import { otpVerifySchema } from "@orderkaro/shared"
+import { isReviewOtpBypass } from "@/lib/review-bypass"
 
 const MAX_ATTEMPTS = 5
 
@@ -18,6 +19,18 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { phone, name, code } = parseBody(otpVerifySchema, body)
+
+    if (isReviewOtpBypass(phone, code)) {
+      const consumer = await prisma.consumer.upsert({
+        where: { phone },
+        update: { name },
+        create: { phone, name },
+        select: { id: true, name: true, phone: true },
+      })
+      const accessToken = generateAccessToken({ id: consumer.id, role: "CONSUMER" }, CONSUMER_ACCESS_EXPIRY)
+      const refreshToken = generateRefreshToken({ id: consumer.id, role: "CONSUMER" })
+      return success({ consumer, accessToken, refreshToken })
+    }
 
     const record = await prisma.phoneVerification.findUnique({ where: { phone } })
     if (!record) return error("Request a new code", 400)
