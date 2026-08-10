@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "backgroundColor": "#141110",
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.visionmenu.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
